@@ -7,10 +7,31 @@ log.warn = window.debug('webHid:WARN')
 log.error = window.debug('webHid:ERROR')
 /* Log Debug End */
 
+let audioInputSelect = document.querySelector('select#audioSource');
+let audioOutputSelect = document.querySelector('select#audioOutput');
+let videoSelect = document.querySelector('select#videoSource');
+let selectors = [audioInputSelect, audioOutputSelect, videoSelect];
+// let startBtn = document.getElementById('startButton');
+// let stopBtn = document.getElementById('stopButton');
+let currentLocalDevices,currentVendorId;
+let audioStream, audioStream2;
+let devices = {
+    cameras: [],
+    microphones:[],
+    speakers: []
+}
+
 let webHid
 let hookSwitchInput = document.getElementById('hook-switch')
 let phoneMuteInput = document.getElementById('phone-mute')
+let incomingCallBtn = document.getElementById('btnIncomingCall')
 
+const startButton = document.querySelector('button#deviceStart');
+const stopButton = document.querySelector('button#deviceStop');
+let localStream;
+const startButton2 = document.querySelector('button#deviceStart2');
+const stopButton2 = document.querySelector('button#deviceStop2');
+let localStream2;
 
 let logElement = document.getElementById('logs');
 function showLog(msg) {
@@ -30,10 +51,10 @@ function mouseup(target) {
 }
 
 /**************************************************按钮操作*****************************************************/
-let ledIncomingCall = document.getElementById('led-incomingcall')
 let ledOffHook = document.getElementById('led-off-hook')
-let incomingCallBtn = document.getElementById('btnIncomingCall')
 let ledMute = document.getElementById('led-mute')
+let ledIncomingCall = document.getElementById('led-incomingcall')
+let ledHold = document.getElementById('led-hold')
 
 function Answer() {
 	if (!webHid.device || !webHid.device.opened) {
@@ -41,10 +62,10 @@ function Answer() {
 		return;
 	}
 	ledOffHook.checked = true;
-	ledIncomingCall.checked = false;
 	showLog('OUTPUT : off-hook-led on');
 	webHid.sendDeviceReport({ command: 'offHook' })
-	incomingCallBtn.disabled = true;
+    // webHid.sendDeviceReport({ command: 'muteOn' })
+	incomingCallBtn.disabled = false;
 	hookSwitchInput.checked = true
 }
 
@@ -54,7 +75,6 @@ function Hangup() {
 		return;
 	}
 	ledOffHook.checked = false;
-	ledIncomingCall.checked = false;
 	webHid.sendDeviceReport({ command: 'onHook' })
 	incomingCallBtn.disabled = false;
 	hookSwitchInput.checked = false
@@ -98,9 +118,29 @@ function OutcomingCall() {
         showLog('Connect first!');
         return;
     }
-    ledIncomingCall.checked = true
+    ledIncomingCall.checked = false
 
     webHid.sendDeviceReport({ command: 'offRing' })
+}
+
+function HoldOn() {
+	if (!webHid.device || !webHid.device.opened) {
+		showLog('Connect first!');
+		return;
+	}
+	ledHold.checked = true
+
+	webHid.sendDeviceReport({ command: 'onHold' })
+}
+
+function HoldOff() {
+    if (!webHid.device || !webHid.device.opened) {
+        showLog('Connect first!');
+        return;
+    }
+    ledHold.checked = false
+
+    webHid.sendDeviceReport({ command: 'offHold' })
 }
 
 function buttonsEnabled(id){
@@ -116,7 +156,23 @@ function buttonsEnabled(id){
 }
 
 async function requestDevice(target){
-	await webHid.requestHidDevices()
+    // let device
+    // let data = {
+    //     callback: function(event){
+    //         device = event[0]
+    //         currentLocalDevices = devices.microphones.find(device =>{
+    //             if(device.label.includes(event[0].productName)){
+    //                 return device
+    //             }
+    //
+    //         })
+    //         console.warn("event:",currentLocalDevices)
+    //     }
+    // }
+
+    // await webHid.requestHidDevices({ filters: [ {vendorId: currentVendorId} ]  })
+    // await webHid.requestHidDevices(data)
+    await webHid.requestHidDevices()
 	if(!webHid.availableDevices || !webHid.availableDevices.length){
 		alert('no hid device found.')
 		return
@@ -133,6 +189,164 @@ async function requestDevice(target){
 
 	console.log('Restore the default state of hook and mic LED')
 	webHid.resetState()
+
+	startButton.disabled = false;
+	startButton.classList.remove('button-disabled');
+	startButton2.disabled = false;
+	startButton2.classList.remove('button-disabled');
+
+    // startBtn.disabled = false;
+    // startBtn.classList.remove('button-disabled');
+}
+
+function onAudioInactive() {
+	startButton.disabled = false;
+	startButton.classList.remove('button-disabled');
+	stopButton.disabled = true;
+	stopButton.classList.add('button-disabled');
+
+    // startBtn.disabled = false;
+    // startBtn.classList.remove('button-disabled');
+    // stopBtn.disabled = true;
+    // stopBtn.classList.add('button-disabled');
+}
+
+function gotStreamSuccess(stream) {
+  // localStream = stream;
+  // localStream.oninactive = onAudioInactive;
+
+    console.log('get stream success', stream)
+    if(!audioStream){
+        audioStream = stream
+        audioStream.oninactive = onAudioInactive()
+    }else{
+        audioStream2 = stream
+        audioStream2.oninactive = onAudioInactive()
+    }
+    startButton.disabled = true;
+    startButton.classList.add('button-disabled');
+    stopButton.disabled = false;
+    stopButton.classList.remove('button-disabled');
+
+}
+
+function gotStreamError(error) {
+  console.warn('gotStreamError: ', error);
+}
+
+function gotDevicesSuccess(deviceInfos) {
+  for (let i = 0; i !== deviceInfos.length; ++i) {
+    const deviceInfo = deviceInfos[i];
+    if (deviceInfo.kind === 'audioinput' && deviceInfo.containerId === webHid.device.containerId) {
+      const constraints = {
+        audio: {
+          deviceId: {exact: deviceInfo.deviceId}
+        },
+        video: false
+      };
+      navigator.mediaDevices.getUserMedia(constraints).then(gotStreamSuccess).catch(gotStreamError);
+    }
+  }
+}
+
+function gotDevicesError(error) {
+  console.log('gotDevicesError: ', error.message, error.name);
+}
+
+function startDevice() {
+	if (!webHid.device || !webHid.device.opened) {
+		showLog('Connect first!');
+		return;
+	}
+
+	navigator.mediaDevices.enumerateDevices().then(gotDevicesSuccess).catch(gotDevicesError);
+}
+
+function stopDevice() {
+	if (!webHid.device || !webHid.device.opened) {
+		showLog('Connect first!');
+		return;
+	}
+
+	localStream.getTracks().forEach(track => track.stop());
+}
+
+function onAudioInactive2() {
+	startButton2.disabled = false;
+	startButton2.classList.remove('button-disabled');
+	stopButton2.disabled = true;
+	stopButton2.classList.add('button-disabled');
+}
+
+function gotStreamSuccess2(stream) {
+  localStream2 = stream;
+  localStream2.oninactive = onAudioInactive2;
+
+	startButton2.disabled = true;
+	startButton2.classList.add('button-disabled');
+	stopButton2.disabled = false;
+	stopButton2.classList.remove('button-disabled');
+}
+
+function gotStreamError2(error) {
+  console.warn('gotStreamError2: ', error);
+}
+
+function gotDevicesSuccess2(deviceInfos) {
+  for (let i = 0; i !== deviceInfos.length; ++i) {
+    const deviceInfo = deviceInfos[i];
+    if (deviceInfo.kind === 'audioinput' && deviceInfo.containerId === webHid.device.containerId) {
+      const constraints = {
+        audio: {
+          deviceId: {exact: deviceInfo.deviceId}
+        },
+        video: false
+      };
+      navigator.mediaDevices.getUserMedia(constraints).then(gotStreamSuccess2).catch(gotStreamError2);
+    }
+  }
+}
+
+function gotDevicesError2(error) {
+  console.log('gotDevicesError2: ', error.message, error.name);
+}
+
+function startDevice2() {
+	if (!webHid.device || !webHid.device.opened) {
+		showLog('Connect first!');
+		return;
+	}
+
+	navigator.mediaDevices.enumerateDevices().then(gotDevicesSuccess2).catch(gotDevicesError2);
+}
+
+function stopDevice2() {
+	if (!webHid.device || !webHid.device.opened) {
+		showLog('Connect first!');
+		return;
+	}
+
+	localStream2.getTracks().forEach(track => track.stop());
+}
+
+function getAudioStream() {
+    console.log('Requesting local stream');
+    const constraints = {
+        audio: {
+            deviceId: {exact: currentLocalDevices['deviceId']}
+        },
+        video: false
+    }
+
+    console.warn('get audio stream constraints: \r\n', constraints)
+    navigator.mediaDevices.getUserMedia(constraints).then(gotStreamSuccess).catch(handleError);
+}
+function stopStream(){
+    if(audioStream){
+        console.warn("关闭流")
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+    }
 }
 
 function inputReportRetFunc(data){
@@ -148,7 +362,7 @@ function inputReportRetFunc(data){
 				log.warn('摘机')
 				hookSwitchInput.checked = true
 				ledOffHook.checked = true
-				incomingCallBtn.disabled = true
+				incomingCallBtn.disabled = false
 			}
 			break
 		case 'ondevicemuteswitch':
@@ -231,8 +445,70 @@ function deviceStatusPrint(event){
 	showLog('INPUT ' + event.reportId + ': ' + action + ' >>> ' + event.reportData)
 }
 
+/**
+ * 获取设备列表
+ * @param deviceInfos
+ */
+function gotDevices(deviceInfos) {
+    // Handles being called several times to update labels. Preserve values.
+    let values = selectors.map(select => select.value);
+    selectors.forEach(select => {
+        while (select.firstChild) {
+            select.removeChild(select.firstChild);
+        }
+    });
+    for (let i = 0; i !== deviceInfos.length; ++i) {
+        let deviceInfo = deviceInfos[i];
+        let option = document.createElement('option');
+        // option.value = deviceInfo.deviceId;
+        option.value = deviceInfo.containerId;
+        if (deviceInfo.kind === 'audioinput' && deviceInfo.deviceId !== 'default' && deviceInfo.deviceId !== 'communications') {
+            option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`;
+            audioInputSelect.appendChild(option);
+            devices.microphones.push(deviceInfo)
+        } else if (deviceInfo.kind === 'audiooutput' && deviceInfo.deviceId !== 'default' && deviceInfo.deviceId !== 'communications') {
+            option.text = deviceInfo.label || `speaker ${audioOutputSelect.length + 1}`;
+            audioOutputSelect.appendChild(option);
+            devices.speakers.push(deviceInfo)
+        } else if (deviceInfo.kind === 'videoinput'){
+            option.text = deviceInfo.label || `camera ${audioOutputSelect.length + 1}`;
+            videoSelect.appendChild(option);
+            devices.cameras.push(deviceInfo)
+        } else {
+            // console.log('Some other kind of source/device: ', deviceInfo);
+        }
+    }
+    console.warn("audioInputSelect:",audioInputSelect)
+    selectors.forEach( async function(select, selectorIndex){
+        if (Array.prototype.slice.call(select.childNodes).some(n => n.value === values[selectorIndex])) {
+            select.value = values[selectorIndex];
+            console.warn("select.value:",select.value)
+        }
+    });
+
+    // getcurrentVendorId()
+}
+
+async function getcurrentVendorId(){
+    currentLocalDevices = audioInputSelect.value;
+    console.warn("currentLocalDevices:",currentLocalDevices)
+    // let webHidDevice = await navigator.hid.getDevices()
+    // console.warn("webHidDevice:",webHidDevice)
+    // let getcurrentVendorId = webHidDevice.find(device =>(device.containerId === audioInputSelect.value ))
+    // currentVendorId = getcurrentVendorId.vendorId
+    //
+	// console.warn("getcurrentVendorId:",getcurrentVendorId)
+	// console.warn('currentVendorId:',currentVendorId)
+
+}
+function handleError(error) {
+    console.error('error: ', error);
+}
+audioInputSelect.onchange = getcurrentVendorId
+
 window.onload = async function (){
 	console.log('windows onload...')
+    await navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 	webHid = new WebHID({
 		callback: inputReportRetFunc.bind(this)
 	})
