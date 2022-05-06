@@ -156,31 +156,28 @@ function buttonsEnabled(id){
 }
 
 async function requestDevice(target){
-    // let device
-    // let data = {
-    //     callback: function(event){
-    //         device = event[0]
-    //         currentLocalDevices = devices.microphones.find(device =>{
-    //             if(device.label.includes(event[0].productName)){
-    //                 return device
-    //             }
-    //
-    //         })
-    //         console.warn("event:",currentLocalDevices)
-    //     }
-    // }
+    let device
+    let data = {
+        callback: function(event){
+            device = event[0]
+            currentLocalDevices = devices.microphones.find(device =>{
+                if(device.label.includes(event[0].productName)){
+                    return device
+                }
 
-    // await webHid.requestHidDevices({ filters: [ {vendorId: currentVendorId} ]  })
-    // await webHid.requestHidDevices(data)
-    await webHid.requestHidDevices()
+            })
+            console.warn("event:",currentLocalDevices)
+        }
+    }
+
+    await webHid.requestHidDevices(data)
 	if(!webHid.availableDevices || !webHid.availableDevices.length){
 		alert('no hid device found.')
 		return
 	}
 
-	let device = webHid.availableDevices[0]
-	showLog('Select device: ' + device.productName);
-	await webHid.open({label: device.productName})
+    showLog('Select device: ' + device.productName);
+    await webHid.open({label: device.productName})
 	showLog('Connected to device: ' + webHid.device.productName);
 
 	buttonsEnabled('output')
@@ -204,17 +201,9 @@ function onAudioInactive() {
 	startButton.classList.remove('button-disabled');
 	stopButton.disabled = true;
 	stopButton.classList.add('button-disabled');
-
-    // startBtn.disabled = false;
-    // startBtn.classList.remove('button-disabled');
-    // stopBtn.disabled = true;
-    // stopBtn.classList.add('button-disabled');
 }
 
 function gotStreamSuccess(stream) {
-  // localStream = stream;
-  // localStream.oninactive = onAudioInactive;
-
     console.log('get stream success', stream)
     if(!audioStream){
         audioStream = stream
@@ -460,8 +449,8 @@ function gotDevices(deviceInfos) {
     for (let i = 0; i !== deviceInfos.length; ++i) {
         let deviceInfo = deviceInfos[i];
         let option = document.createElement('option');
-        // option.value = deviceInfo.deviceId;
-        option.value = deviceInfo.containerId;
+        option.value = deviceInfo.deviceId;
+        // option.value = deviceInfo.containerId;
         if (deviceInfo.kind === 'audioinput' && deviceInfo.deviceId !== 'default' && deviceInfo.deviceId !== 'communications') {
             option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`;
             audioInputSelect.appendChild(option);
@@ -486,7 +475,7 @@ function gotDevices(deviceInfos) {
         }
     });
 
-    // getcurrentVendorId()
+    getcurrentVendorId()
 }
 
 async function getcurrentVendorId(){

@@ -89,11 +89,12 @@ WebHID.prototype.requestHidDevices = async function (data){
 
     log.info('device request params: ' + JSON.stringify(this.requestParams, null, '    '))
     let devices = await navigator.hid.requestDevice(this.requestParams)
-    // log.info('device request params: ' + JSON.stringify(data, null, '    '))
-    // let devices = await navigator.hid.requestDevice(data)
+
     if (!devices || !devices.length) {
         log.warn('No HID devices selected.')
         return false
+    }else{
+        data.callback(devices)
     }
     devices.forEach(device => {
         log.info(`request device HID: ${device.productName}`)
