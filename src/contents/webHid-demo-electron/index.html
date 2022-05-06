@@ -1,0 +1,85 @@
+<html>
+<head>
+    <title>test_webHID</title>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <link rel="shortcut icon" href="#" />
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div id="container">
+        <div>
+            <h2>Device select</h2>
+            <div class="select">
+                <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
+            </div>
+
+            <div class="select" style="display: none">
+                <label for="audioOutput">Audio output destination: </label><select id="audioOutput"></select>
+            </div>
+
+            <div class="select" style="display: none">
+                <label for="videoSource">Video source: </label><select id="videoSource"></select>
+            </div>
+        </div>
+
+        <h1>USB-HID Sample</h1>
+        <div id="output">
+            <h3>Output (Host 向 耳机 发送指令)</h3>
+            <ul>
+                <li><input type="checkbox" id="led-off-hook" disabled>LEDs / Off-Hook
+                <li><input type="checkbox" id="led-mute" disabled>LEDs / Mute
+                <li><input type="checkbox" id="led-incomingcall" disabled>LEDs / Incoming call
+                <li><input type="checkbox" id="led-hold" disabled>LEDs / Hold
+            </ul>
+
+            <div>
+                <button type="button" id="btnAnswer" class="mouseup button-disabled"  onclick="Answer()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Hook Off</button>
+                <button type="button" id="btnHangup" class="mouseup button-disabled" onclick="Hangup()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Hook On</button>
+                <button type="button" id="btnMuteOn" class="mouseup button-disabled" onclick="MuteOn()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Mute On</button>
+                <button type="button" id="btnMuteOff" class="mouseup button-disabled" onclick="MuteOff()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Mute Off</button>
+            </div>
+            <div>
+                <button type="button" id="btnIncomingCall" class="mouseup button-disabled" onclick="IncomingCall()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Ring On</button>
+                <button type="button" id="btnOutcomingCall" class="mouseup button-disabled" onclick="OutcomingCall()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Ring Off</button>
+                <button type="button" id="btnHoldOn" class="mouseup button-disabled" onclick="HoldOn()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Hold On</button>
+                <button type="button" id="btnHoldOff" class="mouseup button-disabled" onclick="HoldOff()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Hold Off</button>
+            </div>
+        </div>
+
+        <div id="input">
+            <h3>Input (耳机 向 Host 发送指令)</h3>
+            <ul>
+                <li><input type="checkbox" id="hook-switch" disabled>Telephony / Hook Switch
+                <li><input type="checkbox" id="phone-mute" disabled>Telephony / Phone Mute
+            </ul>
+
+            <button id="deviceConnect" type="button" class="mouseup" onclick="requestDevice(this)" onmousedown=mousedown(this) onmouseup=mouseup(this)>Connect</button>
+            <div>
+                <button id="deviceStart" type="button" class="mouseup button-disabled" onclick="getAudioStream()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Start</button>
+                <button id="deviceStop" type="button" class="mouseup button-disabled" onclick="stopStream()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Stop</button>
+                <button id="deviceStart2" type="button" class="mouseup button-disabled" onclick="getAudioStream()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Start2</button>
+                <button id="deviceStop2" type="button" class="mouseup button-disabled" onclick="stopStream()" onmousedown=mousedown(this) onmouseup=mouseup(this) disabled>Stop2</button>
+            </div>
+
+            <hr>
+            <a href="/newDevice.html"  target="_blank">add new device</a>
+        </div>
+
+        <div class="warning">
+            <p><strong>Warning:</strong></p>
+            <p>WebHID is available in Chrome 78+ behind a flag.</p>
+            <p>To use WebHID, navigate to <strong>chrome://flags</strong> in a browser window and enable <strong>"Experimental Web Platform Features"</strong>,</p>
+            <p>then restart Chrome.</p>
+        </div>
+
+        <H1>Logs: </H1>
+        <div id="logs">
+        </div>
+    </div>
+
+    <script type="application/javascript" src="debug.js"></script>
+    <script type="application/javascript" src="index.js"></script>
+    <script type="application/javascript" src="hid_all_reply.js"></script>
+</body>
+</html>

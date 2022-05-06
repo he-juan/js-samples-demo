@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/contents/webhid-demo/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/webhid-demo/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js" afterDir="false" />
-    </list>
+    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -43,7 +39,7 @@
         <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="2646">
+              <first_editor relative-caret-position="27">
                 <caret line="98" column="28" selection-start-line="92" selection-start-column="8" selection-end-line="98" selection-end-column="28" />
               </first_editor>
               <second_editor />
@@ -54,7 +50,7 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="214">
+            <state relative-caret-position="-232">
               <caret line="73" column="10" lean-forward="true" selection-start-line="73" selection-start-column="10" selection-end-line="73" selection-end-column="10" />
               <folding>
                 <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -67,17 +63,17 @@
       <file leaf-file-name="hid.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="94" column="44" lean-forward="true" selection-start-line="94" selection-start-column="44" selection-end-line="94" selection-end-column="44" />
+            <state relative-caret-position="296">
+              <caret line="92" column="38" lean-forward="true" selection-start-line="92" selection-start-column="38" selection-end-line="92" selection-end-column="38" />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.js">
+        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="319">
-              <caret line="173" column="40" lean-forward="true" selection-start-line="173" selection-start-column="40" selection-end-line="173" selection-end-column="40" />
+            <state relative-caret-position="-7619">
+              <caret line="205" column="35" selection-start-line="205" selection-start-column="35" selection-end-line="205" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -88,6 +84,7 @@
     <findStrings>
       <find>currentLocalDevices</find>
       <find>device request params</find>
+      <find>requestHidDevices</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -105,8 +102,9 @@
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/index.html" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/README.md" />
-        <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/index.js" />
+        <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js" />
+        <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/index.js" />
       </list>
     </option>
   </component>
@@ -157,14 +155,6 @@
               <item name="contents" type="462c0819:PsiDirectoryNode" />
               <item name="webhid-demo" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="webhid-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="js" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -174,9 +164,16 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
+      <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
+      <recent name="E:\private\js-samples-demo\src\contents\webhid-demo\js" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid-demo" />
     </key>
   </component>
@@ -203,16 +200,15 @@
       <option name="presentableId" value="Default" />
       <updated>1651721936539</updated>
       <workItem from="1651721937787" duration="1088000" />
-      <workItem from="1651818609376" duration="1429000" />
+      <workItem from="1651818609376" duration="1671000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2517000" />
+    <option name="totallyTimeSpent" value="2759000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24973656" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -275,7 +271,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
@@ -295,16 +291,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="2646">
-            <caret line="98" column="28" selection-start-line="92" selection-start-column="8" selection-end-line="98" selection-end-column="28" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -315,16 +301,47 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/new_webHid.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/old-webHid.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/webHid.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="27">
+            <caret line="98" column="28" selection-start-line="92" selection-start-column="8" selection-end-line="98" selection-end-column="28" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="94" column="44" lean-forward="true" selection-start-line="94" selection-start-column="44" selection-end-line="94" selection-end-column="44" />
+        <state relative-caret-position="296">
+          <caret line="92" column="38" lean-forward="true" selection-start-line="92" selection-start-column="38" selection-end-line="92" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
+        <state relative-caret-position="-232">
           <caret line="73" column="10" lean-forward="true" selection-start-line="73" selection-start-column="10" selection-end-line="73" selection-end-column="10" />
           <folding>
             <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -333,10 +350,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="173" column="40" lean-forward="true" selection-start-line="173" selection-start-column="40" selection-end-line="173" selection-end-column="40" />
+        <state relative-caret-position="-7619">
+          <caret line="205" column="35" selection-start-line="205" selection-start-column="35" selection-end-line="205" selection-end-column="35" />
         </state>
       </provider>
     </entry>
