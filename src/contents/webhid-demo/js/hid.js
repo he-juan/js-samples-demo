@@ -1,8 +1,3 @@
-
-if (!('hid' in navigator)) {
-    log.warn('WebHID is not available yet.')
-}
-
 function WebHID(props){
     this.hidSupport = !(!window.navigator.hid || !window.navigator.hid.requestDevice)
     this.requestParams = (props && props.deviceFilter) || { filters: [ ]  }
@@ -11,6 +6,7 @@ function WebHID(props){
     this.device = null
     this.pairedDevices = []    // has previously granted the website access to.
     this.availableDevices = []
+    this.isParseSuccess = false
     this.inputReportRetFunc = props && props.callback
     log.info('hid device load')
     this.load()
@@ -33,7 +29,7 @@ WebHID.prototype.deviceUsage = {
     mute: {usageId: 0x080009, usageName: 'Mute'},
     offHook: {usageId: 0x080017, usageName: 'Off Hook'},
     ring: {usageId: 0x080018, usageName: 'Ring'},
-    hold: {usageId: 0x080020, usageName: 'Hold'},
+    // hold: {usageId: 0x080020, usageName: 'Hold'},
 
     /********** inputReports ************/
     hookSwitch: {usageId: 0x0B0020, usageName: 'Hook Switch'},
@@ -54,12 +50,6 @@ WebHID.prototype.deviceCommand = {
     }
 }
 
-WebHID.prototype.needReplyVids = [
-    2830, // Jabra
-    1118, // Microsoft
-    27027, // Yealink
-];
-
 /**
  *  Get all devices the user has previously granted the website access to.
  * @returns {Promise<*>}
@@ -78,7 +68,7 @@ WebHID.prototype.getPairedDevices = async function (){
     }
 }
 
-WebHID.prototype.requestHidDevices = async function (data){
+WebHID.prototype.requestHidDevices = async function(data) {
     if (!this.hidSupport) {
         log.warn('The WebHID API is NOT supported!')
         return false
@@ -133,26 +123,39 @@ WebHID.prototype.getHexByteStr = function (data){
 /**  parse HIDDevice about inputeReports and outputReports
  **/
 WebHID.prototype.parseDeviceDescriptors = function () {
-    this.outputEventGenerators = new Map();
+    try{
+        this.outputEventGenerators = new Map();
+        if (!(this.device && this.device.collections)) {
+            log.error('Undefined device collection');
+            return
+        }
 
-    if (!(this.device && this.device.collections)) {
-        log.error('Undefined device collection');
-        throw new Error('Undefined device collection');
-        return
-    }
+        let telephoneCollection = this.device.collections.find( collection => (collection.usagePage === 11));
+        if (!telephoneCollection || Object.keys(telephoneCollection).length === 0) {
+            log.error('No telephone collection');
+            return
+        }
 
-    let telephoneCollection = this.device.collections.find( collection => (collection.usagePage === 11));
-    if (telephoneCollection === undefined || Object.keys(telephoneCollection).length === 0) {
-        log.error('No telephone collection');
-        throw new Error('No telephone collection');
-    }
+        if (telephoneCollection.inputReports) {
+            if(!this.parseInputReports(telephoneCollection.inputReports)){
+                log.warn("parse inputReports failed")
+                return false;
+            }else{
+                log.info("parse inputReports success")
+            }
+        }
 
-    if (telephoneCollection.inputReports) {
-        this.parseInputReports(telephoneCollection.inputReports);
-    }
-
-    if (telephoneCollection.outputReports) {
-        this.parseOutputReports(telephoneCollection.outputReports);
+        if (telephoneCollection.outputReports) {
+            if(!this.parseOutputReports(telephoneCollection.outputReports)){
+                log.warn("parse outputReports failed")
+                return false
+            }else{
+                log.info("parse outputReports success")
+                return true;
+            }
+        }
+    }catch (e){
+        log.error("parseDeviceDescriptors error:" + JSON.stringify(e, null, '    '))
     }
 }
 
@@ -187,6 +190,12 @@ WebHID.prototype.parseInputReports = function (inputReports) {
             usageOffset += item.reportCount * item.reportSize;
         });
     });
+
+    if(this.deviceCommand.inputReport['phoneMute'].reportData === 0 || this.deviceCommand.inputReport['hookSwitch'] === 0) {
+        return false
+    }else{
+        return true
+    }
 }
 
 WebHID.prototype.parseOutputReports = function (outputReports) {
@@ -219,10 +228,10 @@ WebHID.prototype.parseOutputReports = function (outputReports) {
                         this.deviceCommand.outputReport['ring'] = {reportId: report.reportId, usageOffset: usageOffset + i * item.reportSize};
                         usageOffsetMap.set(usage, usageOffset + i * item.reportSize);
                         break;
-                    case this.deviceUsage.hold.usageId:
-                        this.deviceCommand.outputReport['hold'] = {reportId: report.reportId, usageOffset: usageOffset + i * item.reportSize};
-                        usageOffsetMap.set(usage, usageOffset + i * item.reportSize);
-                        break;
+                    // case this.deviceUsage.hold.usageId:
+                    //     this.deviceCommand.outputReport['hold'] = {reportId: report.reportId, usageOffset: usageOffset + i * item.reportSize};
+                    //     usageOffsetMap.set(usage, usageOffset + i * item.reportSize);
+                    //     break;
                     default:
                         break;
                 }
@@ -246,11 +255,30 @@ WebHID.prototype.parseOutputReports = function (outputReports) {
             };
         }
     });
+
+    let mute, ring, hook;
+    for(let item in this.outputEventGenerators){
+        let newItem = this.getHexByte(item)
+        newItem = "0x0" + newItem
+        if(this.deviceUsage.mute.usageId === Number(newItem)){
+            mute = this.outputEventGenerators[this.deviceUsage.mute.usageId]
+        }else if(this.deviceUsage.offHook.usageId === Number(newItem)){
+            hook = this.outputEventGenerators[this.deviceUsage.offHook.usageId]
+        }else if(this.deviceUsage.ring.usageId === Number(newItem)){
+            ring = this.outputEventGenerators[this.deviceUsage.ring.usageId]
+        }
+    }
+    if(mute && ring && hook){
+        return true;
+    } else{
+        return false;
+    }
 }
 
 WebHID.prototype.open = async function (data){
     log.info("webHid open data:" +  JSON.stringify(data, null, '    '))
     try {
+        let isExistDevice = false
         if (!data) {
             log.warn('invalid parameter of device')
             return
@@ -265,10 +293,20 @@ WebHID.prototype.open = async function (data){
         }
 
         if(data.containerId){
-            this.device = this.availableDevices.find(device =>{return device.containerId === data.containerId && device.collections && device.collections.find( collection => (collection.usagePage === 11))})
+            this.device = this.availableDevices.find(device =>{
+                return device.containerId === data.containerId && device.collections &&
+                    device.collections.find(collection => (collection.usagePage === 11))
+            })
+            if(this.device){
+                isExistDevice = true
+            }
             log.info('found HID device by containerId: ' + data.containerId)
-        }else if(data.label){
-            this.device = this.availableDevices.find(device =>{return data.label.includes(device.productName) && device.collections && device.collections.find( collection => (collection.usagePage === 11))})
+        }
+        if( !isExistDevice && data.label){
+            this.device = this.availableDevices.find(device =>{
+                return data.label.includes(device.productName) && device.collections &&
+                    device.collections.find( collection => (collection.usagePage === 11))
+            })
             log.info('found HID device by device label: ' + data.label)
         }
         if(!this.device){
@@ -279,23 +317,31 @@ WebHID.prototype.open = async function (data){
         log.info('set current HID device: ' + this.device.productName)
         await this.device.open();
 
-        this.parseDeviceDescriptors();
-
-        //  listen for input reports by registering an oninputreport event listener
-        this.device.oninputreport = this.handleInputReport.bind(this)
-
-        // reset device status
-        log.info('open resetState');
-        await this.resetState()
-
-        // Synchronize the status of the current call line
-        if(data.hookStatus === 'off'){
-            log.warn('Synchronous off-hook status')
-            await this.sendDeviceReport({ command: 'offHook' })
+        if(!await this.parseDeviceDescriptors()) {
+            this.isParseSuccess = false
+            log.warn("Failed to parse webhid")
+            return
+        }else{
+            this.isParseSuccess = true
         }
-        if(data.muted === true){
-            log.warn('Synchronous mute status')
-            await this.sendDeviceReport({ command: 'muteOn' })
+
+        if(this.isParseSuccess){
+            //  listen for input reports by registering an oninputreport event listener
+            this.device.oninputreport = await this.handleInputReport.bind(this)
+
+            // reset device status
+            log.info('open resetState');
+            await this.resetState()
+
+            // Synchronize the status of the current call line
+            if(data.hookStatus === 'off'){
+                log.warn('Synchronous off-hook status')
+                await this.sendDeviceReport({ command: 'offHook' })
+            }
+            if(data.muted === true){
+                log.warn('Synchronous mute status')
+                await this.sendDeviceReport({ command: 'muteOn' })
+            }
         }
     }catch (e){
         log.error("error content:" + e)
@@ -334,7 +380,7 @@ WebHID.prototype.resetState = function(){
     this.device.hookStatus = 'on';
     this.device.muted = false;
     this.device.ring = false;
-    this.device.hold = false;
+    // this.device.hold = false;
     this.sendDeviceReport({command: 'onHook'})
     this.sendDeviceReport({command: 'muteOff'})
 }
@@ -346,7 +392,8 @@ WebHID.prototype.resetState = function(){
 
 WebHID.prototype.sendDeviceReport = async function (data) {
     log.warn("sendDeviceReport_data:"+ JSON.stringify(data, null, '    '))
-    if (!data || !data.command || !this.device || !this.device.opened) {
+    if (!data || !data.command || !this.device || !this.device.opened || !this.isParseSuccess) {
+        log.info("There are currently non-compliant conditions")
         return;
     }
 
@@ -378,10 +425,10 @@ WebHID.prototype.sendDeviceReport = async function (data) {
         case 'offRing':
             reportId = this.deviceCommand.outputReport['ring'].reportId;
             break;
-        case 'onHold':
-        case 'offHold':
-            reportId = this.deviceCommand.outputReport['hold'].reportId;
-            break;
+        // case 'onHold':
+        // case 'offHold':
+        //     reportId = this.deviceCommand.outputReport['hold'].reportId;
+        //     break;
         default:
             log.info('Unknown command ' + data.command);
             return;
@@ -394,17 +441,17 @@ WebHID.prototype.sendDeviceReport = async function (data) {
 
     /************************* keep old status ****************************/
     oldMuted  = this.device.muted;
-    if (this.device.hookStatus == 'off') {
+    if (this.device.hookStatus === 'off') {
         oldOffHook = true;
-    } else if (this.device.hookStatus == 'on') {
+    } else if (this.device.hookStatus === 'on') {
         oldOffHook = false;
     } else {
         log.warn('Invalid hook status');
         return;
     }
     oldRing = this.device.ring;
-    oldHold = this.device.hold;
-    log.info('send device command: old_hook=' + oldOffHook + ', old_muted=' + oldMuted + ', old_ring=' + oldRing + ', old_hold=' + oldHold)
+    // oldHold = this.device.hold;
+    log.info('send device command: old_hook=' + oldOffHook + ', old_muted=' + oldMuted + ', old_ring=' + oldRing )
 
     /*********************  get new status  *****************************/
     switch (data.command) {
@@ -426,17 +473,17 @@ WebHID.prototype.sendDeviceReport = async function (data) {
         case 'offRing':
             newRing = false
             break;
-        case 'onHold':
-            newHold = true;
-            break;
-        case 'offHold':
-            newHold = false
-            break;
+        // case 'onHold':
+        //     newHold = true;
+        //     break;
+        // case 'offHold':
+        //     newHold = false
+        //     break;
         default:
             log.info('Unknown command ' + data.command);
             return;
     }
-    log.info('send device command: new_hook = ' + newOffHook + ', new_muted = ' + newMuted + ', new_ring = ' + newRing + ', new_hold = ' + newHold)
+    log.info('send device command: new_hook = ' + newOffHook + ', new_muted = ' + newMuted + ', new_ring = ' + newRing )
 
     if (newMuted === undefined) {
         muteReport = this.outputEventGenerators[this.deviceUsage.mute.usageId](oldMuted);
@@ -456,11 +503,11 @@ WebHID.prototype.sendDeviceReport = async function (data) {
         ringReport =  this.outputEventGenerators[this.deviceUsage.ring.usageId](newRing);
     }
 
-    if (newHold === undefined) {
-        holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](oldHold);
-    } else {
-        holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](newHold);
-    }
+    // if (newHold === undefined) {
+    //     holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](oldHold);
+    // } else {
+    //     holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](newHold);
+    // }
 
     if (reportId === this.deviceCommand.outputReport['mute'].reportId) {
         if (reportData === null) {
@@ -492,15 +539,15 @@ WebHID.prototype.sendDeviceReport = async function (data) {
         }
     }
 
-    if (reportId === this.deviceCommand.outputReport['hold'].reportId) {
-        if (reportData === null) {
-            reportData = new Uint8Array(holdReport);
-        } else {
-            for (const [i, data] of holdReport.entries()) {
-                reportData[i] |= data;
-            }
-        }
-    }
+    // if (reportId === this.deviceCommand.outputReport['hold'].reportId) {
+    //     if (reportData === null) {
+    //         reportData = new Uint8Array(holdReport);
+    //     } else {
+    //         for (const [i, data] of holdReport.entries()) {
+    //             reportData[i] |= data;
+    //         }
+    //     }
+    // }
 
     log.warn('send device command ' + data.command + ': reportId=' + reportId + ', reportData=' + reportData)
     log.warn('reportData is ' + JSON.stringify(reportData, null, '    '));
@@ -526,17 +573,17 @@ WebHID.prototype.sendDeviceReport = async function (data) {
         case 'offRing':
             this.device.ring = false;
             break;
-        case 'onHold':
-            this.device.hold = true;
-            break;
-        case 'offHold':
-            this.device.hold = false;
-            break;
+        // case 'onHold':
+        //     this.device.hold = true;
+        //     break;
+        // case 'offHold':
+        //     this.device.hold = false;
+        //     break;
         default:
             log.info('Unknown command ' + data.command);
             break;
     }
-    log.info('device status after send command: hook=' + this.device.hookStatus + ', muted=' + this.device.muted + ', ring=' + this.device.ring + ', hold=' + this.device.hold)
+    log.info('device status after send command: hook=' + this.device.hookStatus + ', muted=' + this.device.muted + ', ring=' + this.device.ring )
 }
 
 WebHID.prototype.sendReplyReport = async function (inputReportId, curOffHook, curMuted) {
@@ -595,6 +642,8 @@ WebHID.prototype.handleInputReport = function (event){
         if (reportId === 0) {
             log.warn("handleInputReport: ignore invalid reportId")
             return;
+        }else{
+            log.info("handleInputReport_reportId:" + reportId)
         }
 
         let inputReport = This.deviceCommand.inputReport;
@@ -606,11 +655,10 @@ WebHID.prototype.handleInputReport = function (event){
 
         let hookStatusChange = false;
         let muteStatusChange = false;
-        let canReply = false;
 
-        let vendorId = device.vendorId;
         let reportData = new Uint8Array(data.buffer);
-        let needReply = true;//this.needReplyVids.includes(vendorId);
+        let needReply = true;
+
         log.warn('recv device event: reportId=' + reportId + ', reportData=' + reportData + ', needReply=' + needReply)
 
         if (reportId === inputReport['hookSwitch'].reportId) {
@@ -630,9 +678,6 @@ WebHID.prototype.handleInputReport = function (event){
             } else if (usageOn) {
                 This.device.hookStatus = This.device.hookStatus === 'off'?  'on': 'off';
                 hookStatusChange = true;
-            } else if (needReply) {
-                log.warn('canReply');
-                canReply = true;
             }
         }
 
@@ -651,9 +696,6 @@ WebHID.prototype.handleInputReport = function (event){
             } else if (usageOn) {
                 This.device.muted = !This.device.muted;
                 muteStatusChange = true;
-            } else if (needReply) {
-                log.warn('canReply');
-                canReply = true;
             }
         }
 
@@ -677,7 +719,7 @@ WebHID.prototype.handleInputReport = function (event){
 
         This.inputReportRetFunc && This.inputReportRetFunc(inputReportData)
 
-        log.warn('hookStatusChange=' + hookStatusChange + ', muteStatusChange=' + muteStatusChange + ', needReply=' + needReply);
+        log.warn('hookStatusChange=' + hookStatusChange + ', muteStatusChange=' + muteStatusChange + ', needReply=' + needReply );
         if (needReply && (hookStatusChange || muteStatusChange)) {
             let newOffHook;
             if (this.device.hookStatus === 'off') {
