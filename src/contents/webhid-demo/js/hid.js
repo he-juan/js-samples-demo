@@ -68,7 +68,7 @@ WebHID.prototype.getPairedDevices = async function (){
     }
 }
 
-WebHID.prototype.requestHidDevices = async function(data) {
+WebHID.prototype.requestHidDevices = async function() {
     if (!this.hidSupport) {
         log.warn('The WebHID API is NOT supported!')
         return false
@@ -83,8 +83,6 @@ WebHID.prototype.requestHidDevices = async function(data) {
     if (!devices || !devices.length) {
         log.warn('No HID devices selected.')
         return false
-    }else{
-        data.callback(devices)
     }
     devices.forEach(device => {
         log.info(`request device HID: ${device.productName}`)
@@ -268,10 +266,10 @@ WebHID.prototype.parseOutputReports = function (outputReports) {
             ring = this.outputEventGenerators[this.deviceUsage.ring.usageId]
         }
     }
-    if(mute && ring && hook){
-        return true;
-    } else{
+    if(!mute && !ring && !hook){
         return false;
+    } else{
+        return true;
     }
 }
 
@@ -397,6 +395,23 @@ WebHID.prototype.sendDeviceReport = async function (data) {
         return;
     }
 
+    if(data.command === 'muteOn' || data.command === 'muteOff'){
+        if(!this.outputEventGenerators[this.deviceUsage.mute.usageId]){
+            log.info("current no parse mute event")
+            return
+        }
+    }else if(data.command === 'onHook' || data.command === 'offHook'){
+        if(!this.outputEventGenerators[this.deviceUsage.offHook.usageId]){
+            log.info("current no parse offHook event")
+            return
+        }
+    }else if(data.command === 'onRing' || data.command === 'offRing'){
+        if(!this.outputEventGenerators[this.deviceUsage.ring.usageId]){
+            log.info("current no parse ring event")
+            return
+        }
+    }
+
     let reportId = 0;
     let oldOffHook;
     let oldMuted;
@@ -485,29 +500,38 @@ WebHID.prototype.sendDeviceReport = async function (data) {
     }
     log.info('send device command: new_hook = ' + newOffHook + ', new_muted = ' + newMuted + ', new_ring = ' + newRing )
 
-    if (newMuted === undefined) {
-        muteReport = this.outputEventGenerators[this.deviceUsage.mute.usageId](oldMuted);
-    } else {
-        muteReport = this.outputEventGenerators[this.deviceUsage.mute.usageId](newMuted);
+    if(this.outputEventGenerators[this.deviceUsage.mute.usageId]){
+        if (newMuted === undefined) {
+            muteReport = this.outputEventGenerators[this.deviceUsage.mute.usageId](oldMuted);
+        } else {
+            muteReport = this.outputEventGenerators[this.deviceUsage.mute.usageId](newMuted);
+        }
     }
 
-    if (newOffHook === undefined) {
-        offHookReport = this.outputEventGenerators[this.deviceUsage.offHook.usageId](oldOffHook);
-    } else {
-        offHookReport = this.outputEventGenerators[this.deviceUsage.offHook.usageId](newOffHook);
+    if(this.outputEventGenerators[this.deviceUsage.offHook.usageId]){
+        if (newOffHook === undefined) {
+            offHookReport = this.outputEventGenerators[this.deviceUsage.offHook.usageId](oldOffHook);
+        } else {
+            offHookReport = this.outputEventGenerators[this.deviceUsage.offHook.usageId](newOffHook);
+        }
     }
 
-    if (newRing === undefined) {
-        ringReport =  this.outputEventGenerators[this.deviceUsage.ring.usageId](oldRing);
-    } else {
-        ringReport =  this.outputEventGenerators[this.deviceUsage.ring.usageId](newRing);
+    if(this.outputEventGenerators[this.deviceUsage.ring.usageId]){
+        if (newRing === undefined) {
+            ringReport =  this.outputEventGenerators[this.deviceUsage.ring.usageId](oldRing);
+        } else {
+            ringReport =  this.outputEventGenerators[this.deviceUsage.ring.usageId](newRing);
+        }
     }
 
-    // if (newHold === undefined) {
-    //     holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](oldHold);
-    // } else {
-    //     holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](newHold);
+    // if(this.outputEventGenerators[this.deviceUsage.hold.usageId]){
+    //     if (newHold === undefined) {
+    //         holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](oldHold);
+    //     } else {
+    //         holdReport =  this.outputEventGenerators[this.deviceUsage.hold.usageId](newHold);
+    //     }
     // }
+
 
     if (reportId === this.deviceCommand.outputReport['mute'].reportId) {
         if (reportData === null) {

@@ -156,26 +156,27 @@ function buttonsEnabled(id){
 }
 
 async function requestDevice(target){
-    let device
-    let data = {
-        callback: function(event){
-            device = event[0]
-            currentLocalDevices = devices.microphones.find(device =>{
-                if(device.label.includes(event[0].productName)){
-                    return device
-                }
-
-            })
-            console.warn("event:",currentLocalDevices)
-        }
-    }
-
-    await webHid.requestHidDevices(data)
+    // let device
+    // let data = {
+    //     callback: function(event){
+    //         device = event[0]
+    //         currentLocalDevices = devices.microphones.find(device =>{
+    //             if(device.label.includes(event[0].productName)){
+    //                 return device
+    //             }
+    //
+    //         })
+    //         console.warn("event:",currentLocalDevices)
+    //     }
+    // }
+    //
+    // await webHid.requestHidDevices(data)
+    await webHid.requestHidDevices()
 	if(!webHid.availableDevices || !webHid.availableDevices.length){
 		alert('no hid device found.')
 		return
 	}
-
+    let device = webHid.availableDevices[0]
     showLog('Select device: ' + device.productName);
     await webHid.open({label: device.productName})
 	showLog('Connected to device: ' + webHid.device.productName);
@@ -497,7 +498,7 @@ audioInputSelect.onchange = getcurrentVendorId
 
 window.onload = async function (){
 	console.log('windows onload...')
-    await navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+    // await navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 	webHid = new WebHID({
 		callback: inputReportRetFunc.bind(this)
 	})
