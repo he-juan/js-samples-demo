@@ -1,7 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="" />
+    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/article.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/css/site.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-1.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-3.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-4.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/latest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen-144.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/newspaper.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/js/article.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/js/main.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/sw.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/readme.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/register.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/sw-cachefirst.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/sw.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/css/site.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-1.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-2.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-3.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-4.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/latest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/images/newspaper.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/article.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/sw.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -14,103 +51,74 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="418">
-              <caret line="42" column="12" lean-forward="true" selection-start-line="42" selection-start-column="12" selection-end-line="42" selection-end-column="12" />
+            <state relative-caret-position="313">
+              <caret line="49" column="63" lean-forward="true" selection-start-line="49" selection-start-column="63" selection-end-line="49" selection-end-column="63" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="4050">
-                <caret line="150" column="34" selection-start-line="150" selection-start-column="34" selection-end-line="150" selection-end-column="34" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
+      <file leaf-file-name="homescreen.png" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen.png">
+          <provider selected="true" editor-type-id="images" />
         </entry>
       </file>
-      <file leaf-file-name="hid.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
+      <file leaf-file-name="newspaper.svg" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/images/newspaper.svg">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file leaf-file-name="main.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file leaf-file-name="register.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="366">
-              <caret line="86" column="31" lean-forward="true" selection-start-line="86" selection-start-column="31" selection-end-line="86" selection-end-column="31" />
+            <state relative-caret-position="270">
+              <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="article.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="324">
+              <caret line="12" column="81" selection-start-line="12" selection-start-column="81" selection-end-line="12" selection-end-column="81" />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="297">
-              <caret line="56" column="80" selection-start-line="56" selection-start-column="80" selection-end-line="56" selection-end-column="80" />
+            <state relative-caret-position="351">
+              <caret line="13" column="81" selection-start-line="13" selection-start-column="81" selection-end-line="13" selection-end-column="81" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
+      <file leaf-file-name="manifest.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="438">
-              <caret line="173" column="26" selection-start-line="173" selection-start-column="26" selection-end-line="173" selection-end-column="26" />
+            <state relative-caret-position="459">
+              <caret line="17" column="5" lean-forward="true" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="各设备耳机的状态.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="2835">
-                <caret line="105" column="14" lean-forward="true" selection-start-line="105" selection-start-column="14" selection-end-line="105" selection-end-column="14" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
+      <file leaf-file-name="article.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/article.js">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1728">
-              <caret line="64" column="16" selection-start-line="64" selection-start-column="16" selection-end-line="64" selection-end-column="16" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hid_all_reply.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-5805">
-              <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-end-line="98" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor />
-              <second_editor />
-            </state>
-          </provider>
+      <file leaf-file-name="homescreen-144.png" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen-144.png">
+          <provider selected="true" editor-type-id="images" />
         </entry>
       </file>
     </leaf>
@@ -120,12 +128,14 @@
       <find>currentLocalDevices</find>
       <find>device request params</find>
       <find>requestHidDevices</find>
+      <find>PWA</find>
     </findStrings>
     <replaceStrings>
       <replace />
     </replaceStrings>
     <dirStrings>
       <dir>E:\private\js-samples-demo\src\contents\webhid-demo\js</dir>
+      <dir>E:\private\js-samples-demo\src\contents\server_work_demo</dir>
     </dirStrings>
   </component>
   <component name="Git.Settings">
@@ -142,6 +152,9 @@
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/index.js" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js" />
         <option value="$PROJECT_DIR$/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html" />
+        <option value="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json" />
       </list>
     </option>
   </component>
@@ -153,7 +166,7 @@
   </component>
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths>
-      <path value="$PROJECT_DIR$/src/contents/webHid-demo-electron/package.json" />
+      <path value="$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/package.json" />
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
@@ -168,6 +181,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -191,14 +205,33 @@
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="webhid-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="webhid-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+              <item name="cachefirst" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+              <item name="cachefirst" type="462c0819:PsiDirectoryNode" />
               <item name="js" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -206,13 +239,61 @@
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="webHid-demo-electron" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+              <item name="progressive-times" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+              <item name="progressive-times" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+              <item name="progressive-times" type="462c0819:PsiDirectoryNode" />
+              <item name="js" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter-5" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter-5" type="462c0819:PsiDirectoryNode" />
+              <item name="look-and-feel" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="contents" type="462c0819:PsiDirectoryNode" />
+              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="chapter-5" type="462c0819:PsiDirectoryNode" />
+              <item name="look-and-feel" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -223,11 +304,13 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\webhid" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid-demo\js" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\PWA_demo\chapter-5\look-and-feel\images" />
       <recent name="E:\private\js-samples-demo\src\contents" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid-demo" />
     </key>
@@ -259,24 +342,26 @@
       <workItem from="1652057484550" duration="598000" />
       <workItem from="1652778393585" duration="1355000" />
       <workItem from="1652862458653" duration="1662000" />
+      <workItem from="1653539030073" duration="783000" />
+      <workItem from="1653556505578" duration="431000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7265000" />
+    <option name="totallyTimeSpent" value="8479000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24920969" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18703899" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.3129771" />
+      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.30970556" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -285,7 +370,6 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -295,55 +379,10 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="4050">
-            <caret line="150" column="34" lean-forward="true" selection-start-line="150" selection-start-column="34" selection-end-line="150" selection-end-column="34" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/debug.js">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2214">
-          <caret line="82" column="38" lean-forward="true" selection-start-line="82" selection-start-column="38" selection-end-line="82" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4644">
-          <caret line="172" column="27" lean-forward="true" selection-start-line="172" selection-start-column="27" selection-end-line="172" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="2835">
-            <caret line="105" column="14" lean-forward="true" selection-start-line="105" selection-start-column="14" selection-end-line="105" selection-end-column="14" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1728">
-          <caret line="64" column="16" selection-start-line="64" selection-start-column="16" selection-end-line="64" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2619">
-          <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-end-line="98" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
@@ -352,7 +391,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor />
@@ -360,67 +399,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1593">
-          <caret line="59" column="20" lean-forward="true" selection-start-line="59" selection-start-column="20" selection-end-line="59" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1242">
-          <caret line="46" selection-start-line="46" selection-end-line="46" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="2835">
-            <caret line="105" column="14" lean-forward="true" selection-start-line="105" selection-start-column="14" selection-end-line="105" selection-end-column="14" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/main.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/package.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1728">
-          <caret line="64" column="16" selection-start-line="64" selection-start-column="16" selection-end-line="64" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/debug.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="4050">
@@ -437,7 +416,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/各设备耳机的状态.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="2835">
@@ -447,26 +426,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/main.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/main.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/package.json">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/package.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1728">
           <caret line="64" column="16" selection-start-line="64" selection-start-column="16" selection-end-line="64" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/hid_all_reply.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/debug.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/debug.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
@@ -475,7 +454,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor />
@@ -483,7 +462,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="4050">
@@ -500,7 +479,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/各设备耳机的状态.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="2646">
@@ -510,24 +489,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2511">
           <caret line="93" column="49" lean-forward="true" selection-start-line="93" selection-start-column="49" selection-end-line="93" selection-end-column="49" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/js/hid.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="18792">
           <caret line="696" lean-forward="true" selection-start-line="696" selection-end-line="696" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/js/index.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="1836">
@@ -540,16 +519,16 @@
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/new_webHid.js" />
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/old-webHid.js" />
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/webHid.js" />
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/package.json">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/package.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/debug.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/debug.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/main.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/main.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
@@ -558,14 +537,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1728">
           <caret line="64" column="16" selection-start-line="64" selection-start-column="16" selection-end-line="64" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor />
@@ -573,17 +552,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/各设备耳机的状态.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/各设备耳机的状态.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="2835">
-            <caret line="105" column="14" lean-forward="true" selection-start-line="105" selection-start-column="14" selection-end-line="105" selection-end-column="14" />
+            <caret line="105" column="14" selection-start-line="105" selection-start-column="14" selection-end-line="105" selection-end-column="14" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/README.md">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="4050">
@@ -593,38 +572,104 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="297">
+        <state relative-caret-position="1512">
           <caret line="56" column="80" selection-start-line="56" selection-start-column="80" selection-end-line="56" selection-end-column="80" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/js/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
+        <state relative-caret-position="4671">
           <caret line="173" column="26" selection-start-line="173" selection-start-column="26" selection-end-line="173" selection-end-column="26" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/js/hid.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="366">
-          <caret line="86" column="31" lean-forward="true" selection-start-line="86" selection-start-column="31" selection-end-line="86" selection-end-column="31" />
+        <state relative-caret-position="2322">
+          <caret line="86" column="31" selection-start-line="86" selection-start-column="31" selection-end-line="86" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/hid_all_reply.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2619">
+          <caret line="97" column="31" selection-start-line="97" selection-end-line="98" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/sw.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/index.html">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/newspaper.svg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen-144.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/images/newspaper.svg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/article.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/manifest.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="12" column="81" selection-start-line="12" selection-start-column="81" selection-end-line="12" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="351">
+          <caret line="13" column="81" selection-start-line="13" selection-start-column="81" selection-end-line="13" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="17" column="5" lean-forward="true" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/denglun.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="42" column="12" lean-forward="true" selection-start-line="42" selection-start-column="12" selection-end-line="42" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5805">
-          <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-end-line="98" />
+        <state relative-caret-position="313">
+          <caret line="49" column="63" lean-forward="true" selection-start-line="49" selection-start-column="63" selection-end-line="49" selection-end-column="63" />
         </state>
       </provider>
     </entry>
