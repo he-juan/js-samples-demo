@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style type="text/css">
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        .clip-img-w{
+            position: relative;
+            width: 100%;
+            height: 100%;
+            font-size: 0;
+        }
+        .clip-img-w img{
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+        }
+        .clip-img-w canvas{
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .clip-img-w #clipcanvas{
+            z-index: 2;
+        }
+        .clip-img-w #drawcanvas{
+            background: #fff;
+            z-index: 1;
+        }
+        #img{
+            display: block;
+            margin: 0 auto;
+        }
+        .box-c{
+            width: 800px;
+            height: 500px;
+            border: 1px solid #F35252;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="box-c">
+    <div class="clip-img-w" id="clip-img-w">
+        <canvas id="drawcanvas" ></canvas>
+        <canvas id="clipcanvas" ></canvas>
+    </div>
+</div>
+
+<!-- 结果 -->
+<img src="" id="img">
+</body>
+<script type="text/javascript">
+    var img = document.getElementById("img");
+    var url = 'test.gif';
+
+    var wrap = document.getElementById("clip-img-w");
+    var width = wrap.offsetWidth;
+    var height = wrap.offsetHeight;
+
+    var clipcanvas = document.getElementById("clipcanvas");
+    var drawcanvas = document.getElementById("drawcanvas");
+    clipcanvas.width = width;
+    clipcanvas.height = height;
+    drawcanvas.width = width;
+    drawcanvas.height = height;
+    var clipCtx = drawcanvas.getContext("2d");
+    var clipImg = document.createElement("img");
+    clipImg.crossOrigin = "anonymous";
+    clipImg.src = url;
+    var timg = clipImg.cloneNode();
+    // wrap.appendChild(clipImg);
+    clipImg.onload = function(){
+        var x = Math.floor((width - this.width)/2);
+        var y = Math.floor((height - this.height)/2);
+        console.log(timg.width, timg.height, x, y, this.width,this.height )
+        clipCtx.drawImage(this,0,0,timg.width,timg.height,x,y,this.width,this.height);
+    }
+    var ctx = clipcanvas.getContext("2d");
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.strokeStyle="green";
+    var start = null;
+    var clipArea = {};//裁剪范围
+
+    clipcanvas.onmousedown = function(e){
+        start = {
+            x:e.offsetX,
+            y:e.offsetY
+        };
+    }
+    clipcanvas.onmousemove = function(e){
+        if(start){
+            fill(start.x,start.y,e.offsetX-start.x,e.offsetY-start.y)
+        }
+    }
+    document.addEventListener("mouseup",function(){
+        if(start){
+            start = null;
+            var url = startClip(clipArea);
+            img.src= url;
+            img.onload=function () {
+                console.log(img.width,img.height, 2222)
+                getcolor(img)
+            }
+        }
+    })
+    function fill(x,y,w,h){
+        ctx.clearRect(0,0,width,height);
+        ctx.beginPath();
+        //遮罩层
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillRect(0,0,width,height);
+        //画框
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillRect(x,y,w,h);
+        //描边
+        ctx.globalCompositeOperation = "source-over";
+        ctx.moveTo(x,y);
+        ctx.lineTo(x+w,y);
+        ctx.lineTo(x+w,y+h);
+        ctx.lineTo(x,y+h);
+        ctx.lineTo(x,y);
+        ctx.stroke();
+        ctx.closePath();
+        clipArea = {
+            x,
+            y,
+            w,
+            h
+        };
+    }
+    function startClip(area){
+        var canvas = document.createElement("canvas");
+        canvas.width = area.w;
+        canvas.height = area.h;
+
+        var data = clipCtx.getImageData(area.x,area.y,area.w,area.h);
+
+        var context = canvas.getContext("2d");
+        context.putImageData(data,0,0);
+        return canvas.toDataURL("image/png");
+    }
+    function getcolor(image) {
+        //js创建一个canvas元素
+        var canvas = document.createElement('canvas');
+        //设置canvas的大小，默认是300*150，这样就无法获取到全部的图片像素了，这个值也是看你怎么设置的，动态获取也是可以的。
+        canvas.width = image.width;
+        canvas.height = image.height;
+        //表示绘制一个2d图
+        var context = canvas.getContext("2d");
+        //获取图片元素
+        // var img = document.getElementById('img');
+        //创建图片元素用来加载图片地址
+        var nimg = new Image();
+        nimg.onload = function(){
+            var r = 0;
+            var g = 0;
+            var b = 0;
+            var a = 0;
+            var fxs = nimg.width * nimg.height;
+            //设置要绘制的图片
+            context.drawImage(nimg,0,0);
+            //获取图片的像素信息，并.data获得数组
+            var data = context.getImageData(0,0,900,300).data;
+            //获取所有的rgba的和
+            for(var i = 0;i<data.length/4;i++) {
+                r += data[i * 4];
+                g += data[i * 4 + 1];
+                b += data[i * 4 + 2];
+            }
+            //获得平均值
+            var rgba = 'rgba('+ parseInt(r/fxs) +','+ parseInt(g/fxs) +','+ parseInt(b/fxs)+')';
+            console.log(rgba)
+            document.documentElement.style.backgroundColor = rgba;
+        }
+        //将图片地址传给nimg
+        nimg.src = image.src ;
+    }
+</script>
+</html>

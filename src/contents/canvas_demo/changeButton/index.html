@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <!--<meta http-equiv="X-UA-Compatible" content="ie=edge">-->
+    <title>Document</title>
+    <style>
+        .btn{
+            margin: 20px 120px;
+            width: 80px;
+        }
+        .content{
+            margin: 10px auto;
+            display: none;
+        }
+        .btn.active{
+            background-color: pink;
+        }
+        .content.show{
+            display:block;
+
+        }
+    </style>
+</head>
+<body>
+<p class="btn1">
+    <button class="btn active">页面一</button>
+
+    <button class="btn">页面二</button>
+
+    <button class="btn">页面三</button>
+</p>
+
+<div class="content show">
+    <p>页面一要显示的内容</p>
+    <input type="text" placeholder="页面一内容"/>
+</div>
+<div class="content">
+    <p>页面二要显示的内容</p>
+    <input type="text" placeholder="页面二内容" />
+</div>
+
+<div class="content" >
+    <p>页面三要显示的内容</p>
+    <input type="text" placeholder="页面三内容"/>
+</div>
+
+<script>　
+    　　　　//获取页面的每个按钮
+var btns = document.getElementsByClassName("btn")　　　　　//获取内容盒子
+var contents = document.getElementsByClassName("content")
+
+//遍历每个按钮为其添加点击事件
+for(var i=0;i<btns.length;i++){
+    btns[i].index = i;
+    btns[i].onclick = function(){　　　　　　　　　　//对当前点击的按钮赋予active类名及显示当前按钮对应的内容
+        for(var j=0;j<btns.length;j++){
+            btns[j].className = btns[j].className.replace(' active', '').trim();
+            contents[j].className = contents[j].className.replace(' show', '').trim();
+        }
+        this.className = this.className + ' active';
+        contents[this.index].className = contents[this.index].className + ' show';
+    };
+}
+
+
+</script>
+</body>
+</html>

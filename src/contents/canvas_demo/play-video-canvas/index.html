@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <canvas id="canvas1" width="500" height="500"></canvas>
+  <video id="video1" controls="" src="https://blz-videos.nosdn.127.net/1/OverWatch/OVR_D.VA_SHOOTING_STAR_zhCN_YT_PC_3.mp4" type="video/mp4" width="720" height="360">浏览器不支持</video>
+
+  <script type="text/javascript">
+      var canvas = document.getElementById("canvas1");
+      var context = canvas.getContext("2d");
+
+      var video = document.getElementById("video1");
+      //订阅视频可播放事件
+      video.oncanplay = function() {
+          video.play();
+          switchToCanvas();
+      }
+
+      function switchToCanvas() {
+          if (video.ended) {
+              return;
+          }
+          // 将video上的图片的每一帧以图片的形式绘制的canvas上
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          window.requestAnimationFrame(switchToCanvas);
+      }
+  </script>
+</body>
+</html>

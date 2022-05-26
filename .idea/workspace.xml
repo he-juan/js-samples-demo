@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -19,8 +17,8 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1242">
-              <caret line="46" selection-start-line="46" selection-end-line="46" />
+            <state relative-caret-position="418">
+              <caret line="42" column="12" lean-forward="true" selection-start-line="42" selection-start-column="12" selection-end-line="42" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -37,7 +35,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="hid.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="hid.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="366">
@@ -85,10 +83,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="hid_all_reply.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="hid_all_reply.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2619">
+            <state relative-caret-position="-5805">
               <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-end-line="98" />
             </state>
           </provider>
@@ -141,9 +139,9 @@
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/README.md" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/index.js" />
         <option value="$PROJECT_DIR$/src/contents/webHid-demo-electron/index.html" />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/index.js" />
         <option value="$PROJECT_DIR$/src/contents/webhid-demo/js/hid.js" />
+        <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
   </component>
@@ -260,25 +258,25 @@
       <workItem from="1651818609376" duration="2562000" />
       <workItem from="1652057484550" duration="598000" />
       <workItem from="1652778393585" duration="1355000" />
-      <workItem from="1652862458653" duration="1524000" />
+      <workItem from="1652862458653" duration="1662000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7127000" />
+    <option name="totallyTimeSpent" value="7265000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24920969" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24920969" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.3129771" />
+      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.3129771" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -567,13 +565,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1242">
-          <caret line="46" selection-start-line="46" selection-end-line="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -602,13 +593,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2619">
-          <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-end-line="98" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="297">
@@ -627,6 +611,20 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="366">
           <caret line="86" column="31" lean-forward="true" selection-start-line="86" selection-start-column="31" selection-end-line="86" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="42" column="12" lean-forward="true" selection-start-line="42" selection-start-column="12" selection-end-line="42" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/webHid-demo-electron/hid_all_reply.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-5805">
+          <caret line="97" column="31" lean-forward="true" selection-start-line="97" selection-end-line="98" />
         </state>
       </provider>
     </entry>

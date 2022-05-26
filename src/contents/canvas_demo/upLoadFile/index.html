@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.staticfile.org/jquery/2.0.0/jquery.min.js"></script>
+    <style>
+        label {
+            display: inline-block;
+            color: red;
+            height: 28px;
+            line-height: 28px;
+            width: 100px;
+            text-align: center;
+            background-color: rgb(40, 221, 253);
+            border: solid 1px #ccc;
+            border-radius: 2px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div><a href="javascript:;" id="download-template">下载模板</a></div>
+<div>
+    <div>
+        <label for="file">
+                <span class="btn-file">
+                    上传文件
+                    <input class="file-input" name="file" type="file" onchange="upLoadFile()"
+                           accept="application/msexcel" id="file" style="display: none">
+                </span>
+        </label>
+        <p id="file-name"></p>
+        <p><span>上传文件类型：csv</span></p>
+        <button id="import">导入</button>
+        <button id="cancel">取消</button>
+    </div>
+</div>
+</body>
+
+<script>
+    var file  = "";
+
+    $(document).ready(function(){
+        // 导入
+        $("#import").click(function() {
+            var fileName = $("#file-name").text();
+            if(!!fileName) {
+                importFile();
+            } else {
+                alert("请选择上传文件!");
+            }
+        });
+
+        // 取消
+        $("#cancel").click(function() {
+            $("#file-name").text("");
+        });
+
+        // 下载模板
+        $("#download-template").click(function() {
+            window.open('./test.csv');
+        });
+    });
+
+    function importFile() {
+        var fileData = new FormData();
+        fileData.append('fileupload', file);
+        // console.log(fileData)  // 把fileData传给接口
+    }
+
+    function upLoadFile(e) {
+        var event = e || window.event;
+        file = event.target.files[0];
+        if (file) {
+            var fileName = file.name;
+            if (fileName != "") {
+                var fileSuffix = fileName.substr(fileName.indexOf("."));
+                if (fileSuffix != ".csv" && fileName) {
+                    alert("限CSV文件格式");
+                    return;
+                }
+
+                $("#file-name").text(fileName)
+            }
+        }
+    }
+
+</script>
+
+</html>

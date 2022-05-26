@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .p-video_recorder_canvas__container {
+            position: relative;
+            background: rgba(var(--sk_foreground_min,29,28,29),.04);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 525px;
+            height: 296px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .p-video_recorder_canvas__container--screen_share {
+            width: 600px;
+            height: 338px;
+            border-radius: 0;
+        }
+        .p-video_recorder_canvas, .recorder {
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+   <button id="btn">开启共享</button>
+   <div class="p-video_recorder_canvas__container">
+       <canvas class="p-video_recorder_canvas" style="transform: scale(1)" width="1920" height="1080"></canvas>
+   </div>
+
+   <hr/>
+
+   <button id="startBtn" disabled>开始录制</button>
+   <button id="pauseBtn" disabled>暂停录制</button>
+   <button id="resumeBtn" disabled>恢复录制</button>
+   <button id="stopBtn" disabled>结束录制</button>
+   <button id="downLoadBtn" >下载</button>
+   <div class="p-video_recorder_canvas__container">
+       <video class="recorder" style="transform: scale(1)" width="1920" height="1080"></video>
+   </div>
+
+</body>
+
+<script >
+    let btn = document.getElementById("btn")
+    let recorderVideo = document.getElementsByClassName("recorder")[0]
+    let canvas = document.getElementsByClassName("p-video_recorder_canvas")[0]
+    let ctx = canvas.getContext('2d')
+    let stream
+    let video
+    let timer
+    let allChunks = [];
+
+    let startBtn = document.getElementById("startBtn")
+    let pauseBtn = document.getElementById("pauseBtn")
+    let resumeBtn = document.getElementById("resumeBtn")
+    let stopBtn = document.getElementById("stopBtn")
+    let downLoadBtn = document.getElementById("downLoadBtn")
+
+
+    btn.onclick = async function startCapture() {
+        if(btn.textContent === '开启共享'){
+            try {
+                console.log('Start capturing.');
+                if (navigator.getDisplayMedia) {
+                    stream = await navigator.getDisplayMedia({video: {
+                            width: 1280,
+                            height: 720
+                        },audio:true});
+
+                } else if (navigator.mediaDevices.getDisplayMedia) {
+                    stream = await navigator.mediaDevices.getDisplayMedia({video:  {
+                            width: 1280,
+                            height: 720
+                        },audio:true});
+                } else {
+                    stream = await navigator.mediaDevices.getUserMedia({video: {mediaSource: 'screen'}});
+                }
+            } catch(err) {
+                console.error("Error: " + err);
+            }
+
+            stream.oninactive = function () {
+                console.warn('user clicks the bottom share bar to stop sharing')
+                btn.textContent = '开启共享'
+                closeStream(stream)
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                window.cancelAnimationFrame(timer)
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                stopBtn.disabled = true;
+            }
+
+            if(stream){
+                video = document.createElement('video')
+                video.srcObject = stream
+                video.play()
+                btn.textContent = '关闭共享'
+                startBtn.disabled = false
+            }
+
+            video.onloadedmetadata = function(e){
+                console.warn("video: "+ video.videoWidth + "  * " + video.videoHeight)
+                let attribute = document.getElementsByClassName("p-video_recorder_canvas__container")[0].getAttribute('class').split(" ")
+                if(attribute.length <= 1){
+                    document.getElementsByClassName("p-video_recorder_canvas__container")[0].classList.add('p-video_recorder_canvas__container--screen_share')
+                }
+                drawCanvas()
+            }
+            function drawCanvas(){
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                timer = window.requestAnimationFrame(() => {
+                    drawCanvas()
+                })
+            }
+            setRecorder();
+            setFormatSelect('video/webm;codecs=vp9')
+        }else{
+            video.pause()
+            btn.textContent = '开启共享'
+            closeStream(stream)
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            window.cancelAnimationFrame(timer)
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            resumeBtn.disabled = true;
+            stopBtn.disabled = false;
+        }
+    }
+
+    function closeStream(stream){
+        console.log("closeStream:", stream.id)
+        stream.oninactive = null
+        let tracks = stream.getTracks()
+        for (let track in tracks) {
+            tracks[track].onended = null
+            console.info('close stream')
+            tracks[track].stop()
+        }
+    }
+
+    function setFormatSelect(format){
+        if(!MediaRecorder.isTypeSupported(format)){
+            alert(format)
+            alert("当前浏览器不支持该编码类型");
+            return;
+        }
+        setRecorder(format)
+    }
+
+    function setRecorder(format) {
+        const canvasStream = canvas.captureStream(60); // 60 FPS recording
+        console.warn("canvasStream:",canvasStream)
+        const recorder = new MediaRecorder(canvasStream, {
+            mimeType: format
+        });
+
+        recorder.ondataavailable = e => {
+            allChunks.push(
+                e.data
+            );
+        }
+
+        startBtn.disabled = false;
+        startBtn.onclick = e =>{
+            recorderVideo.srcObject = null
+            recorderVideo.src = null
+            recorder.start(10);
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            resumeBtn.disabled = true;
+            stopBtn.disabled = false;
+            recorderVideo.srcObject = canvasStream
+            recorderVideo.ondataavailable = function(){
+                recorderVideo.play()
+            }
+        }
+        stopBtn.onclick = e => {
+            recorder.stop();
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            stopBtn.disabled = true;
+
+            /**停止录制后需要关闭流**/
+            let tracks = recorderVideo.srcObject.getTracks();
+            tracks.forEach(track => {
+                track.stop()
+            });
+
+            /***录制内容返回播放***/
+            let blob = new Blob(allChunks, {'type': 'video/webm'});
+            let url = window.URL.createObjectURL(blob);
+            recorderVideo.controls = true
+            recorderVideo.srcObject = null;
+            recorderVideo.src = url;
+            recorderVideo.play();
+        }
+
+        pauseBtn.onclick = e => {
+            recorder.pause();
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = false;
+            recorderVideo.pause();
+        }
+        resumeBtn.onclick = e => {
+            recorder.resume();
+            pauseBtn.disabled = false;
+            resumeBtn.disabled = true;
+            recorderVideo.play();
+        }
+
+        downLoadBtn.onclick = e =>{
+            blobDownload(format);
+        }
+    }
+
+    function blobDownload(format) {
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        const fullBlob = new Blob(allChunks);
+        const downloadUrl = window.URL.createObjectURL(fullBlob);
+        link.href = downloadUrl;
+        link.download = 'media - '+format+'.mp4';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+</script>
+</html>

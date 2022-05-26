@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .da-fei {
+            width: 200px;
+            height: 200px;
+            background-color: #c0c0c0;
+            outline: 2px solid #eee8aa;
+        }
+        .big {
+            background-color: #dda0dd;
+            outline: 2px solid #90ee90;
+            transform: scale(2);
+            /*transform-origin: 0;*/
+            /*transform-origin: 0 0;*/ /* 基点位置 */
+            opacity: 0.5;
+        }
+        .small {
+            background-color: red;
+            outline: 2px solid #ffd700;
+            transform: scale(0.5);
+        }
+    </style>
+</head>
+<body>
+
+<p>被scale放大的元素,看起来很大,但是实际占据的位置还是原来的大小</p>
+<div class="da-fei"></div>
+<div class="da-fei big"></div>
+<div class="da-fei small"></div>
+</body>
+</html>
