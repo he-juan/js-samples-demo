@@ -2,42 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/article.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/css/site.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-1.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-2.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-3.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/data-4.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/data/latest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen-144.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/newspaper.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/js/article.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/js/main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/sw.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/register.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/sw-cachefirst.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/cachefirst/js/sw.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/css/site.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-1.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-2.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-3.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/data-4.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/data/latest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/images/newspaper.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/article.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/sw.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -51,35 +16,51 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="49" column="63" lean-forward="true" selection-start-line="49" selection-start-column="63" selection-end-line="49" selection-end-column="63" />
+            <state relative-caret-position="1998">
+              <caret line="74" column="73" selection-start-line="74" selection-start-column="73" selection-end-line="74" selection-end-column="73" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="homescreen.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen.png">
-          <provider selected="true" editor-type-id="images" />
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/video-screen-record/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1944">
+              <caret line="72" column="21" selection-start-line="72" selection-start-column="20" selection-end-line="72" selection-end-column="21" />
+              <folding>
+                <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#button#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
         </entry>
       </file>
-      <file leaf-file-name="newspaper.svg" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/images/newspaper.svg">
-          <provider selected="true" editor-type-id="images" />
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/play-video-canvas/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="459">
+              <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
+            </state>
+          </provider>
         </entry>
       </file>
-      <file leaf-file-name="main.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js">
-          <provider selected="true" editor-type-id="text-editor" />
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/clipImage/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="170" column="40" lean-forward="true" selection-start-line="170" selection-start-column="40" selection-end-line="170" selection-end-column="40" />
+            </state>
+          </provider>
         </entry>
       </file>
       <file leaf-file-name="register.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="270">
-              <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+              <caret line="10" selection-start-line="10" selection-end-line="10" />
             </state>
           </provider>
         </entry>
@@ -106,19 +87,9 @@
         <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="459">
-              <caret line="17" column="5" lean-forward="true" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
+              <caret line="17" column="5" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
             </state>
           </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="article.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/article.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="homescreen-144.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen-144.png">
-          <provider selected="true" editor-type-id="images" />
         </entry>
       </file>
     </leaf>
@@ -129,6 +100,7 @@
       <find>device request params</find>
       <find>requestHidDevices</find>
       <find>PWA</find>
+      <find>startClip</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -155,6 +127,10 @@
         <option value="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html" />
         <option value="$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html" />
         <option value="$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/clipVideo/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/play-video-canvas/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/video-screen-record/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/clipImage/index.html" />
       </list>
     </option>
   </component>
@@ -170,10 +146,10 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1001" />
-    <option name="height" value="1047" />
+    <option name="x" value="3" />
+    <option name="y" value="16" />
+    <option name="width" value="1932" />
+    <option name="height" value="1042" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -205,90 +181,31 @@
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
+              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="clipImage" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
-              <item name="cachefirst" type="462c0819:PsiDirectoryNode" />
+              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="video-screen-record" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
-              <item name="cachefirst" type="462c0819:PsiDirectoryNode" />
-              <item name="js" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
-              <item name="progressive-times" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
-              <item name="progressive-times" type="462c0819:PsiDirectoryNode" />
-              <item name="images" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter1" type="462c0819:PsiDirectoryNode" />
-              <item name="progressive-times" type="462c0819:PsiDirectoryNode" />
-              <item name="js" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter-5" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter-5" type="462c0819:PsiDirectoryNode" />
-              <item name="look-and-feel" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="PWA_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="chapter-5" type="462c0819:PsiDirectoryNode" />
-              <item name="look-and-feel" type="462c0819:PsiDirectoryNode" />
-              <item name="images" type="462c0819:PsiDirectoryNode" />
+              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="video-screen-record-demo" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -303,16 +220,18 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
+      <recent name="E:\private\js-samples-demo\src\contents\PWA_demo\chapter-5\look-and-feel\images" />
+      <recent name="E:\private\js-samples-demo\src\contents" />
+      <recent name="E:\private\js-samples-demo\src\contents\webhid-demo" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid-demo\js" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="E:\private\js-samples-demo\src\contents\PWA_demo\chapter-5\look-and-feel\images" />
-      <recent name="E:\private\js-samples-demo\src\contents" />
-      <recent name="E:\private\js-samples-demo\src\contents\webhid-demo" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -343,33 +262,38 @@
       <workItem from="1652778393585" duration="1355000" />
       <workItem from="1652862458653" duration="1662000" />
       <workItem from="1653539030073" duration="783000" />
-      <workItem from="1653556505578" duration="431000" />
+      <workItem from="1653556505578" duration="746000" />
+      <workItem from="1653612765485" duration="599000" />
+      <workItem from="1659411669349" duration="9017000" />
+      <workItem from="1659430489466" duration="9675000" />
+      <workItem from="1659688866387" duration="589000" />
+      <workItem from="1660111828675" duration="15000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8479000" />
+    <option name="totallyTimeSpent" value="28689000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="3" y="16" width="1932" height="1042" extended-state="7" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18703899" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21066526" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.30970556" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.19933555" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -379,43 +303,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/debug.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="4050">
-            <caret line="150" column="34" lean-forward="true" selection-start-line="150" selection-start-column="34" selection-end-line="150" selection-end-column="34" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1242">
-          <caret line="46" selection-start-line="46" selection-end-line="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid/webhid-demo/各设备耳机的状态.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -446,13 +333,7 @@
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
@@ -529,13 +410,7 @@
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.html">
       <provider selected="true" editor-type-id="text-editor">
@@ -632,9 +507,7 @@
     <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/manifest.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/manifest.json" />
     <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
@@ -652,24 +525,49 @@
     <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="459">
-          <caret line="17" column="5" lean-forward="true" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
+          <caret line="17" column="5" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/denglun.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/denglun.jpg" />
     <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
-          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/clipVideo/test.gif" />
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/clipVideo/index.html" />
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/play-video-canvas/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="49" column="63" lean-forward="true" selection-start-line="49" selection-start-column="63" selection-end-line="49" selection-end-column="63" />
+        <state relative-caret-position="1998">
+          <caret line="74" column="73" selection-start-line="74" selection-start-column="73" selection-end-line="74" selection-end-column="73" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/video-screen-record/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1944">
+          <caret line="72" column="21" selection-start-line="72" selection-start-column="20" selection-end-line="72" selection-end-column="21" />
+          <folding>
+            <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#button#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/clipImage/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="170" column="40" lean-forward="true" selection-start-line="170" selection-start-column="40" selection-end-line="170" selection-end-column="40" />
         </state>
       </provider>
     </entry>

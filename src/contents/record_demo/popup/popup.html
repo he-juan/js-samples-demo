@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>record demo</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<div id="container">
+    <section id="header">
+        <div class="recordTitle">
+            <img src="../img/icon.jpg"/>
+            <h2>Record Content</h2>
+        </div>
+    </section>
+
+    <section id="content">
+        <div class="selectRecord">
+            <div class="selectRecordWrapper">
+                <div class="selectRecordType">
+                    <div class="labelTitle">
+                        <label class="label">recordType:</label>
+                    </div>
+                    <!--<label class="label">recordType:</label>-->
+                    <select class="recordType">
+                        <option label="normalRecord" value="NR">normalRecord</option>
+                        <option label="advancedRecord" value="AR">advancedRecord</option>
+                    </select>
+                </div>
+
+                <div class="normalRecordContainer">
+                    <div class="normalRecordWrapper">
+                        <div class="labelTitle">
+                            <label class="label">normalRecordType:</label>
+                        </div>
+
+                        <select class="normalRecord">
+                            <option label="normal-audio-record" value="normal-audio-record">音频录制</option>
+                            <option label="normal-video-record" value="normal-video-record">视频录制</option>
+                            <option label="normal-screen-record" value="normal-screen-record">屏幕共享录制</option>
+                            <option label="normal-audio-screen-record" value="normal-audio-screen-record">屏幕共享+音频录制</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="advancedRecordContainer">
+                    <div class="advancedRecordWrapper">
+                        <div class="labelTitle">
+                            <label class="label">advancedRecordType:</label>
+                        </div>
+
+                        <select class="advancedRecord">
+                            <option label="advanced-audio-mp3-record" value="advanced-audio-mp3-record">本地音频+音频录制</option>
+                            <option label="advanced-video-screen-record" value="advanced-video-screen-record">视频+共享录制</option>
+                            <option label="advanced-screen-record" value="advanced-screen-record">屏幕共享录制</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button">
+                    <div class="buttonWrapper">
+                        <button class="recordButton">开始录制</button>
+                        <!--<button class="recordButton" onclick="initRecord()">开始录制</button>-->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="displayRecord">
+            <div class="displayRecordWrapper">
+                <video class="recordVideo"></video>
+            </div>
+        </div>
+    </section>
+</div>
+
+</body>
+
+<script src="../api/recordRTC.js"></script>
+<script src="../api/multiStreamsMixer.js"></script>
+<script src="../api/fileSelector.js"></script>
+<script src="pop.js"></script>
+</html>

@@ -1,0 +1,131 @@
+#container{
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    position: absolute;
+    border: 1px solid #37b9e9;
+}
+
+body {
+    font-family: HelveticaNeue, Helvetica, Arial, sans-serif;
+    margin: 0 auto;
+    height: 820px;
+    width: 840px;
+    background: #FFFFFF;
+    overflow: hidden;
+    border: 1px solid rgba(8, 25, 62, 0.2);
+    position: relative;
+}
+
+/**********************分布格局**********************************/
+#header{
+    width: 100%;
+    height: 8%;
+}
+
+#content{
+    width:100%;
+    height:92%;
+    line-height: 92%;
+}
+
+.selectRecord{
+    width: 100%;
+    height: 8%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*border: 1px solid #bec2b8;*/
+    /*background-color: #c9ced1;*/
+}
+.displayRecord{
+    width: 800px;
+    height: 92%;
+    margin:0 auto;
+    line-height: 92%;
+    /*background-color: #c9ced1;*/
+}
+/********************************header样式***************************************/
+.recordTitle{
+    width: 100%;
+    height: 100%;
+    margin:5px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.recordTitle img{
+    width: 40px;
+    height: 40px;
+    padding: 0 5px;
+}
+
+.recordTitle h2{
+    margin: 5px 5px;
+}
+
+/*************************content- select样式***********************************/
+.selectRecordWrapper{
+    width:900px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*border: 1px solid #bec2b8;*/
+    /*background-color: #c9ced1;*/
+}
+
+.displayRecordWrapper{
+    width: 100%;
+    height: 100%;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    /*border: 1px solid rgba(8, 25, 62, 0.2);*/
+}
+
+.selectRecord select{
+    width: 250px;
+    height: 30px;
+    margin: 5px;
+    border:1px solid #06c;
+}
+
+.selectRecord label{
+    font-size: 14px;
+}
+
+.selectRecordType, .normalRecordContainer, .advancedRecordContainer, .button{
+    width: 100%;
+    height: 100%;
+    margin: 5px;
+    line-height: 100%;
+}
+
+.selectRecordType, .normalRecordWrapper, .advancedRecordWrapper, .buttonWrapper{
+    width: 100%;
+    height: 100%;
+    line-height: 100%;
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+button {
+    background-color: #d84a38;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.8em;
+    padding: 0.5em 0.7em 0.6em 0.7em;
+}
+
+.recordVideo{
+    width:640px;
+    height:360px;
+}
