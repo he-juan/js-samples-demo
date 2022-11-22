@@ -1,0 +1,45 @@
+{
+  "name": "record demo",
+  "version": "1.0.0.0",
+  "description": " A simple record extension",
+  "manifest_version": 2,
+  "icons":
+  {
+    "16": "img/icon.png",
+    "48": "img/icon.png",
+    "128": "img/icon.png"
+  },
+  "default_locale": "zh_CN",
+  "background":
+  {
+    "page": "background/background.html"
+//    "scripts": ["background/background.js"]
+  },
+  "browser_action":
+  {
+    "default_icon": "img/icon.png",
+    "default_title": "这是录制插件示例"
+//    "default_popup": "popup/popup.html"
+  },
+//  "content_scripts":
+//  [
+//    {
+//      "matches": ["<all_urls>"],
+//      "js": ["contentScript/jquery-1.8.3.js", "contentScript/content-script.js"],
+//      "css": ["contentScript/custom.css"],
+//      "run_at": "document_start"
+//    }
+//  ],
+  "permissions":
+  [
+    "contextMenus", // 右键菜单
+    "tabs", // 标签
+    "notifications", // 通知
+    "webRequest", // web请求
+    "webRequestBlocking", // 阻塞式web请求
+    "storage", // 插件本地存储
+    "http://*/*", // 可以通过executeScript或者insertCSS访问的网站
+    "https://*/*" // 可以通过executeScript或者insertCSS访问的网站
+  ]
+
+}

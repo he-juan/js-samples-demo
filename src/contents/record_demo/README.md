@@ -1,3 +1,11 @@
+**此demo是chrome插件**
+- 使用方法：
+  - 访问`chrome://extensions`, 点击`加载已解压的扩展程序`，找到record-demo的文件夹，会显示对应的插件。
+  
+  
+
+
+
 
 **[更多demo请点击此链接，以下都是简述流程](https://he-juan.github.io/record-demo/dist1/#/)**
 

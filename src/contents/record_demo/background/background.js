@@ -1,3 +1,17 @@
+/**************************************点击browserAction 图标 跳转页面***********************************/
+
+if(chrome.runtime){
+    chrome.browserAction.onClicked.addListener(async function() {
+        // window.open(chrome.extension.getURL('background/background.html'));
+        chrome.tabs.create({
+            url: chrome.extension.getURL("background/background.html")
+        }, function(tab) {
+            console.warn("tabs:",tab)
+        })
+    })
+}
+
+
 let selectRecordType = document.getElementsByClassName("recordType")[0]
 let normalRecordContainer = document.getElementsByClassName("normalRecordContainer")[0]
 let advancedRecordContainer = document.getElementsByClassName("advancedRecordContainer")[0]
@@ -17,12 +31,10 @@ selectRecordType.onchange= function(){
     recordOptions = selectRecordType.value
     console.warn("selectRecordType:",recordOptions)
     if(recordOptions === 'NR'){
-        console.warn("AR AR AR")
         normalRecordContainer.style.display = 'block'
         advancedRecordContainer.style.display = "none"
         currentRecordType = normalRecord.value          // 获取标准录制下默认的录制类型（如：音频录制）
     }else if(recordOptions === 'AR'){
-        console.warn("NR NR NR")
         advancedRecordContainer.style.display = "block"
         normalRecordContainer.style.display = 'none'
         currentRecordType = advancedRecord.value         // 获取高级录制下默认的录制类型（如：视频+演示录制）
@@ -98,6 +110,7 @@ function initRecord(){
         };
         if(streamArray instanceof Array){
             options.previewStream = function(s) {
+                replaceAudio()
                 video.muted = true;
                 video.srcObject = s;
                 video.play()
@@ -118,7 +131,7 @@ function initRecord(){
             }else{
                 recordButton.stream  = streamArray;
                 video.src = video.srcObject = null;
-                if(currentRecordType === 'normal-audio-record'){
+                if(currentRecordType === 'normal-audio-record' || currentRecordType === 'advanced-audio-mp3-record'){
                     var audioPreview = document.createElement('audio');
                     audioPreview.controls = true;
                     audioPreview.autoplay = true;
@@ -128,16 +141,7 @@ function initRecord(){
                     video = audioPreview;
 
                 }else{
-                    let audio = document.getElementsByClassName("recordAudio")[0]
-                    if(audio){
-                        audio.src = audio.srcObject = null
-                        let videoPreview = document.createElement('video');
-                        videoPreview.controls = true;
-                        videoPreview.autoplay = true;
-                        videoPreview.className = 'recordVideo'
-                        audio.replaceWith(videoPreview);
-                        video = videoPreview
-                    }
+                    replaceAudio()
                     let {width, height} = streamArray.getVideoTracks()[0].getConstraints()
                     console.warn("getContraints :",width , height )
 
@@ -608,7 +612,6 @@ function keepStreamActive(stream) {
     (document.body || document.documentElement).appendChild(video);
 }
 
-
 /** 监听事件： 停止录制后关闭流
  **/
 function addStreamStopListener(stream, callback) {
@@ -656,6 +659,20 @@ function stopRecordingCallback() {
         }
     });
     recordButton.stream = null
+}
+
+/***/
+function replaceAudio(){
+    let audio = document.getElementsByClassName("recordAudio")[0]
+    if(audio){
+        audio.src = audio.srcObject = null
+        let videoPreview = document.createElement('video');
+        videoPreview.controls = true;
+        videoPreview.autoplay = true;
+        videoPreview.className = 'recordVideo'
+        audio.replaceWith(videoPreview);
+        video = videoPreview
+    }
 }
 
 
