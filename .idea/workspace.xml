@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/bezier.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/Béziercurve/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/Béziercurve/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -260,15 +253,16 @@
       <workItem from="1660111828675" duration="15000" />
       <workItem from="1669014878155" duration="1073000" />
       <workItem from="1669087742148" duration="399000" />
-      <workItem from="1681807516463" duration="2207000" />
+      <workItem from="1681807516463" duration="3385000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="33342000" />
+    <option name="totallyTimeSpent" value="34520000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20969442" />
       <window_info anchor="bottom" id="TODO" order="6" />

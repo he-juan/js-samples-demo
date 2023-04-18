@@ -142,8 +142,6 @@ function transformPointToBezier(points,controlPoints){
         const p = points[i]
         const { cn: ppn } = controlPoints[i - 1]
         const { cp } = controlPoints[i]
-
-        console.warn("pp:",pp, "ppn:",ppn, "cp:",cp, "p:",p)
         const bz = new Bezier(pp.x, pp.y, ppn.x, ppn.y, cp.x, cp.y, p.x, p.y)
         bzArray.push(bz)
     }
@@ -296,8 +294,7 @@ let drawing = false
 
 /** 显示当前鼠标划过或者点击的位置
  * */
-canvas.onmousemove = function(e){
-    console.warn("move move move")
+canvas.onmousemove = function(event){
     mouseTrack.push({
         x: event.clientX - canvasPos.x,
         y: event.clientY - canvasPos.y,
