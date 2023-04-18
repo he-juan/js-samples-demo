@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -35,20 +35,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="25" column="57" selection-start-line="25" selection-start-column="57" selection-end-line="25" selection-end-column="57" />
+            <state relative-caret-position="187">
+              <caret line="16" column="26" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mousePostion.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="mousePostion.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="283" column="3" lean-forward="true" selection-start-line="283" selection-start-column="3" selection-end-line="283" selection-end-column="3" />
+            <state relative-caret-position="79">
+              <caret line="143" column="34" lean-forward="true" selection-start-line="143" selection-start-column="34" selection-end-line="143" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -95,6 +95,7 @@
       <find>requestHidDevices</find>
       <find>PWA</find>
       <find>startClip</find>
+      <find>console</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -127,8 +128,8 @@
         <option value="$PROJECT_DIR$/src/contents/record_demo/README.md" />
         <option value="$PROJECT_DIR$/src/contents/recordVideo/README.md" />
         <option value="$PROJECT_DIR$/index.html" />
-        <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" />
       </list>
     </option>
   </component>
@@ -253,25 +254,25 @@
       <workItem from="1660111828675" duration="15000" />
       <workItem from="1669014878155" duration="1073000" />
       <workItem from="1669087742148" duration="399000" />
-      <workItem from="1681807516463" duration="3385000" />
+      <workItem from="1681807516463" duration="4214000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="34520000" />
+    <option name="totallyTimeSpent" value="35349000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20969442" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20969442" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.47655398" />
+      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.47655398" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -513,17 +514,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="25" column="57" selection-start-line="25" selection-start-column="57" selection-end-line="25" selection-end-column="57" />
+        <state relative-caret-position="79">
+          <caret line="143" column="34" lean-forward="true" selection-start-line="143" selection-start-column="34" selection-end-line="143" selection-end-column="34" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="283" column="3" lean-forward="true" selection-start-line="283" selection-start-column="3" selection-end-line="283" selection-end-column="3" />
+        <state relative-caret-position="187">
+          <caret line="16" column="26" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
         </state>
       </provider>
     </entry>
