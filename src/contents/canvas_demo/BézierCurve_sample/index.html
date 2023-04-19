@@ -12,7 +12,9 @@
             margin: 0;
             padding: 0;
         }
-        .canvas {
+        .box {
+            width:800px;
+            height:600px;
             background-color: #dcdcdc;
             margin: 0 auto;
             display: block;
@@ -21,10 +23,40 @@
             left: 50%;
             transform: translate(-50%,-50%);
         }
+        .container{
+            width:100%;
+            height:100%;
+            position: relative;
+        }
+        video, canvas{
+            width:100%;
+            height:100%;
+            position: absolute;
+        }
+        .canvas{
+            z-index: 999;
+        }
+        .showPosition{
+            background-color: gray;
+            color: white;
+            position: absolute;
+            width: 200px;
+            height:50px;
+            z-index: 999;
+            cursor: pointer;
+            display:none;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-<canvas class="canvas" width="800" height="600"></canvas>
+<div class="box">
+    <div class="container" >
+        <video  class="localVideo" ></video>
+        <canvas class="canvas" ></canvas>
+        <div class="showPosition"></div>
+    </div>
+</div>
 <script src="mousePostion.js"></script>
 <script src="bezier.js"></script>
 </body>

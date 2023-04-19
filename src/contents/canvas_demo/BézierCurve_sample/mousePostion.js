@@ -148,26 +148,6 @@ function transformPointToBezier(points,controlPoints){
     return bzArray
 }
 
-
-function bezier(arr, t) { //通过各控制点与占比t计算当前贝塞尔曲线上的点坐标
-    var x = 0,
-        y = 0,
-        n = arr.length - 1
-    arr.forEach(function(item, index) {
-        if(!index) {
-            x += item.x * Math.pow(( 1 - t ), n - index) * Math.pow(t, index)
-            y += item.y * Math.pow(( 1 - t ), n - index) * Math.pow(t, index)
-        } else {
-            x += factorial(n) / factorial(index) / factorial(n - index) * item.x * Math.pow(( 1 - t ), n - index) * Math.pow(t, index)
-            y += factorial(n) / factorial(index) / factorial(n - index) * item.y * Math.pow(( 1 - t ), n - index) * Math.pow(t, index)
-        }
-    })
-    return {
-        x: x,
-        y: y
-    }
-}
-
 /**
  * calculate drawing data from bezier
  */
@@ -285,16 +265,21 @@ function hypotenuse(x, y) {
 }
 
 /************************************************************************************* 基本处理 ************************************************************************/
-
+let showPosition = document.getElementsByClassName("showPosition")[0]
 let canvas = document.getElementsByClassName("canvas")[0]
 let canvasPos = canvas.getBoundingClientRect()
 let ctx = canvas.getContext("2d")
+canvas.width = canvasPos.width
+canvas.height = canvasPos.height
+
 let mouseTrack = []
 let drawing = false
 
 /** 显示当前鼠标划过或者点击的位置
  * */
 canvas.onmousemove = function(event){
+    stopDefault(event)
+    stopBubble(event)
     mouseTrack.push({
         x: event.clientX - canvasPos.x,
         y: event.clientY - canvasPos.y,
@@ -302,11 +287,48 @@ canvas.onmousemove = function(event){
     })
     startDraw()
 
+    setShowPosition({type: 'mousemove',data:{x:event.offsetX, y:event.offsetY}})
 }
 
 canvas.onmouseleave = function(e) {
-    console.warn("out out out")
+    stopDefault(e)
+    stopBubble(e)
+    showPosition.style.display = "none";
 }
+
+/***
+ * 设置鼠标显示位置
+ * */
+function setShowPosition(message){
+    if(message.type === 'mousemove'){
+        showPosition.style.left = message.data.x + 'px'
+        showPosition.style.top =  message.data.y + 'px'
+        showPosition.style.display = "block";
+        showPosition.textContent = `x: ${message.data.x}, y:${message.data.y}`
+    }else if(message.type === 'mouseleave'){
+        showPosition.style.display = "none";
+    }
+}
+
+// 阻止冒泡行为
+function stopBubble(e) {             //如果提供了事件对象，则这是一个非IE浏览器
+    if ( e && e.stopPropagation ) {   //因此它支持W3C的stopPropagation()方法
+        e.stopPropagation();
+    } else {                          //否则，我们需要使用IE的方式来取消事件冒泡
+        window.event.cancelBubble = true;
+    }
+}
+
+// 阻止浏览器的默认行为
+function stopDefault( e ) {
+    if ( e && e.preventDefault ) {   //阻止默认浏览器动作(W3C)
+        e.preventDefault();
+    }else {                          //IE中阻止函数器默认动作的方式
+        window.event.returnValue = false;
+        return false;
+    }
+}
+
 /** 开始绘制
  * */
 function startDraw() {

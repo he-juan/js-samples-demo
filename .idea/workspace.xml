@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -15,78 +18,141 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="debug.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/debug.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="preload.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/preload.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="349">
-              <caret line="60" column="77" selection-start-line="60" selection-start-column="77" selection-end-line="60" selection-end-column="77" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="16" column="26" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="mousePostion.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="79">
-              <caret line="143" column="34" lean-forward="true" selection-start-line="143" selection-start-column="34" selection-end-line="143" selection-end-column="34" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="bezier.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/bezier.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="hid_all_reply.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/hid_all_reply.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2619">
-              <caret line="97" column="31" selection-start-line="97" selection-end-line="98" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1998">
-              <caret line="74" selection-start-line="74" selection-end-line="74" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/index.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file leaf-file-name="main.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/main.js">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.7786667">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file leaf-file-name="debug.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/debug.js">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file leaf-file-name="preload.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/preload.js">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/index.html">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="349">
+                  <caret line="60" column="77" selection-start-line="60" selection-start-column="77" selection-end-line="60" selection-end-column="77" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="72">
+                  <caret line="23" column="44" selection-start-line="23" selection-start-column="44" selection-end-line="23" selection-end-column="44" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
+              <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+                <state split_layout="SPLIT">
+                  <first_editor relative-caret-position="189">
+                    <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+                  </first_editor>
+                  <second_editor />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../Html-demo/src/contents/js_demo/mousePostion/index.html">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="135">
+                  <caret line="28" column="31" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="mousePostion.js" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-740">
+                  <caret line="297" column="17" selection-start-line="297" selection-start-column="17" selection-end-line="297" selection-end-column="17" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="jcanvas.min.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/web_screenshots_print/libs/jcanvas.min.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="151">
+                  <caret line="5" column="28572" selection-start-line="5" selection-start-column="28572" selection-end-line="5" selection-end-column="28572" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="bezier.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/bezier.js">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file leaf-file-name="main.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/main.js">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file leaf-file-name="mousePostion.js" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="297">
+                  <caret line="280" column="22" lean-forward="true" selection-start-line="280" selection-start-column="22" selection-end-line="280" selection-end-column="22" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="1058">
+                  <caret line="48" column="9" lean-forward="true" selection-start-line="48" selection-start-column="9" selection-end-line="48" selection-end-column="9" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../Html-demo/src/contents/js_demo/mousePostion/index.html">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="234">
+                  <caret line="63" column="28" selection-start-line="63" selection-start-column="28" selection-end-line="63" selection-end-column="28" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/index.html">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="430">
+                  <caret line="63" column="33" lean-forward="true" selection-start-line="63" selection-start-column="33" selection-end-line="63" selection-end-column="33" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/Béziercurve/index.html">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+      </list>
+    </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
@@ -127,9 +193,12 @@
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/clipImage/index.html" />
         <option value="$PROJECT_DIR$/src/contents/record_demo/README.md" />
         <option value="$PROJECT_DIR$/src/contents/recordVideo/README.md" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/text.html" />
+        <option value="$PROJECT_DIR$/src/contents/mousePostion/mousePosition.html" />
         <option value="$PROJECT_DIR$/index.html" />
-        <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" />
       </list>
     </option>
   </component>
@@ -197,9 +266,10 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editorconfig.notification" value="t.editorconfigrue" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Html-demo" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
@@ -211,11 +281,11 @@
       <recent name="E:\private\js-samples-demo\src\contents\record_demo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\mousePostion" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
-      <recent name="E:\private\js-samples-demo\src\contents\webhid-demo\js" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -254,12 +324,12 @@
       <workItem from="1660111828675" duration="15000" />
       <workItem from="1669014878155" duration="1073000" />
       <workItem from="1669087742148" duration="399000" />
-      <workItem from="1681807516463" duration="4214000" />
+      <workItem from="1681807516463" duration="23006000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="35349000" />
+    <option name="totallyTimeSpent" value="54141000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -272,7 +342,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.47655398" />
+      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.11559433" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -290,17 +360,19 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/../Html-demo/src/contents/js_demo/mousePostion/index.html</url>
+          <line>74</line>
+          <properties lambdaOrdinal="-1" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/new_webHid.js" />
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/old-webHid.js" />
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid-demo/js/webHid.js" />
-    <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="15" column="12" selection-start-line="15" selection-start-column="12" selection-end-line="15" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -507,6 +579,23 @@
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/bezier.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/web_screenshots_print/libs/jcanvas.min.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="5" column="28572" selection-start-line="5" selection-start-column="28572" selection-end-line="5" selection-end-column="28572" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/Béziercurve/index.html">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../Html-demo/src/contents/js_demo/mousePostion/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="28" column="31" selection-start-line="28" selection-start-column="31" selection-end-line="28" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="349">
@@ -514,17 +603,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="79">
-          <caret line="143" column="34" lean-forward="true" selection-start-line="143" selection-start-column="34" selection-end-line="143" selection-end-column="34" />
+        <state relative-caret-position="72">
+          <caret line="23" column="44" selection-start-line="23" selection-start-column="44" selection-end-line="23" selection-end-column="44" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="189">
+            <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="16" column="26" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
+        <state relative-caret-position="-740">
+          <caret line="297" column="17" selection-start-line="297" selection-start-column="17" selection-end-line="297" selection-end-column="17" />
         </state>
       </provider>
     </entry>
