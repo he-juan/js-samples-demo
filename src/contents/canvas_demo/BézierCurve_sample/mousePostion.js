@@ -293,7 +293,7 @@ canvas.onmousemove = function(event){
 canvas.onmouseleave = function(e) {
     stopDefault(e)
     stopBubble(e)
-    showPosition.style.display = "none";
+    setShowPosition({type: 'mouseleave',data:{x:event.offsetX, y:event.offsetY}})
 }
 
 /***
