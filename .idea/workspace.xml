@@ -607,20 +607,14 @@
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-<<<<<<< Updated upstream
-          <first_editor relative-caret-position="358">
-            <caret line="21" column="6" lean-forward="true" selection-start-line="21" selection-start-column="6" selection-end-line="21" selection-end-column="6" />
-=======
           <first_editor relative-caret-position="572">
             <caret line="30" column="112" lean-forward="true" selection-start-line="23" selection-end-line="30" selection-end-column="112" />
->>>>>>> Stashed changes
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-<<<<<<< Updated upstream
-=======
+
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SECOND">
@@ -652,6 +646,5 @@
         </state>
       </provider>
     </entry>
->>>>>>> Stashed changes
   </component>
 </project>
