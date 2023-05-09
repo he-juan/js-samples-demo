@@ -482,6 +482,7 @@ var fullOrExit = function(){
 let presentVideo = document.getElementsByClassName("localVideo")[0]
 let videoContainter = document.getElementsByClassName("presentVideoContainter")[0]
 let fullBtn = document.getElementById("fullBtn")
+let isCurrentFullScreen = false
 
 /** 全屏监听事件
  * */
@@ -530,9 +531,14 @@ function toggleFullscreen(isStopScreen = null) {
             videoContainter.msRequestFullscreen()
             presentVideo.msRequestFullscreen()
         }
-        setFullscreenData(true);
 
+        setFullscreenData(true);
+        isCurrentFullScreen = true
         fullBtn.value= '退出'
+        if(!toolbar.classList.contains('toolbar_change')){
+            toolbar.classList.toggle('toolbar_change')
+            toolbar.style.left = ""
+        }
     } else {
         if(fullscreenElement){
             if (document.exitFullscreen) {
@@ -545,7 +551,14 @@ function toggleFullscreen(isStopScreen = null) {
                 document.webkitExitFullscreen();
             }
             setFullscreenData(false);
+            isCurrentFullScreen = false
             fullBtn.value= '全屏'
+            if(toolbar.classList.contains('toolbar_change')){
+                toolbar.classList.toggle('toolbar_change')
+                toolbar.style.top = "10px"
+                toolbar.style.left = "40px"
+
+            }
         }
     }
 }
@@ -599,7 +612,7 @@ function togglePictureInPicture(isStopScreen = null) {
     }
 }
 
-/******************************************************************************监听 当前页面video宽高的变化 *************************************************************************************/
+/******************************************************************监听 当前页面video宽高的变化 ************************************************************************/
 const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
         if (entry.contentBoxSize) {
@@ -614,10 +627,71 @@ const resizeObserver = new ResizeObserver((entries) => {
 
     canvas.lastImage = canvas.toDataURL('image/png');
     canvas.loadImage()
-    console.log('Size changed',canvas.lastImage);
+    console.log('Size changed');
 });
 
 resizeObserver.observe(videoContainter);
+
+
+/************************************************************** 工具栏移动、拖拽***************************************************************************************/
+let toolbar = document.getElementsByClassName("toolbar")[0];
+toolbar.onmousedown = function(e){
+    // let isFullscreen = isFullScreen()
+    // let fullscreenElement = fullScreenElement()
+    if(isCurrentFullScreen){
+        handleMouseDown(e)
+    }
+}
+
+toolbar.onmouseup = function(){
+    handleMouseUp()
+}
+
+function handleMouseDown(e) {
+    // e.pageX, e.pageY 是鼠标在页面上的坐标
+    // box.offsetLeft, box.offsetTop 是元素相对于页面左上角的偏移位置
+    // disx, disy 便是鼠标相对于元素左上角的偏移位置
+    let disx = e.pageX - toolbar.offsetLeft;
+    let disy = e.pageY - toolbar.offsetTop;
+
+    // document.documentElement.clientWidth: 浏览器页面可用宽度
+    // document.documentElement.clientHeight: 浏览器页面可用高度
+
+    document.onmousemove = function (e) {       // 鼠标移动的时候计算元素的位置
+        let x, y;
+        // e.pageX - disx  鼠标在页面上的位置 - 鼠标在元素中的偏移位置  得到的是元素相对于页面左上角的偏移位置
+        if ((e.pageX - disx) > 0) {  // 元素相对于页面左上角的偏移位置 大于0时
+            if ((e.pageX - disx) > document.documentElement.clientWidth - 60) {   // 元素相对于页面左上角的偏移位置 移出到页面以外（右侧）
+                x = document.documentElement.clientWidth - 60;   // 60是元素自身的宽高
+            } else {
+                x = e.pageX - disx;
+            }
+        } else {    // 元素移到到页面以外（左侧）
+            x = 0;
+        }
+
+        if ((e.pageY - disy) > 0) {
+            if ((e.pageY - disy) > document.documentElement.clientHeight - 60) {   // 元素移动到页面以外（底部）
+                y = document.documentElement.clientHeight - 60;
+            } else {
+                y = e.pageY - disy;
+            }
+        } else {        // 元素移动到页面以外（顶部）
+            y = 0;
+        }
+
+
+        toolbar.style.left = x + 'px';
+        toolbar.style.top = y + 'px';
+    }
+}
+/** 释放鼠标按钮，将事件清空，否则始终会跟着鼠标移动
+**/
+function handleMouseUp() {
+    document.onmousemove = document.onmouseup = null;
+}
+
+
 
 window.onload = function(){
     canvas.drawTable(ctx)
