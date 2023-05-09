@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/asset/logo_16x16.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" afterDir="false" />
-    </list>
+    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -26,49 +18,28 @@
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="428">
-                <caret line="27" column="52" selection-start-line="27" selection-start-column="52" selection-end-line="27" selection-end-column="52" />
+              <first_editor relative-caret-position="374">
+                <caret line="20" column="19" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
               </first_editor>
               <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="376">
-              <caret line="179" column="10" lean-forward="true" selection-start-line="179" selection-start-column="10" selection-end-line="179" selection-end-column="10" />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/index.html">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="376">
-              <caret line="61" column="62" selection-start-line="61" selection-start-column="62" selection-end-line="61" selection-end-column="62" />
+              <caret line="179" column="44" lean-forward="true" selection-start-line="179" selection-start-column="44" selection-end-line="179" selection-end-column="44" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="673">
-              <caret line="623" column="1" selection-start-line="623" selection-start-column="1" selection-end-line="623" selection-end-column="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="1431">
-                <caret line="53" column="45" lean-forward="true" selection-start-line="53" selection-start-column="45" selection-end-line="53" selection-end-column="45" />
-              </first_editor>
-              <second_editor />
+            <state relative-caret-position="430">
+              <caret line="63" selection-start-line="63" selection-end-line="63" />
             </state>
           </provider>
         </entry>
@@ -93,32 +64,6 @@
               <second_editor />
             </state>
           </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="background.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/record_demo/background/background.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="6" column="24" selection-start-line="6" selection-start-column="24" selection-end-line="6" selection-end-column="24" />
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="workspace.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-11612">
-              <caret line="122" column="13" lean-forward="true" selection-start-line="122" selection-start-column="13" selection-end-line="122" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/changeButton/index.html">
-          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
     </leaf>
@@ -236,14 +181,6 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
               <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="BézierCurve_sample" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
               <item name="drawingBoard" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -254,14 +191,6 @@
               <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
               <item name="drawingBoard" type="462c0819:PsiDirectoryNode" />
               <item name="asset" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="getColor" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
@@ -293,19 +222,19 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="E:\private\js-samples-demo\src\contents\mousePostion" />
-      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
-      <recent name="E:\private\js-samples-demo\src\contents\webhid" />
-      <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
-      <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\asset" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid\webHid-demo-electron" />
       <recent name="E:\private\js-samples-demo\src\contents\recordVideo" />
       <recent name="E:\private\js-samples-demo\src\contents" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\mousePostion" />
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
+      <recent name="E:\private\js-samples-demo\src\contents\webhid" />
+      <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
+      <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -351,11 +280,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="135240000" />
+    <option name="totallyTimeSpent" value="135438000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20600632" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -523,9 +451,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="162">
           <caret line="6" column="24" selection-start-line="6" selection-start-column="24" selection-end-line="6" selection-end-column="24" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -632,8 +557,8 @@
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="428">
-            <caret line="27" column="52" selection-start-line="27" selection-start-column="52" selection-end-line="27" selection-end-column="52" />
+          <first_editor relative-caret-position="374">
+            <caret line="20" column="19" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
           </first_editor>
           <second_editor />
         </state>
@@ -656,17 +581,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
+    <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="376">
-          <caret line="179" column="10" lean-forward="true" selection-start-line="179" selection-start-column="10" selection-end-line="179" selection-end-column="10" />
+        <state relative-caret-position="430">
+          <caret line="63" selection-start-line="63" selection-end-line="63" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="376">
-          <caret line="61" column="62" selection-start-line="61" selection-start-column="62" selection-end-line="61" selection-end-column="62" />
+          <caret line="179" column="44" lean-forward="true" selection-start-line="179" selection-start-column="44" selection-end-line="179" selection-end-column="44" />
         </state>
       </provider>
     </entry>
