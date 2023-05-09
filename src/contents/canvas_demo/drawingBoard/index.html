@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>canvas 画板</title>
+    <!--<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">-->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .box {
+            width:800px;
+            height:600px;
+            background-color: #dcdcdc;
+            margin: 0 auto;
+            display: block;
+            position: absolute;
+            top:50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+        .container{
+            width:100%;
+            height:100%;
+            position: relative;
+        }
+        .presentVideoContainter {
+            width:100%;
+            height:100%;
+            margin: auto;
+            position: absolute;
+            background-color: #dcdcdc;
+            display: flex;
+            justify-content: center;
+        }
+
+        .presentVideoContainter[data-fullscreen=true] {
+            max-width:100%;
+            width:100%;
+            margin:0;
+            padding:0;
+            max-height:100%;
+        }
+        video, canvas{
+            width:100%;
+            height:100%;
+            position: absolute;
+        }
+        .canvas{
+            z-index: 99;
+        }
+        .showPosition{
+            background-color: gray;
+            color: white;
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            z-index: 99;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 40px;
+            pointer-events: none;
+            display: none;
+        }
+
+        .toolbar{
+            position: absolute;
+            top:10px;
+            z-index: 1000;
+            background-color: #bec2b8;
+            width: 90%;
+            height:30px;
+            border-radius: 5px;
+            margin:0 auto;
+            display:flex;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+            /*pointer-events: none;*/
+        }
+        .toolbar input{
+            margin:0  5px;
+            background-color: white;
+            /*pointer-events: auto;*/
+            border: none;
+            border-radius: 2px;
+            width:40px;
+            height:20px;
+        }
+
+        .rounded{
+            display:none;
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            /*border: 2px solid #fff;*/
+            border-radius: 50%;
+            background:linear-gradient(red, yellow, orange);
+        }
+
+        textarea {
+            display:none;
+            float: left;
+            position: absolute;
+            top:40px;
+            font: 14px SFUIDisplay;
+            color:red;
+            word-break: break-all;
+
+            /*maxlength: 50;    !* 允许用户输入的最大字符长度*! */
+            outline:none;
+            resize: none;
+            border:1px dashed gray;
+            overflow-x:hidden;
+            overflow-y:hidden;
+
+            background-color: transparent;
+            z-index: 888888;
+            caret-color:black;   /* 光标颜色 */
+
+            /*font-size: 14px;*/
+            /*color: red;*/
+            /*letter-spacing: 0;*/
+            /*font-weight: 400;*/
+            /*font-family: SFUIDisplay;*/
+        }
+        .fullBtn{
+            float: right;
+            width: 40px;
+            height: 30px;
+            position: relative;
+            background-color: #d4b489;
+            top: 10px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 5px;
+            color:white;
+            z-index: 100;
+            cursor: pointer;
+            display:none;
+        }
+        .container:hover  .fullBtn{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!--画板-->
+<div class="box">
+    <div class="container" >
+        <figure class="presentVideoContainter">
+            <!--工具栏-->
+            <div class="toolbar">
+                <input id="defaultBtn" type="button" value="随意画" onclick="drawDefault()">
+                <input id="penBtn" type="button" value="激光笔" onclick="drawPen()">
+                <input id="lineBtn" type="button" value="直线" onclick="drawLine()">
+                <input id="arrowBtn" type="button" value="箭头" onclick="drawArrow()">
+                <input id="rectBtn" type="button" value="矩形" onclick="drawRect()">
+                <input id="strokeRectBtn" type="button" value="空心矩形" onclick="drawStrokeRect()">
+                <input id="circleBtn" type="button" value="圆" onclick="drawCircle()">
+                <input id="strokeCircleBtn" type="button" value="空心圆" onclick="drawStrokeCircle()">
+                <input id="textBtn" type="button" value="文字" onclick="drawText()">
+                <input id="eraserBtn" type="button" value="橡皮擦" onclick="drawEraser()">
+                <input id="clearBtn" type="button" value="清空" onclick="drawClear()">
+                <input id="fullBtn" type="button" value="全屏" onclick="fullOrExit()">
+            </div>
+            <video  class="localVideo" ></video>
+            <canvas class="canvas" ></canvas>
+            <textarea name="textBox" id="textBox" cols="1" rows="1"  class="text-style"></textarea>
+            <!--<div class="cursor rounded"></div>-->
+            <div class="showPosition"></div>
+        </figure>
+        <!--<div class="fullBtn">全屏</div>-->
+    </div>
+</div>
+<script src="index.js"></script>
+</body>
+</html>

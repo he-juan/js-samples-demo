@@ -20,3 +20,12 @@
       canvas.width = canvasPos.width
       canvas.height = canvasPos.height
    ```
+   
+ ## 案例demo
+  - [canvas小画板——（1）平滑曲线](https://www.cnblogs.com/fangsmile/p/13427794.html)
+  - [canvas可视化效果之内阴影效果](https://www.cnblogs.com/flyfox1982/p/14171581.html)
+  - [canvas 画板](https://github.com/xpyjs/javascript-canvas-paint-demo)
+  - [fabric.js 中文教程](https://k21vin.gitee.io/fabric-js-doc/articles/)
+  - [Fabric.js 从入门到精通](https://juejin.cn/post/7026941253845516324)
+  - [canvas 各种demo](http://fabricjs.com/demos/)
+  - [前端可视化内容_fabric.js](http://k21vin.gitee.io/front-end-data-visualization/#/fabric/fabric-basic/fabric-i-text)
