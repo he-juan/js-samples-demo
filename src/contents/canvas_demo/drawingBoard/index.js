@@ -3,8 +3,8 @@ let textBox = document.getElementById("textBox");
 let canvas = document.getElementsByClassName("canvas")[0]
 let ctx = canvas.getContext("2d")
 let canvasPos = canvas.getBoundingClientRect()
-canvas.width = canvasPos.width
-canvas.height = canvasPos.height
+// canvas.width = canvasPos.width
+// canvas.height = canvasPos.height
 
 let showInputFlag = false;  // 标记是否要绘制
 let points = [];            // 存储坐标点
@@ -57,21 +57,23 @@ function makeExpandingArea(el){
  * **/
 canvas.drawTable = function(context){
     let gridSize = 50
-    let row = parseInt(canvas.height / gridSize);
-    let col = parseInt(canvas.width / gridSize);
+    let getRatio = getCanvasRatio()
+    let row = parseInt(canvasPos.height / gridSize) / getRatio.xRatio;
+    let col = parseInt(canvasPos.width / gridSize) / getRatio.yRatio;
+
     for(let i=0;i < row;i++)
     {
         context.beginPath();
-        context.moveTo(0,i * gridSize - 0.5);
-        context.lineTo(canvas.width,i * gridSize - 0.5);
+        context.moveTo(0, (i * gridSize - 0.5) /getRatio.yRatio);
+        context.lineTo(canvasPos.width/getRatio.xRatio, (i * gridSize - 0.5)/ getRatio.yRatio);
         context.strokeStyle = "#ccc";
         context.stroke();
     }
     for(let i=0;i < col;i++)
     {
         context.beginPath();
-        context.moveTo(i * gridSize - 0.5,0);
-        context.lineTo(i * gridSize - 0.5,canvas.height);
+        context.moveTo((i * gridSize - 0.5) / getRatio.xRatio, 0);
+        context.lineTo((i * gridSize - 0.5) / getRatio.xRatio, canvasPos.height/getRatio.yRatio);
         context.strokeStyle="#ccc";
         context.stroke();
     }
@@ -99,7 +101,7 @@ canvas.drawing = function(x1,y1,x2,y2,e){
     // 设置画笔的颜色和大小
     ctx.fillStyle = 'red'       // 填充颜色为红色
     ctx.strokeStyle = 'red'     // 画笔的颜色
-    ctx.lineWidth = 10          // 指定描边线的宽度
+    ctx.lineWidth = 5          // 指定描边线的宽度
     // ctx.globalAlpha = 0.8;      // 画笔透明度
 
     ctx.save()
@@ -116,7 +118,7 @@ canvas.drawing = function(x1,y1,x2,y2,e){
             ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
         }
     } else if (self.strokeRectFlag) {
-        // console.log('画空心矩形')
+        console.log('画空心矩形',e.shiftKey)
         self.initCanvas();
         if (e.shiftKey === true) {
             // 正方形
@@ -190,35 +192,38 @@ canvas.drawing = function(x1,y1,x2,y2,e){
         // console.log('画文字')
         // ctx.font = "28px orbitron";
         // ctx.fillText(textContent, parseInt(textBox.style.left), parseInt(textBox.style.top));
-
-        ctx.font = '14px SFUIDisplay';
-        ctx.textBaseline = 'top';     // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top";
+        // window.getComputedStyle(textBox).fontSize
+        ctx.font =  16 + "px/1.5 'Open Sans', 'SimHei', sans-serif"
+        ctx.textBaseline = 'hanging';     // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top";
         ctx.textAlign = 'left';       // "center" | "end" | "left" | "right" | "start"; 值不同，绘制的时候 fillText 的坐标也要修改
         console.warn("get textContent:",textContent)
         let allChars = textContent && textContent.split('')
-        let lineText = '';   // 每行的内容
-        let y = parseInt(textBox.style.top);
+        let lineText = '';    // 每行的内容
+        let getRatio = getCanvasRatio()
+        let x = parseInt(textBox.style.left) / getRatio.xRatio
+        let y = parseInt(textBox.style.top) /getRatio.yRatio;
 
-        let lineHeight = 20;   // 每行的高度
+        // let {nextX: x, nextY: y} = changeCanvasPosition(parseInt(textBox.style.left), parseInt(textBox.style.top))
+        let lineHeight = 22 / getRatio.yRatio;   // 每行的高度
         for (let i = 0; i < allChars.length; i++) {
             // measureText 可计算绘制内容的宽度
             let metric = ctx.measureText(lineText + allChars[i]);
             if (metric.width < 225 /*ctx.canvas.width / dpr*/) {
-                lineText += allChars[i];
+                lineText = lineText + allChars[i];
                 if (i === allChars.length - 1) {
                     // 绘制结束的文本
                     // ctx.fillText(lineText, 0, y);
-                    ctx.fillText(lineText, parseInt(textBox.style.left), y);
+                    ctx.fillText(lineText, x, y);
                 }else if(allChars[i] === '\n'){
                     // 绘制整行内容
-                    ctx.fillText(lineText, parseInt(textBox.style.left), y);
+                    ctx.fillText(lineText, x, y);
                     lineText = '';
                     y = y + lineHeight;
                 }
             } else {
                 // 绘制整行内容
                 // ctx.fillText(lineText, 0, y);
-                ctx.fillText(lineText, parseInt(textBox.style.left), y);
+                ctx.fillText(lineText, x, y);
                 lineText = allChars[i];
                 y =  y + lineHeight;
             }
@@ -264,8 +269,12 @@ canvas.onmousedown = function (event) {
     let self = this
     // self.startX = event.offsetX
     // self.startY = event.offsetY
-    self.startX = event.clientX - canvasPos.x
-    self.startY = event.clientY - canvasPos.y
+    let startX = event.clientX - canvasPos.x
+    let startY = event.clientY - canvasPos.y
+    let getPosition = changeCanvasPosition(startX, startY)
+
+    self.startX = getPosition.nextX
+    self.startY = getPosition.nextY
     if (canvas.textFlag) {
 
         /**** 显示输入框 */
@@ -280,15 +289,15 @@ canvas.onmousedown = function (event) {
         showInputFlag = false;
         // textBox.style['z-index'] = 1;
         textBox.value = "";
-        this.drawing(this.startX, this.startY);
+        this.drawing(self.startX, self.startY);
 
         /** 绘图后将文本框恢复到原点***/
         //  textBox.style.left = '30px';
         // textBox.style.top = '30px';
 
         textBox.style.display ="block"
-        textBox.style.left = this.startX + 'px';
-        textBox.style.top = this.startY + 'px';
+        textBox.style.left = startX + 'px';
+        textBox.style.top = startY + 'px';
         textBox.style['z-index'] = 100000;
     }else{
         self.isMouseDown = true
@@ -299,20 +308,23 @@ canvas.onmousedown = function (event) {
 
 canvas.onmousemove = function(event){
     let self = this
-    if(self.isMouseDown){
-        self.drawing(self.startX,self.startY, self.currentX,self.currentY,event)
-
-    }
-    // self.currentX = event.offsetX
-    // self.currentY = event.offsetY
-    self.currentX = event.clientX - canvasPos.x
-    self.currentY = event.clientY - canvasPos.y
+    // let currentX = event.offsetX
+    // let currentY = event.offsetY
+    let currentX = event.clientX - canvasPos.x
+    let currentY = event.clientY - canvasPos.y
 
     // 坐标显示
-    showPosition.style.left = self.currentX + 5 + 'px'
-    showPosition.style.top =  self.currentY + 5 + 'px'
+    showPosition.style.left = currentX + 5 + 'px'
+    showPosition.style.top =  currentY + 5 + 'px'
     showPosition.style.display = "block";
-    showPosition.textContent = `x: ${self.currentX}, y:${self.currentY}`
+    showPosition.textContent = `x: ${parseInt(currentX)}, y:${parseInt(currentY)}`
+
+    if(self.isMouseDown){
+        let getPosition = changeCanvasPosition(currentX, currentY)
+        self.currentX = getPosition.nextX
+        self.currentY = getPosition.nextY
+        self.drawing(self.startX, self.startY, self.currentX, self.currentY, event)
+    }
 }
 
 canvas.onmouseup = function(e){
@@ -320,8 +332,6 @@ canvas.onmouseup = function(e){
     self.lastImage = canvas.toDataURL('image/png');
     self.isMouseDown = false
 
-    self.endX = e.offsetX
-    self.endY = e.offsetY
     textBox.value = ''
 
     points = []
@@ -332,6 +342,39 @@ canvas.onmouseup = function(e){
 
 canvas.onmouseleave = function(){
     showPosition.style.display = "none";
+}
+
+/** 转换canvas的像素坐标
+ * @param x：鼠标当前移动相对于canvas的x 偏移量
+ * @param y：鼠标当前移动相对于canvas的y 偏移量
+ * */
+
+var changeCanvasPosition = function(x, y){
+    // let cavasHtmlWidth = canvas.width
+    // let canvasHtmlHeight = canvas.height
+    // let {width:canvasStyleWidth, height: canvasStyleHeight} = canvas.getBoundingClientRect()
+    // let nextX = x * cavasHtmlWidth / canvasStyleWidth
+    // let nextY = y * canvasHtmlHeight / canvasStyleHeight
+    let getRatio = getCanvasRatio()
+    let nextX = x / getRatio.xRatio
+    let nextY = y / getRatio.yRatio
+
+    return {nextX, nextY}
+}
+/** 获取canvas画布大小和像素大小比例
+ * @param canvas.width, canvas.height: canvas画布像素的大小
+ * @param canvasStyleWidth, canvasStyleHeight: 肉眼可见的canvas大小
+ * @return  xRatio = canvasStyleWidth / cavasHtmlWidth;
+ * @return  yRatio  = canvasStyleHeight / canvasHtmlHeight
+ ***/
+var getCanvasRatio = function(){
+    let cavasHtmlWidth = canvas.width
+    let canvasHtmlHeight = canvas.height
+    let { width: canvasStyleWidth, height: canvasStyleHeight} = canvas.getBoundingClientRect()
+    let xRatio = canvasStyleWidth / cavasHtmlWidth
+    let yRatio  = canvasStyleHeight / canvasHtmlHeight
+
+    return {xRatio, yRatio}
 }
 
 
@@ -465,15 +508,12 @@ var drawClear = function(){
 
     clearBtn.style.background = "#22A6F2";
     clearBtn.style.color = "#eee";
-    // canvas.drawTable(ctx)
 }
 
 var fullOrExit = function(){
     initDraw("fullOrExit")
     toggleFullscreen()
 
-    canvas.lastImage = canvas.toDataURL('image/png');
-    canvas.loadImage()
     fullBtn.style.background = "#22A6F2";
     fullBtn.style.color = "#eee";
 }
@@ -556,7 +596,7 @@ function toggleFullscreen(isStopScreen = null) {
             if(toolbar.classList.contains('toolbar_change')){
                 toolbar.classList.toggle('toolbar_change')
                 toolbar.style.top = "10px"
-                toolbar.style.left = "40px"
+                toolbar.style.left = "255.609px"
 
             }
         }
@@ -616,17 +656,20 @@ function togglePictureInPicture(isStopScreen = null) {
 const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
         if (entry.contentBoxSize) {
-            canvas.width = entry.contentBoxSize[0].inlineSize
-            canvas.height = entry.contentBoxSize[0].blockSize
+            canvas.style.width = entry.contentBoxSize[0].inlineSize + 'px'
+            canvas.style.height = entry.contentBoxSize[0].blockSize + 'px'
         } else {
-            canvas.width = entry.contentRect.width
-            canvas.height = entry.contentRect.height
+            canvas.style.width = entry.contentRect.width + 'px'
+            canvas.style.height = entry.contentRect.height + 'px'
         }
     }
     canvasPos = canvas.getBoundingClientRect()
 
-    canvas.lastImage = canvas.toDataURL('image/png');
-    canvas.loadImage()
+    // canvas.lastImage = canvas.toDataURL('image/png');
+    // canvas.loadImage()
+    setTimeout(function(){
+        canvas.initCanvas()
+    },1000)
     console.log('Size changed');
 });
 

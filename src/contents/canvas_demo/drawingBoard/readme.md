@@ -1,10 +1,11 @@
- ## 解析
+ ## 一、解析
    - [使用鼠标实时绘制图形](http://www.jeremyjone.com/472/) 
+   - [参考 canvas 画板](https://github.com/xpyjs/javascript-canvas-paint-demo)
    
-   ### 使用鼠标实时绘制图形
+ ## 二、 使用鼠标实时绘制图形[demo](https://he-juan.github.io/js-samples-demo/src/contents/canvas_demo/drawingBoard/)
    
     >  canvas需要实时的显示图片内容
-    
+  
     
    1. 加载图片和清空canvas。
    
@@ -49,11 +50,84 @@
        };
     
        ```
-   3. **当鼠标按下时，获取事件**，保存鼠标当前位置为起始位置(x1, y1)，并且将一个按下的flag变为true，这样在移动鼠标时，可以判断是否应该绘图，同时加载背景图片。  
-   4. **当鼠标按下且移动时**，调用自定义的绘图函数drawing，并且保存鼠标移动时的当前位置，该位置在移动时不停切换，作为绘图的结束位置(x2, y2)，图片会不停的绘制
-   5. **当鼠标抬起时**，停止绘图，将移动flag变为false，同时保存最后一张图片，这样就获取到了我们需要的最后的图片，后续可以加载为背景
+   3. canvas画布大小和真实大小 像素比例：
+       ```javascript
+        /** 转换canvas的像素坐标
+         * @param x：鼠标当前移动相对于canvas的x 偏移量
+         * @param y：鼠标当前移动相对于canvas的y 偏移量
+         * */
+        
+        var changeCanvasPosition = function(x, y){
+            // let cavasHtmlWidth = canvas.width
+            // let canvasHtmlHeight = canvas.height
+            // let {width:canvasStyleWidth, height: canvasStyleHeight} = canvas.getBoundingClientRect()
+            // let nextX = x * cavasHtmlWidth / canvasStyleWidth
+            // let nextY = y * canvasHtmlHeight / canvasStyleHeight
+            let getRatio = getCanvasRatio()
+            let nextX = x / getRatio.xRatio
+            let nextY = y / getRatio.yRatio
+        
+            return {nextX, nextY}
+        }
+        /** 获取canvas画布大小和像素大小比例
+         * @param canvas.width, canvas.height: canvas画布像素的大小
+         * @param canvasStyleWidth, canvasStyleHeight: 肉眼可见的canvas大小
+         * @return  xRatio = canvasStyleWidth / cavasHtmlWidth;
+         * @return  yRatio  = canvasStyleHeight / canvasHtmlHeight
+         ***/
+        var getCanvasRatio = function(){
+            let cavasHtmlWidth = canvas.width
+            let canvasHtmlHeight = canvas.height
+            let { width: canvasStyleWidth, height: canvasStyleHeight} = canvas.getBoundingClientRect()
+            let xRatio = canvasStyleWidth / cavasHtmlWidth
+            let yRatio  = canvasStyleHeight / canvasHtmlHeight
+        
+            return {xRatio, yRatio}
+        }
+       ```
+   4. 绘制表格。
+   
+       ```javascript
+        canvas.drawTable = function(context){
+            let gridSize = 50
+            let row = parseInt(canvasPos.height / gridSize) ;
+            let col = parseInt(canvasPos.width / gridSize) ;      
+            for(let i=0;i < row;i++)
+            {
+                context.beginPath();
+                context.moveTo(0,i * gridSize - 0.5);
+                context.lineTo(canvasPos.width,i * gridSize - 0.5);
+                context.strokeStyle = "#ccc";
+                context.stroke();
+            }
+            for(let i=0;i < col;i++)
+            {
+                context.beginPath();
+                context.moveTo(i * gridSize - 0.5,0);
+                context.lineTo(i * gridSize - 0.5,canvasPos.height);
+                context.strokeStyle="#ccc";
+                context.stroke();
+            }
+        }
+       ```
+       
+   5. **当鼠标按下时，获取事件**，保存鼠标当前位置为起始位置(x1, y1)，并且将一个按下的flag变为true，这样在移动鼠标时，可以判断是否应该绘图，同时加载背景图片。  
+   6. **当鼠标按下且移动时**，调用自定义的绘图函数drawing，并且保存鼠标移动时的当前位置，该位置在移动时不停切换，作为绘图的结束位置(x2, y2)，图片会不停的绘制
+   7. **当鼠标抬起时**，停止绘图，将移动flag变为false，同时保存最后一张图片，这样就获取到了我们需要的最后的图片，后续可以加载为背景
  
- ## 案例demo
+ 
+ ## 三、canvas 绘制注意事项
+ 
+  - 关于 canvas style width 和 canvas.width：
+    - canvas style width：是canvas element style中设置的width属性的值；即css width 且决定能看到画布的大小。
+    - canvas width：就是给canvas html width设置的值；即画布真实的大小 且不是我们看到画布的大小。
+    - 两者区别：style width决定在浏览器的大小表现。canvas html width决定canvas里面有多少个像素。
+    - canvas真实大小时，默认按300*150处理，如果canvas.style也没提供，那么style.width为空，注意并不是300*150
+    - [canvas style width和canvas.width 详细解释](https://www.jianshu.com/p/fcb541914a80)
+ 
+    - [如何正确设置canvas尺寸，以及如何在高分辨率屏幕上清晰显示canvas图形](https://segmentfault.com/a/1190000020189168)
+ 
+ ## 四、案例demo
   - [canvas小画板——（1）平滑曲线](https://www.cnblogs.com/fangsmile/p/13427794.html)
   - [canvas可视化效果之内阴影效果](https://www.cnblogs.com/flyfox1982/p/14171581.html)
   - [canvas 画板](https://github.com/xpyjs/javascript-canvas-paint-demo)
@@ -61,3 +135,4 @@
   - [Fabric.js 从入门到精通](https://juejin.cn/post/7026941253845516324)
   - [canvas 各种demo](http://fabricjs.com/demos/)
   - [前端可视化内容_fabric.js](http://k21vin.gitee.io/front-end-data-visualization/#/fabric/fabric-basic/fabric-i-text)
+  - [canvas文字的绘制 与 textarea](https://juejin.cn/post/7129140994011824141)

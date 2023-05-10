@@ -6,15 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>canvas 画板</title>
-    <!--<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">-->
     <style>
         * {
             margin: 0;
             padding: 0;
         }
         .box {
-            width:800px;
-            height:600px;
+            width: 1278px;
+            height: 718.715px;
             background-color: #dcdcdc;
             margin: 0 auto;
             display: block;
@@ -72,8 +71,9 @@
             position: absolute;
             top:10px;
             z-index: 1000;
-            background-color: #bec2b8;
-            width: 90%;
+            background-color: #82858a;
+            border-radius: 8px;
+            width: 55%;
             height:30px;
             border-radius: 5px;
             margin:0 auto;
@@ -111,7 +111,7 @@
             float: left;
             position: absolute;
             top:40px;
-            font: 14px SFUIDisplay;
+            font: 16px Open Sans SimHei sans-serif;
             color:red;
             word-break: break-all;
 
@@ -174,7 +174,7 @@
                 <input id="fullBtn" type="button" value="全屏" onclick="fullOrExit()">
             </div>
             <video  class="localVideo" ></video>
-            <canvas class="canvas" ></canvas>
+            <canvas class="canvas" width="1600px" height="1600px"></canvas>
             <textarea name="textBox" id="textBox" cols="1" rows="1"  class="text-style"></textarea>
             <!--<div class="cursor rounded"></div>-->
             <div class="showPosition"></div>
