@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>白板</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        textarea {
+            position: absolute;
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="600" height="400"></canvas>
+
+<textarea id="text" placeholder="在此输入文字"></textarea>
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    var textarea = document.getElementById("text");
+    var isDrawing = false;
+
+    // 在canvas上画点
+    function drawPoint(x, y, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+
+    // 监听鼠标点击事件
+    canvas.addEventListener("mousedown", function(e) {
+        var x = e.pageX - canvas.offsetLeft;
+        var y = e.pageY - canvas.offsetTop;
+        isDrawing = true;
+        // drawPoint(x, y, "black");
+        textarea.style.left = x + "px";
+        textarea.style.top = y + "px";
+        textarea.style.display = "block";
+    }, false);
+
+    // 监听textarea输入事件
+    textarea.addEventListener("input", function() {
+        var value = textarea.value;
+        ctx.font = "14px Arial";
+        ctx.fillText(value, parseInt(textarea.style.left), parseInt(textarea.style.top) + 14);
+    }, false);
+
+    // 监听鼠标抬起事件
+    canvas.addEventListener("mouseup", function(e) {
+        isDrawing = false;
+        textarea.style.display = "none";
+    }, false);
+
+</script>
+
+</body>
+</html>

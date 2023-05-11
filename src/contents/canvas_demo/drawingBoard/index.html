@@ -83,9 +83,11 @@
             align-items: center;
             /*pointer-events: none;*/
         }
+
         .toolbar_change{
             width: 40%;
         }
+
         .toolbar input{
             margin:0  5px;
             background-color: white;
@@ -94,16 +96,6 @@
             border-radius: 2px;
             width:40px;
             height:20px;
-        }
-
-        .rounded{
-            display:none;
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            /*border: 2px solid #fff;*/
-            border-radius: 50%;
-            background:linear-gradient(red, yellow, orange);
         }
 
         textarea {
@@ -123,7 +115,7 @@
             overflow-y:hidden;
 
             background-color: transparent;
-            z-index: 888888;
+            z-index: 999;
             caret-color:black;   /* 光标颜色 */
 
             /*font-size: 14px;*/
@@ -132,24 +124,13 @@
             /*font-weight: 400;*/
             /*font-family: SFUIDisplay;*/
         }
-        .fullBtn{
-            float: right;
-            width: 40px;
-            height: 30px;
-            position: relative;
-            background-color: #d4b489;
-            top: 10px;
-            text-align: center;
-            line-height: 30px;
-            border-radius: 5px;
-            color:white;
-            z-index: 100;
-            cursor: pointer;
-            display:none;
+
+        .selectionArea{
+            border: 1px dotted black;
+            position: absolute;
+            z-index:999;
         }
-        .container:hover  .fullBtn{
-            display: block;
-        }
+
     </style>
 </head>
 <body>
@@ -178,6 +159,7 @@
             <textarea name="textBox" id="textBox" cols="1" rows="1"  class="text-style"></textarea>
             <!--<div class="cursor rounded"></div>-->
             <div class="showPosition"></div>
+            <div class="selectionArea" hidden></div>
         </figure>
         <!--<div class="fullBtn">全屏</div>-->
     </div>

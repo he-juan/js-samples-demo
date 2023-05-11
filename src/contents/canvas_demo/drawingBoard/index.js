@@ -3,15 +3,12 @@ let textBox = document.getElementById("textBox");
 let canvas = document.getElementsByClassName("canvas")[0]
 let ctx = canvas.getContext("2d")
 let canvasPos = canvas.getBoundingClientRect()
-// canvas.width = canvasPos.width
-// canvas.height = canvasPos.height
 
 let showInputFlag = false;  // 标记是否要绘制
 let points = [];            // 存储坐标点
 let textContext = ''        // 文字内容
 
-/** textarea 内容及样式处理
- * **/
+/******************************************** textarea 内容及样式处理*************************************************/
 function makeExpandingArea(el){
     var setStyle = function(el,isAddCols = false){
         el.style.height = 'auto';
@@ -79,6 +76,7 @@ canvas.drawTable = function(context){
     }
 }
 
+/***********************************************************canvas 绘制内容做处理******************************************************************/
 
 canvas.loadImage = function () {
     let self = this;
@@ -193,7 +191,8 @@ canvas.drawing = function(x1,y1,x2,y2,e){
         // ctx.font = "28px orbitron";
         // ctx.fillText(textContent, parseInt(textBox.style.left), parseInt(textBox.style.top));
         // window.getComputedStyle(textBox).fontSize
-        ctx.font =  16 + "px/1.5 'Open Sans', 'SimHei', sans-serif"
+
+        ctx.font =  '16' * 1.5 +'px' +  " 'Open Sans', 'SimHei', sans-serif"
         ctx.textBaseline = 'hanging';     // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top";
         ctx.textAlign = 'left';       // "center" | "end" | "left" | "right" | "start"; 值不同，绘制的时候 fillText 的坐标也要修改
         console.warn("get textContent:",textContent)
@@ -204,11 +203,13 @@ canvas.drawing = function(x1,y1,x2,y2,e){
         let y = parseInt(textBox.style.top) /getRatio.yRatio;
 
         // let {nextX: x, nextY: y} = changeCanvasPosition(parseInt(textBox.style.left), parseInt(textBox.style.top))
-        let lineHeight = 22 / getRatio.yRatio;   // 每行的高度
+        let lineHeight = 20 / getRatio.yRatio;   // 每行的高度
         for (let i = 0; i < allChars.length; i++) {
             // measureText 可计算绘制内容的宽度
             let metric = ctx.measureText(lineText + allChars[i]);
-            if (metric.width < 225 /*ctx.canvas.width / dpr*/) {
+            console.warn("metric:",metric.width)
+            console.warn("window.getComputedStyle(textBox).width:",window.getComputedStyle(textBox).width.slice(0, -2))
+            if (metric.width < 261/ getRatio.xRatio /*ctx.canvas.width / dpr*/) {
                 lineText = lineText + allChars[i];
                 if (i === allChars.length - 1) {
                     // 绘制结束的文本
@@ -221,18 +222,21 @@ canvas.drawing = function(x1,y1,x2,y2,e){
                     y = y + lineHeight;
                 }
             } else {
+
+                console.warn("2222:",allChars[i])
                 // 绘制整行内容
                 // ctx.fillText(lineText, 0, y);
                 ctx.fillText(lineText, x, y);
                 lineText = allChars[i];
                 y =  y + lineHeight;
+
             }
         }
     } else if (self.eraserFlag) {
-        // 橡皮擦
-        ctx.arc(x1, y1, 10, 0, 2 * Math.PI);
-        ctx.clip();
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // // 橡皮擦
+        // ctx.arc(x1, y1, 10, 0, 2 * Math.PI);
+        // ctx.clip();
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         self.startX = self.currentX;
         self.startY = self.currentY;
@@ -267,6 +271,7 @@ canvas.drawing = function(x1,y1,x2,y2,e){
 }
 canvas.onmousedown = function (event) {
     let self = this
+    console.warn("11111111111111")
     // self.startX = event.offsetX
     // self.startY = event.offsetY
     let startX = event.clientX - canvasPos.x
@@ -513,7 +518,7 @@ var drawClear = function(){
 var fullOrExit = function(){
     initDraw("fullOrExit")
     toggleFullscreen()
-
+    canvas.lastImage = canvas.toDataURL('image/png')
     fullBtn.style.background = "#22A6F2";
     fullBtn.style.color = "#eee";
 }
@@ -665,11 +670,9 @@ const resizeObserver = new ResizeObserver((entries) => {
     }
     canvasPos = canvas.getBoundingClientRect()
 
-    // canvas.lastImage = canvas.toDataURL('image/png');
-    // canvas.loadImage()
-    setTimeout(function(){
-        canvas.initCanvas()
-    },1000)
+    // setTimeout(function(){
+    //     canvas.initCanvas()
+    // },800)
     console.log('Size changed');
 });
 
@@ -678,9 +681,8 @@ resizeObserver.observe(videoContainter);
 
 /************************************************************** 工具栏移动、拖拽***************************************************************************************/
 let toolbar = document.getElementsByClassName("toolbar")[0];
+
 toolbar.onmousedown = function(e){
-    // let isFullscreen = isFullScreen()
-    // let fullscreenElement = fullScreenElement()
     if(isCurrentFullScreen){
         handleMouseDown(e)
     }
@@ -723,17 +725,87 @@ function handleMouseDown(e) {
             y = 0;
         }
 
-
         toolbar.style.left = x + 'px';
         toolbar.style.top = y + 'px';
     }
 }
 /** 释放鼠标按钮，将事件清空，否则始终会跟着鼠标移动
 **/
+
 function handleMouseUp() {
     document.onmousemove = document.onmouseup = null;
 }
 
+/************************************************************** 框选某一个区域 **********************************************************************/
+let selectionArea = document.getElementsByClassName("selectionArea")[0]
+let div = selectionArea
+    x1 = 0,
+    y1 = 0,
+    x2 = 0,
+    y2 = 0;
+
+handleSelectionArea()
+function handleSelectionArea(){
+    let isCompleteSelectionArea = false
+    function reCalc() {
+        let x3 = Math.min(x1, x2);
+        let x4 = Math.max(x1, x2);
+        let y3 = Math.min(y1, y2);
+        let y4 = Math.max(y1, y2);
+        div.style.left = x3 + 'px';
+        div.style.top = y3 + 'px';
+        div.style.width = x4 - x3 + 'px';
+        div.style.height = y4 - y3 + 'px';
+    }
+    onmousedown = function(e) {
+        if(!canvas.eraserFlag) return
+        div.hidden = 0;
+        x1 = event.clientX - canvasPos.x;
+        y1 = event.clientY - canvasPos.y;
+        isCompleteSelectionArea = true
+        reCalc();
+    };
+    onmousemove = function(e) {
+        if(!canvas.eraserFlag) return
+        x2 = event.clientX - canvasPos.x;
+        y2 = event.clientY - canvasPos.y;
+        if(isCompleteSelectionArea){
+            reCalc();
+        }
+    };
+    onmouseup = function(e) {
+        if(!canvas.eraserFlag) return
+        isCompleteSelectionArea = false
+
+        console.warn("x1,y1:",{x1,y1}, "x2,y2:",{x2,y2})
+    };
+}
+
+function clearSelectArea(){
+    let x3 = Math.min(x1, x2);
+    let y3 = Math.min(y1, y2);
+    let { nextX: canvasPreX, nextY: canvasPreY } = changeCanvasPosition(x3, y3)
+    let { width, height} = selectionArea.getBoundingClientRect()
+    let { nextX: selectAreaWidth, nextY: selectAreaHeight } = changeCanvasPosition(width, height)
+    if(!ctx) return
+
+    ctx.clearRect(canvasPreX, canvasPreY, selectAreaWidth, selectAreaHeight)
+    div.hidden = 1
+
+    /*** 保存当前的画面 **/
+    canvas.lastImage = canvas.toDataURL('image/png')
+}
+
+/** 监听delete按键
+ **/
+document.onkeydown = function(event){
+    if(!canvas.eraserFlag) return
+    let e = event || window.event || arguments.callee.caller.arguments[0]
+    console.warn("eeee:",e.keyCode)
+    if(e.keyCode == 8 || e.keyCode == 46) {
+        clearSelectArea()
+    }
+}
 
 
 window.onload = function(){

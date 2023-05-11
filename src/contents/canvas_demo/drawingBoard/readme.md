@@ -119,8 +119,8 @@
  ## 三、canvas 绘制注意事项
  
   - 关于 canvas style width 和 canvas.width：
-    - canvas style width：是canvas element style中设置的width属性的值；即css width 且决定能看到画布的大小。
-    - canvas width：就是给canvas html width设置的值；即画布真实的大小 且不是我们看到画布的大小。
+    - canvas style width：是canvas element style中设置的width属性的值；即通过内联样式、内部样式表或外部样式表设置，一般称为画板尺寸。
+    - canvas width：就是给canvas html width设置的值；即画布真实的大小 且决定能看到画布的大小；一般称为画布尺寸。
     - 两者区别：style width决定在浏览器的大小表现。canvas html width决定canvas里面有多少个像素。
     - canvas真实大小时，默认按300*150处理，如果canvas.style也没提供，那么style.width为空，注意并不是300*150
     - [canvas style width和canvas.width 详细解释](https://www.jianshu.com/p/fcb541914a80)
