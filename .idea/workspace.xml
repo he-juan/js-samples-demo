@@ -1,7 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="" />
+    <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/grid.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/LOG.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/Bank Gothic Light BT.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/Bank Gothic Medium BT.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothic Lt BT Light.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothic Md BT Medium.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothic RUSS Medium.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothic-Regular DB.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothic-Regular.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothicCLtBT-Light.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/BankGothic/BankGothicCMdBT-Medium.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/css/main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/560X120.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/close-circle-outline.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/complete.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/favicon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/file-audio.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/file-open.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/assets/images/file-plus.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/config/paths.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/config/webpack.common.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/Bank Gothic Light BT.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/Bank Gothic Medium BT.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothic Lt BT Light.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothic Md BT Medium.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothic RUSS Medium.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothic-Regular DB.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothic-Regular.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothicCLtBT-Light.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/BankGothic/BankGothicCMdBT-Medium.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/css/main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/560X120.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/close-circle-outline.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/complete.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/favicon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/file-audio.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/file-open.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/assets/images/file-plus.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/src/encoder.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/src/recorder.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/toBin/encoderWorker.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/toOgg/oggOpusEncoderWorker.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/toOgg/oggOpusEncoderWorker.js.LICENSE.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/dist/toOgg/oggOpusEncoderWorker.wasm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/doc/页面文案和提示.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/index.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/isuuse.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/src/encoder.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/src/recorder.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/template_index.ejs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toBin/LICENSE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toBin/alawmulaw.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toBin/bitdepth.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toBin/encoderWorker.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toOgg/LICENSE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toOgg/oggOpusEncoderWorker.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/jsAudioConverter/toOgg/oggOpusEncoderWorker.wasm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -14,38 +81,17 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="SPLIT">
-              <first_editor relative-caret-position="374">
-                <caret line="20" column="19" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="376">
-              <caret line="179" column="44" lean-forward="true" selection-start-line="179" selection-start-column="44" selection-end-line="179" selection-end-column="44" />
+            <state relative-caret-position="680">
+              <caret line="161" column="52" selection-start-line="161" selection-start-column="12" selection-end-line="161" selection-end-column="52" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="430">
-              <caret line="63" selection-start-line="63" selection-end-line="63" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/Béziercurve/readme.md">
+      <file leaf-file-name="页面文案和提示.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/doc/页面文案和提示.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
               <first_editor />
@@ -54,12 +100,68 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="鼠标轨迹.md" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/鼠标轨迹.md">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/index.html">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="544">
+              <caret line="64" column="17" selection-start-line="64" selection-start-column="17" selection-end-line="64" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="template_index.ejs" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/template_index.ejs">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="306">
-                <caret line="51" column="14" selection-start-line="51" selection-start-column="14" selection-end-line="51" selection-end-column="14" />
+              <first_editor />
+              <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="grid.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/grid.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3240">
+              <caret line="120" column="13" selection-start-line="120" selection-start-column="13" selection-end-line="120" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5184">
+              <caret line="192" column="52" selection-start-line="192" selection-start-column="11" selection-end-line="192" selection-end-column="52" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="lib.es5.d.ts" pinned="false" current-in-tab="false">
+        <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es5.d.ts">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="729">
+              <caret line="40" column="17" selection-start-line="40" selection-start-column="17" selection-end-line="40" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="3564">
+                <caret line="132" column="70" selection-start-line="132" selection-start-column="70" selection-end-line="132" selection-end-column="70" />
               </first_editor>
               <second_editor />
             </state>
@@ -71,8 +173,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="HTML File" />
         <option value="JavaScript File" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -84,9 +186,17 @@
       <find>PWA</find>
       <find>startClip</find>
       <find>console</find>
+      <find>penFlag</find>
+      <find>drawTable</find>
+      <find>endX</find>
+      <find>changeCanvasPosition</find>
+      <find>toolbar.style.left</find>
+      <find>lastImage</find>
+      <find>textBox</find>
     </findStrings>
     <replaceStrings>
       <replace />
+      <replace>context.</replace>
     </replaceStrings>
     <dirStrings>
       <dir>E:\private\js-samples-demo\src\contents\webhid-demo\js</dir>
@@ -120,9 +230,14 @@
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/index.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/mousePostion.js" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/drawFocusIfNeeded.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/text.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/白板.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/获取区域位置.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" />
-        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/grid.html" />
         <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
@@ -135,14 +250,15 @@
   </component>
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths>
+      <path value="$PROJECT_DIR$/src/contents/jsAudioConverter/package.json" />
       <path value="$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/package.json" />
     </packageJsonPaths>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-7" />
-    <option name="y" value="2" />
-    <option name="width" value="1932" />
-    <option name="height" value="1045" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="56" />
+    <option name="y" value="47" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -150,6 +266,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -173,24 +290,15 @@
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
+              <item name="jsAudioConverter" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
               <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="drawingBoard" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="drawingBoard" type="462c0819:PsiDirectoryNode" />
-              <item name="asset" type="462c0819:PsiDirectoryNode" />
+              <item name="jsAudioConverter" type="462c0819:PsiDirectoryNode" />
+              <item name="doc" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
@@ -211,30 +319,29 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editorconfig.notification" value="t.editorconfigrue" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Html-demo" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\asset" />
-      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo" />
-      <recent name="E:\private\js-samples-demo\src\contents\webhid\webHid-demo-electron" />
-      <recent name="E:\private\js-samples-demo\src\contents\recordVideo" />
-      <recent name="E:\private\js-samples-demo\src\contents" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="E:\private\js-samples-demo\src\contents\mousePostion" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents" />
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\asset" />
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo" />
+      <recent name="E:\private\js-samples-demo\src\contents\webhid\webHid-demo-electron" />
+      <recent name="E:\private\js-samples-demo\src\contents\recordVideo" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -276,43 +383,35 @@
       <workItem from="1681807516463" duration="23485000" />
       <workItem from="1683508199375" duration="32669000" />
       <workItem from="1683594697400" duration="20661000" />
+      <workItem from="1683768006506" duration="15250000" />
+      <workItem from="1687233612206" duration="163000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="135438000" />
+    <option name="totallyTimeSpent" value="181999000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="56" y="47" width="1936" height="1056" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.20600632" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1564805" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.3293348" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.3293348" />
+      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.14612868" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20969442" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.3762268" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -333,58 +432,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/index.html">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/newspaper.svg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen-144.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/homescreen.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/images/newspaper.svg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/article.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/main.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/manifest.json" />
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/article.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="324">
-          <caret line="12" column="81" selection-start-line="12" selection-start-column="81" selection-end-line="12" selection-end-column="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="351">
-          <caret line="13" column="81" selection-start-line="13" selection-start-column="81" selection-end-line="13" selection-end-column="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/manifest.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="17" column="5" selection-start-line="13" selection-start-column="4" selection-end-line="17" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter-5/look-and-feel/images/denglun.jpg" />
     <entry file="file://$PROJECT_DIR$/src/contents/PWA_demo/chapter1/progressive-times/js/register.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
@@ -531,8 +578,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-11612">
-          <caret line="122" column="13" lean-forward="true" selection-start-line="122" selection-start-column="13" selection-end-line="122" selection-end-column="13" />
+        <state relative-caret-position="1323">
+          <caret line="131" column="13" lean-forward="true" selection-start-line="131" selection-start-column="13" selection-end-line="131" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -547,7 +594,7 @@
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/鼠标轨迹.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="306">
+          <first_editor relative-caret-position="1377">
             <caret line="51" column="14" selection-start-line="51" selection-start-column="14" selection-end-line="51" selection-end-column="14" />
           </first_editor>
           <second_editor />
@@ -557,41 +604,118 @@
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/BézierCurve_sample/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="374">
+          <first_editor relative-caret-position="540">
             <caret line="20" column="19" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/asset/eraser-20.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.dom.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="673">
-          <caret line="623" column="1" selection-start-line="623" selection-start-column="1" selection-end-line="623" selection-end-column="1" />
+        <state relative-caret-position="424359">
+          <caret line="15730" column="12" selection-start-line="15730" selection-start-column="12" selection-end-line="15730" selection-end-column="12" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es5.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="729">
+          <caret line="40" column="17" selection-start-line="40" selection-start-column="17" selection-end-line="40" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/drawFocusIfNeeded.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="355">
+          <caret line="23" column="31" selection-start-line="23" selection-start-column="31" selection-end-line="23" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/text.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="8" column="22" lean-forward="true" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/白板.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="50" column="32" lean-forward="true" selection-start-line="50" selection-start-column="32" selection-end-line="50" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/获取区域位置.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="517">
+          <caret line="49" column="6" lean-forward="true" selection-start-line="21" selection-start-column="4" selection-end-line="49" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/asset/logo_16x16.png">
+      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="1431">
-            <caret line="53" column="45" lean-forward="true" selection-start-line="53" selection-start-column="45" selection-end-line="53" selection-end-column="45" />
+          <first_editor relative-caret-position="3564">
+            <caret line="132" column="70" selection-start-line="132" selection-start-column="70" selection-end-line="132" selection-end-column="70" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/grid.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="430">
-          <caret line="63" selection-start-line="63" selection-end-line="63" />
+        <state relative-caret-position="3240">
+          <caret line="120" column="13" selection-start-line="120" selection-start-column="13" selection-end-line="120" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5184">
+          <caret line="192" column="52" selection-start-line="192" selection-start-column="11" selection-end-line="192" selection-end-column="52" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="376">
-          <caret line="179" column="44" lean-forward="true" selection-start-line="179" selection-start-column="44" selection-end-line="179" selection-end-column="44" />
+        <state relative-caret-position="680">
+          <caret line="161" column="52" selection-start-line="161" selection-start-column="12" selection-end-line="161" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/doc/页面文案和提示.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/template_index.ejs">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/jsAudioConverter/index.html">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="544">
+          <caret line="64" column="17" selection-start-line="64" selection-start-column="17" selection-end-line="64" selection-end-column="17" />
         </state>
       </provider>
     </entry>

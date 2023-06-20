@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #grid-container {
+            width: 150px;
+            height: 150px;
+            display: grid;
+            /* grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr); */
+        }
+        .draggable-element {
+            /* some styles for element */
+            user-select: none;
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            text-align: center;
+            outline: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+<div id="grid-container"></div>
+<script>
+    let elements = '';
+    let offset = { x: 0, y: 0 };
+    let isDragging = false;
+    let column = 3
+    let columnWidth = 50
+    let dataArray = [
+        {
+            label: '1',
+            value: '1'
+        },
+        {
+            label: '2',
+            value: '2'
+        },
+        {
+            label: '3',
+            value: '3'
+        },
+        {
+            label: '4',
+            value: '4'
+        },
+        {
+            label: '5',
+            value: '5'
+        },
+        {
+            label: '6',
+            value: '6'
+        },
+        {
+            label: '7',
+            value: '7'
+        },
+        {
+            label: '8',
+            value: '8'
+        },
+        {
+            label: '9',
+            value: '9'
+        }
+    ];
+    let dataCloneArray = deepClone(dataArray);
+    let type = 'resort' // 拖拽类型：重排resort/替换replace
+    function init() {
+        let parentElement = document.getElementById('grid-container')
+        parentElement.style.gridTemplateAreas = joinGridArea();
+        parentElement.innerHTML = '';
+        dataCloneArray.forEach( (item, index) => {
+            let element = document.createElement('div');
+            element.id = `element-${item.label}`;
+            element.classList.add("draggable-element");
+            element.innerText = item.value;
+            element.style.color = 'red';
+            element.style.gridArea = `area-${index}`;
+            parentElement.appendChild(element);
+        });
+        elements = document.getElementsByClassName("draggable-element")
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].addEventListener("mousedown", startDrag);
+            elements[i].addEventListener("mousemove", doDrag);
+            elements[i].addEventListener("mouseup", stopDrag);
+
+        }
+    }
+    init();
+
+    // grid style拼接
+    function joinGridArea() {
+        const len = dataCloneArray.length
+        let areaStr = ''
+        for (let i = 0; i < len; i++) {
+            if (i % column === 0) {
+                areaStr += '"area-' + i + ' '
+                if (column === 1) {
+                    areaStr += '"'
+                }
+            } else if (i % column === column - 1) {
+                areaStr += 'area-' + i + '"'
+            } else {
+                areaStr += 'area-' + i + ' '
+            }
+        }
+        if (len % column !== 0) {
+            const emptyLength = column - (len % column)
+            areaStr += new Array(emptyLength).fill('.').join(' ') + '"'
+        }
+        return areaStr
+    }
+
+    function startDrag(event) {
+        let element = event.target;
+        element.style.boxShadow = '#e6e6e6 0 0 10px 10px';
+        element.style.zIndex = 100;
+        element.style.position = 'relative';
+        element.style.left = '0px';
+        element.style.top = '0px';
+        isDragging = true;
+        offset.x = event.clientX ;
+        offset.y = event.clientY;
+    }
+
+    function doDrag(event) {
+        if (isDragging) {
+            let x = event.clientX - offset.x
+            let y = event.clientY - offset.y
+            let element = event.target;
+            const { minX, maxX, minY, maxY } = getRangeOfEl(element)
+            // console.log(maxX, maxY, minX, minY);
+            x = x < minX ? minX : (x > maxX ? maxX : x)
+            y = y < minY ? minY : (y > maxY ? maxY : y)
+            // console.log(x, y);
+            requestAnimationFrame(() => {
+                element.style.left = x  + "px";
+                element.style.top = y  + "px";
+            });
+        }
+    }
+
+    function stopDrag(event) {
+        isDragging = false;
+        let element = event.target;
+        element.style.boxShadow = 'none';
+        changeBlock(element)
+    }
+
+    // 计算当前元素可移动的区域
+    function getRangeOfEl(moveEl) {
+        const index = parseInt(moveEl.style.gridArea.split(' / ')[0].split('-')[1])
+        const res = {}
+        const currentColummn = index % column
+        const allRow = Math.ceil(dataCloneArray.length / column)
+        const currentRow = Math.floor(index / column)
+        res.minX = -((moveEl.offsetWidth) * currentColummn)
+        res.maxX = (column - currentColummn - 1) * (moveEl.offsetWidth + 5)
+        res.minY = -((moveEl.offsetHeight + 5) * currentRow)
+        res.maxY = (allRow - currentRow - 1) * (moveEl.offsetHeight + 5)
+        return res
+    }
+
+    // 拖拽结束时重排数据或者替换数据
+    function changeBlock(moveEl) { // 将方块移入到对应的区域中
+        const { nowIndex, index } = getIndexOfMoveEL(moveEl)
+        console.log(nowIndex, index);
+        if (type === 'replace') {
+            const temp = dataCloneArray[index]
+            dataCloneArray[index] = dataCloneArray[nowIndex]
+            dataCloneArray[nowIndex] = temp
+        } else {
+            let element = dataCloneArray.splice(index, 1)[0]
+            dataCloneArray.splice(nowIndex, 0, element)
+        }
+        moveEl.style.left = 0
+        moveEl.style.top = 0
+        dataArray = dataCloneArray
+        init()
+    }
+    // 拖拽时根据位置计算位置
+    // 返回当前的位置和之前的位置
+    function getIndexOfMoveEL(moveEl) {
+        const x = parseInt(moveEl.style.left.split('px')[0])
+        const y = parseInt(moveEl.style.top.split('px')[0])
+        const index = parseInt(moveEl.style.gridArea.split(' / ')[0].split('-')[1])
+        console.log(x, y, index);
+        let nowIndex = 0
+        if (x < 0) {
+            nowIndex = index - (Math.round(Math.abs(x) / moveEl.offsetWidth))
+        } else {
+            nowIndex = index + (Math.round(Math.abs(x) / moveEl.offsetWidth))
+        }
+        if (y < 0) {
+            nowIndex = nowIndex - (Math.round(Math.abs(y) / moveEl.offsetHeight)) * column
+        } else {
+            nowIndex = nowIndex + (Math.round(Math.abs(y) / moveEl.offsetHeight)) * column
+        }
+        return { nowIndex, index }
+    }
+    // 深度克隆函数
+    function deepClone(obj) {
+        if (obj === null || typeof obj !== "object") return obj;
+        if (obj instanceof Date) return new Date(obj);
+        if (obj instanceof RegExp) return new RegExp(obj);
+        if (obj instanceof Set) return new Set(obj);
+        if (obj instanceof Map) return new Map(obj);
+        if (obj instanceof Array) {
+            let clone = [];
+            for (let i = 0; i < obj.length; i++) {
+                clone[i] = deepClone(obj[i]);
+            }
+            return clone;
+        }
+        let clone = {};
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                clone[key] = deepClone(obj[key]);
+            }
+        }
+        return clone;
+    }
+
+</script>
+
+</body>
+</html>
+

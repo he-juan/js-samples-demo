@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ringtone file converter</title>
+    <link rel="icon" sizes="192x192" href="assets/images/favicon.png">
+    <link href="assets/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div class="maintop">
+    <img src="assets/images/560X120.png">
+</div>
+
+<div class="content">
+    <div class="header">
+        <div class="tip">
+            <span class="tip-icon"></span>
+            <span class="tip-text"></span>
+        </div>
+        <h1>Ringtone file online converter</h1>
+        <p>Convert audio files to ogg or bin format with this free and fast online converter</p>
+    </div>
+
+    <!--文件转换-->
+    <div id="fileConversion">
+        <div class="fileInfo">
+            <div class="uploadedFile">
+                <div class="left">
+                    <div class="audioFileIcon"></div>
+                    <span class="fileName"></span>
+
+                    <div id="player">
+                        <audio controls="" src=""></audio>
+                    </div>
+                </div>
+
+                <div class="right">
+                    <div class="duration">
+                        <label>GRP model:</label>
+                        <select id="grpModel">
+                            <option value="ogg">GRP260X</option>
+                            <option value="bin">GRP261P</option>
+                            <option value="bin">GXP</option>
+                            <option value="custom">Customize</option>
+                        </select>
+
+                        <label>| Output format:</label>
+                        <select id="outputFormat" disabled>
+                            <option value="ogg">ogg</option>
+                            <option value="bin">gsbin</option>
+                        </select>
+
+                        <label>| Recording duration</label>
+                        <input type="range" min="1" max="30" value="30" title="This sets the duration of the recording files and limits the ringtone length to 1 - 30 seconds.">
+                        <span class="durationShow">30</span>s
+
+                        <label>| Audio fade out</label>
+                        <input id="audioFadeOut" type="checkbox" value="" checked />
+                    </div>
+                </div>
+            </div>
+
+            <!--  进度条  -->
+            <div id="progress"></div>
+
+            <div class="switchConfirm">
+                <button id="fileSwitch">Convert</button>
+                <button id="startOver">Start over</button>
+            </div>
+        </div>
+    </div>
+
+    <!--文件上传-->
+    <div id="fileUploadContent">
+        <div class="fileIcon">
+            <span class="fileOpen"></span>
+            <p>You can drag the file directly here.</p>
+        </div>
+        <div class="select">
+            <button id="selectButton">
+                <span class="filePlus"></span>
+                Select the file to upload
+            </button>
+            <input type="file" id="uploadFile" />
+        </div>
+    </div>
+
+    <!-- 日志打印   -->
+    <div class="console">
+        <div class="consoleHeader">Console</div>
+        <div id="consoleLog"></div>
+    </div>
+</div>
+
+<footer class="app-footer">
+    <section class="foot">
+        <h3>Copyright © Grandstream Networks, Inc. 2023. All Rights Reserved.</h3>
+    </section>
+</footer>
+
+<!--预加载-->
+<script type="application/javascript" src="toBin/encoderWorker.js"></script>
+<script type="application/javascript" src="toOgg/oggOpusEncoderWorker.js"></script>
+<!--预加载结束-->
+
+<script type="text/javascript" src="src/recorder.js"></script>
+<script type="text/javascript" src="src/encoder.js"></script>
+<script type="text/javascript" src="index.js"></script>
+</body>
+</html>

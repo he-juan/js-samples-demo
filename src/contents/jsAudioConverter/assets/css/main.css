@@ -1,0 +1,320 @@
+@font-face {
+    font-family: "BankGothicLightBT"; /* Project id 2604145 */
+    src: url('../BankGothic/Bank Gothic Light BT.ttf')
+}
+@font-face {
+    font-family: "BankGothicMediumBT"; /* Project id 2604145 */
+    src: url('../BankGothic/Bank Gothic Medium BT.ttf')
+}
+@font-face {
+    font-family: "BankGothicLtBTLight"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothic Lt BT Light.ttf')
+}
+@font-face {
+    font-family: "BankGothicMdBTMedium"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothic Md BT Medium.ttf')
+}
+@font-face {
+    font-family: "BankGothicRUSSMedium"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothic RUSS Medium.ttf')
+}
+@font-face {
+    font-family: "BankGothicRegular"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothic-Regular.ttf')
+}
+@font-face {
+    font-family: "BankGothicRegularDB"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothic-Regular DB.ttf')
+}
+@font-face {
+    font-family: "BankGothicCLtBTLight"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothicCLtBT-Light.otf')
+}
+@font-face {
+    font-family: "BankGothicCMdBTMedium"; /* Project id 2604145 */
+    src: url('../BankGothic/BankGothicCMdBT-Medium.otf')
+}
+
+.maintop{
+    padding: 0 2%;
+}
+.maintop img{
+    max-width: 280px;
+}
+.app-footer{
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    color: #bcbcbd;
+    width: 100%;
+    font-size: 10px;
+    text-align: center;
+    background: #1f4574;
+}
+.foot h3{
+    font-weight: 400;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+html, body{
+    margin: 0 auto;
+    overflow: auto;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.content{
+    width: 55%;
+    min-width: 950px;
+    margin: 0 auto;
+}
+button:hover{
+    cursor:pointer;
+    opacity: 0.8;
+}
+button:disabled{
+    cursor: not-allowed;
+}
+.tip{
+    opacity: 0;
+    width: fit-content;
+    margin: 0 auto;
+    height: 35px;
+    line-height: 35px;
+    box-shadow: 1px 1px 12px #bdb9b9;
+    font-size: 14px;
+    border-radius: 4px;
+    padding: 0 50px;
+}
+.tip-icon{
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 18px;
+    vertical-align: middle;
+    margin-top: -4px;
+    color: #4caf50;
+}
+.tip-icon-complete{
+    background-image: url(../images/complete.svg);
+}
+.tip-icon-close{
+    background-image: url(../images/close-circle-outline.svg);
+}
+.header{
+    text-align: center;
+    margin: 0 0 50px 0;
+}
+.header p{
+    color: gray;
+    font-size: 14px;
+}
+#fileUploadContent{
+    padding: 50px 0;
+    text-align: center;
+    color: #288ef6;
+    border-radius: 10px;
+    border: 2px dashed #288ef6;
+    background: #fbfdff;
+    position: relative;
+    z-index: 999;
+}
+.fileIcon{
+    margin: 40px 0 -20px 0;
+}
+.fileOpen{
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    background-image: url(../images/file-open.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+    margin-top: -4px;
+    color: #4caf50;
+}
+button{
+    background-color: #fff;
+    border: 1px solid #288ef6;
+    font-size: 16px;
+    height: 45px;
+    width: 300px;
+    color: #288ef6;
+    border-radius: 4px;
+    vertical-align: middle;
+    text-align: center;
+    line-height: 23px;
+    font-weight: bold;
+}
+.select{
+    height: 130px;
+    line-height: 130px;
+    margin: 0 auto;
+    text-align: center;
+}
+#uploadFile{
+    display: none;
+}
+
+.filePlus{
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    background-image: url(../images/file-plus.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+    margin-top: -4px;
+    color: #4caf50;
+}
+/********************************************** 文件转换 **************************************************/
+#fileConversion{
+    margin: 50px 0;
+    display: none;
+}
+.fileInfo{
+    margin-top: 55px;
+    box-shadow: 1px 1px 12px #bdb9b9;
+    border-radius: 10px;
+}
+.uploadedFile{
+    /*height: 100px;*/
+    border-bottom: 2px solid #f1f1f1;
+    line-height: 90px;
+    font-size: 14px;
+    padding: 20px;
+}
+.left{
+    /*float: left;*/
+    text-align: left;
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+}
+.audioFileIcon{
+    width: 45px;
+    height: 40px;
+    float: left;
+    display: inline-block;
+    margin: 0 auto;
+    text-align: center;
+    background-image: url(../images/file-audio.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 40px;
+    cursor: pointer;
+}
+.fileName{
+    /*width: 200px;*/
+    overflow: hidden;
+    display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+.right{
+    width: 100%;
+    line-height: 50px;
+    text-align: left;
+    margin-left: 10px
+}
+select{
+    min-width: 90px;
+    height: 25px;
+    background-color: #ffffff;
+    border: solid 1px #cfcfcf;
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    letter-spacing: normal;
+    text-align: left;
+    color: #3d3d3d;
+    padding-left: 10px;
+    -webkit-appearance: none;
+    outline: none;
+    border-radius: 3px;
+}
+select:disabled{
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #878787;
+    color: aliceblue;
+    border: solid 2px #000000;
+}
+input:disabled{
+    /*border:1px solid #DDD;*/
+    /*background-color:#F5F5F5;*/
+    /*color:#ACA899;*/
+    opacity: 0.5;
+}
+.duration{
+    clear: both;
+}
+.duration input[type="range"]{
+    vertical-align: middle;
+    width: 80px;
+}
+.duration label{
+    font-weight: bold;
+}
+#audioFadeOut{
+    vertical-align: baseline;
+}
+#progress{
+    height: 5px;
+    background: #288ef6;
+    width: 0;
+    margin-top: -2px;
+}
+#player{
+    display: none;
+    float: right;
+}
+#player audio{
+    vertical-align: middle;
+    height: 40px;
+}
+.switchConfirm{
+    margin: 0 auto;
+    text-align: center;
+    line-height: 110px;
+}
+.switchConfirm button{
+    margin: 0 auto;
+    background: #288ef6;
+    color: aliceblue;
+}
+#startOver{
+    margin-left: 40px;
+}
+/********************************************** 控制台 **************************************************/
+.console{
+    display: none;
+    clear: both;
+    box-shadow: 1px 1px 12px #bdb9b9;
+    margin: 50px 0;
+    background: #f8f8fa;
+    border-radius: 10px;
+}
+.consoleHeader{
+    height: 50px;
+    line-height: 50px;
+    margin: auto;
+    border-bottom: 2px solid #f1f1f1;
+    font-weight: bold;
+    padding: 0 20px;
+}
+#consoleLog{
+    color: #9e9e9e;
+    padding: 20px;
+}
+#consoleLog p{
+    margin: 5px;
+    font-size: 14px;
+}
