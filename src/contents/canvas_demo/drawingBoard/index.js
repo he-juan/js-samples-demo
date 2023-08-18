@@ -373,10 +373,10 @@ var changeCanvasPosition = function(x, y){
  * @return  yRatio  = canvasStyleHeight / canvasHtmlHeight
  ***/
 var getCanvasRatio = function(){
-    let cavasHtmlWidth = canvas.width
+    let canvasHtmlWidth = canvas.width
     let canvasHtmlHeight = canvas.height
     let { width: canvasStyleWidth, height: canvasStyleHeight} = canvas.getBoundingClientRect()
-    let xRatio = canvasStyleWidth / cavasHtmlWidth
+    let xRatio = canvasStyleWidth / canvasHtmlWidth
     let yRatio  = canvasStyleHeight / canvasHtmlHeight
 
     return {xRatio, yRatio}
@@ -518,9 +518,9 @@ var drawClear = function(){
 var fullOrExit = function(){
     initDraw("fullOrExit")
     toggleFullscreen()
-    canvas.lastImage = canvas.toDataURL('image/png')
-    fullBtn.style.background = "#22A6F2";
-    fullBtn.style.color = "#eee";
+    // canvas.lastImage = canvas.toDataURL('image/png')
+    // fullBtn.style.background = "#22A6F2";
+    // fullBtn.style.color = "#eee";
 }
 
 /***************************************************************全屏********************************************************************/
@@ -659,24 +659,25 @@ function togglePictureInPicture(isStopScreen = null) {
 
 /******************************************************************监听 当前页面video宽高的变化 ************************************************************************/
 const resizeObserver = new ResizeObserver((entries) => {
-    for (const entry of entries) {
-        if (entry.contentBoxSize) {
-            canvas.style.width = entry.contentBoxSize[0].inlineSize + 'px'
-            canvas.style.height = entry.contentBoxSize[0].blockSize + 'px'
-        } else {
-            canvas.style.width = entry.contentRect.width + 'px'
-            canvas.style.height = entry.contentRect.height + 'px'
+    window.requestAnimationFrame(() => {
+        for (const entry of entries) {
+            if (entry.contentBoxSize) {
+                canvas.style.width = entry.contentBoxSize[0].inlineSize + 'px'
+                canvas.style.height = entry.contentBoxSize[0].blockSize + 'px'
+            } else {
+                canvas.style.width = entry.contentRect.width + 'px'
+                canvas.style.height = entry.contentRect.height + 'px'
+            }
         }
-    }
-    canvasPos = canvas.getBoundingClientRect()
+        canvasPos = canvas.getBoundingClientRect()
 
-    // setTimeout(function(){
-    //     canvas.initCanvas()
-    // },800)
-    console.log('Size changed');
+        console.log('Size changed');
+    })
+
 });
 
-resizeObserver.observe(videoContainter);
+// resizeObserver.observe(videoContainter);
+resizeObserver.observe(presentVideo);
 
 
 /************************************************************** 工具栏移动、拖拽***************************************************************************************/
@@ -810,4 +811,16 @@ document.onkeydown = function(event){
 
 window.onload = function(){
     canvas.drawTable(ctx)
+}
+
+
+navigator.mediaDevices.getDisplayMedia({video:{width:1920, height: 1080}}).then(function(stream){
+    presentVideo.srcObject = stream
+})
+
+presentVideo.onloadedmetadata = function(){
+    presentVideo.play()
+    let {width, height} = presentVideo.getBoundingClientRect()
+    canvas.style.width  = width + 'px'
+    canvas.style.height = height + 'px'
 }

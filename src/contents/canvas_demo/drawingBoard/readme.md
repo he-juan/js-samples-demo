@@ -127,7 +127,53 @@
  
     - [如何正确设置canvas尺寸，以及如何在高分辨率屏幕上清晰显示canvas图形](https://segmentfault.com/a/1190000020189168)
  
- ## 四、案例demo
+ 
+ ## 四、关于全屏放大缩小canvas和video位置一致问题：
+ 
+     <video  class="fitWidth localVideo" ></video>
+     <canvas class="canvas" width="1600px" height="1600px"></canvas>
+     
+     
+  - 关于canvas 和 video显示画面起点一致问题：
+    - 默认情况下，video和canvas的width和height都设置成100%；
+   
+        ```javascript
+            width:100%;
+            height:100%;
+      
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        ```   
+    - 对video设置css样式：
+    
+        ```javascript
+           .localVideo{
+                height: auto;
+                max-width: calc(100%);
+            }
+           .fitWidth {
+               height: 100%;
+               width: auto;
+           }
+        ```      
+    - 当获取流成功，放在video中后,需要通过css样式去获取video的真实宽高,且给canvas的style.width 去设置对应的宽高； 即放大缩小都针对改变宽高值。
+    
+        ```javascript
+        navigator.mediaDevices.getDisplayMedia({video:{width:1920, height: 1080}}).then(function(stream){
+            presentVideo.srcObject = stream
+        })
+        
+        presentVideo.onloadedmetadata = function(){
+            presentVideo.play()
+            let {width, height} = presentVideo.getBoundingClientRect()
+            canvas.style.width  = width + 'px'
+            canvas.style.height = height + 'px'
+        }
+        ```
+ 
+ ## 五、案例demo
   - [canvas小画板——（1）平滑曲线](https://www.cnblogs.com/fangsmile/p/13427794.html)
   - [canvas可视化效果之内阴影效果](https://www.cnblogs.com/flyfox1982/p/14171581.html)
   - [canvas 画板](https://github.com/xpyjs/javascript-canvas-paint-demo)

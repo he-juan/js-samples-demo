@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * { margin: 0; padding: 0;}
+
+        body, html { height:100%; }
+
+        #canvas {
+            position:absolute;
+            height:50%;
+            background-color: #d0d9d4;
+            margin-left:100px;
+            background-image:url('he.gif');
+            background-position: right bottom, left top;
+            background-repeat: no-repeat, repeat;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width=1920 height=1080></canvas>
+    <script>
+
+
+
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var canvasPos = canvas.getBoundingClientRect()
+        var canvasOld = canvas.getBoundingClientRect()
+
+
+        context.fillStyle="orange";
+        context.fillRect(50,50,100,100);
+        context.fillRect(1625,800,100,100);
+
+        // 保持之前位置和现在位置一致的函数
+        function restorePosition() {
+            var previousState = JSON.parse(localStorage.getItem('canvasState')); // 从本地存储中获取之前的状态
+            if (previousState) {
+                canvas.width = previousState.width; // 恢复Canvas的宽度
+                canvas.height = previousState.height; // 恢复Canvas的高度
+
+                context.clearRect(0, 0, canvas.width, canvas.height); // 清除绘制内容
+
+                // var scaleX = canvas.width / previousState.width; // 计算宽度的缩放比例
+                // var scaleY = canvas.height / previousState.height; // 计算高度的缩放比例
+                var canvasNew = canvas.getBoundingClientRect()
+                var scaleX = canvasNew.width / canvasOld.width; // 计算宽度的缩放比例
+                var scaleY = canvasNew.height / canvasOld.height; // 计算高度的缩放比例
+
+                console.warn("scaleX:",scaleX + " * " + scaleY)
+                // 对之前绘制的对象进行缩放和转换
+                for (var i = 0; i < previousState.objects.length; i++) {
+                    var object = previousState.objects[i];
+                    if (object.type === 'rectangle') { // 假设之前的对象是一个矩形
+                        console.warn("draw draw:",object.x * scaleX, object.y * scaleY, object.width * scaleX, object.height * scaleY)
+                        context.fillStyle = object.color;
+                        context.fillRect(object.x * scaleX, object.y * scaleY, object.width * scaleX, object.height * scaleY);
+                    }
+                    // ... 其他对象的绘制
+                }
+            }
+        }
+
+        // 全屏时保存状态
+        function saveState() {
+            var canvasState = {
+                width: canvas.width,
+                height: canvas.height,
+                objects: []
+            };
+            // 保存之前绘制的对象，可以根据实际需要添加更多属性和对象类型
+            var objects = canvas.querySelectorAll('.object');
+            for (var i = 0; i < objects.length; i++) {
+                var object = objects[i];
+                canvasState.objects.push({
+                    type: 'rectangle', // 假设之前的对象是一个矩形
+                    x: object.getAttribute('data-x'),
+                    y: object.getAttribute('data-y'),
+                    width: object.getAttribute('data-width'),
+                    height: object.getAttribute('data-height'),
+                    color: object.getAttribute('data-color')
+                });
+            }
+            localStorage.setItem('canvasState', JSON.stringify(canvasState)); // 将Canvas状态保存到本地存储中
+        }
+
+        // 退出全屏时恢复位置
+        function exitFullscreen() {
+            // 保存Canvas状态
+            saveState();
+            // 退出全屏
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        // 进入全屏时恢复位置
+        function enterFullscreen() {
+            // 保存Canvas状态
+            saveState();
+            // 进入全屏
+            if (canvas.requestFullscreen) {
+                canvas.requestFullscreen();
+            } else if (canvas.mozRequestFullScreen) {
+                canvas.mozRequestFullScreen();
+            } else if (canvas.webkitRequestFullscreen) {
+                canvas.webkitRequestFullscreen();
+            } else if (canvas.msRequestFullscreen) {
+                canvas.msRequestFullscreen();
+            }
+        }
+
+        // 监听全屏状态变化
+        document.addEventListener('fullscreenchange', function() {
+            if (document.fullscreenElement) {
+                // 全屏时
+                restorePosition();
+                // 添加其他全屏时的处理逻辑
+            } else {
+                // 退出全屏时
+                restorePosition();
+                // 添加其他退出全屏时的处理逻辑
+            }
+        });
+
+        // 在Canvas上添加对象的示例
+        var obj = document.createElement('div');
+        obj.classList.add('object');
+        obj.setAttribute('data-x','50')
+        obj.setAttribute('data-y','50')
+        obj.setAttribute('data-width','100')
+        obj.setAttribute('data-height','100')
+        obj.setAttribute('data-color','orange')
+        obj.style.position = 'absolute';
+        obj.style.left = '100px';
+        obj.style.top = '100px';
+        obj.style.width = '200px';
+        obj.style.height = '100px';
+        obj.style.backgroundColor = 'red';
+        canvas.appendChild(obj);
+
+        context.fillRect(1625,800,100,100);
+        var obj = document.createElement('div');
+        obj.classList.add('object');
+        obj.setAttribute('data-x','1625')
+        obj.setAttribute('data-y','800')
+        obj.setAttribute('data-width','100')
+        obj.setAttribute('data-height','100')
+        obj.setAttribute('data-color','orange')
+        obj.style.position = 'absolute';
+        canvas.appendChild(obj);
+
+        // 现在可以在Canvas上绘制新的图形和内容，并保持位置一致
+
+
+
+        var getCanvasRatio = function(){
+            let cavasHtmlWidth = canvas.width
+            let canvasHtmlHeight = canvas.height
+            let { width: canvasStyleWidth, height: canvasStyleHeight} = canvas.getBoundingClientRect()
+            let xRatio = canvasStyleWidth / cavasHtmlWidth
+            let yRatio  = canvasStyleHeight / canvasHtmlHeight
+
+            return {xRatio, yRatio}
+        }
+
+        function drawTable(context) {
+            let gridSize = 50
+            let getRatio = getCanvasRatio()
+            let row = parseInt(canvasPos.height / gridSize) / getRatio.xRatio;
+            let col = parseInt(canvasPos.width / gridSize) / getRatio.yRatio;
+
+            for (let i = 0; i < row; i++) {
+                context.beginPath();
+                context.moveTo(0, (i * gridSize - 0.5) / getRatio.yRatio);
+                context.lineTo(canvasPos.width / getRatio.xRatio, (i * gridSize - 0.5) / getRatio.yRatio);
+                context.strokeStyle = "#ccc";
+                context.stroke();
+            }
+            for (let i = 0; i < col; i++) {
+                // context.beginPath();
+                context.moveTo((i * gridSize - 0.5) / getRatio.xRatio, 0);
+                context.lineTo((i * gridSize - 0.5) / getRatio.xRatio, canvasPos.height / getRatio.yRatio);
+                context.strokeStyle = "#ccc";
+                context.stroke();
+            }
+        }
+
+        // window.onload = function(){
+
+            drawTable(context)
+        // }
+    </script>
+</body>
+</html>
