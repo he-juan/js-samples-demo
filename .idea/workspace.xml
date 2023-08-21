@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/canvas_test.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/test.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -24,24 +21,26 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="24">
+            <state relative-caret-position="1272">
               <caret line="53" column="12" selection-start-line="53" selection-start-column="12" selection-end-line="53" selection-end-column="12" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="170" column="75" lean-forward="true" selection-start-line="169" selection-start-column="11" selection-end-line="170" selection-end-column="75" />
+            <state relative-caret-position="277">
+              <caret line="173" column="47" selection-start-line="173" selection-start-column="47" selection-end-line="173" selection-end-column="47" />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="canvas_test.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/canvas_test.html">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3456" />
+          </provider>
         </entry>
       </file>
       <file leaf-file-name="test.html" pinned="false" current-in-tab="false">
@@ -49,12 +48,12 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file leaf-file-name="readme.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="readme.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="187">
-                <caret line="132" column="3" selection-start-line="132" selection-start-column="3" selection-end-line="132" selection-end-column="3" />
+              <first_editor relative-caret-position="3288">
+                <caret line="137" column="39" selection-start-line="137" selection-start-column="39" selection-end-line="137" selection-end-column="39" />
               </first_editor>
               <second_editor />
             </state>
@@ -64,8 +63,8 @@
       <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="232">
-              <caret line="816" selection-start-line="816" selection-end-line="825" selection-end-column="1" />
+            <state relative-caret-position="349">
+              <caret line="826" column="38" lean-forward="true" selection-start-line="826" selection-start-column="38" selection-end-line="826" selection-end-column="38" />
             </state>
           </provider>
         </entry>
@@ -140,9 +139,9 @@
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/获取区域位置.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/grid.html" />
         <option value="$PROJECT_DIR$/index.html" />
-        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" />
-        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" />
       </list>
     </option>
   </component>
@@ -170,6 +169,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -216,7 +216,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -283,11 +282,12 @@
       <workItem from="1683594697400" duration="20661000" />
       <workItem from="1683768006506" duration="15250000" />
       <workItem from="1687233612206" duration="163000" />
+      <workItem from="1692582818947" duration="6567000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="187609000" />
+    <option name="totallyTimeSpent" value="196115000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -300,26 +300,16 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.26826608" />
+      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.14612868" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1564805" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.14612868" />
-      <window_info id="Favorites" order="2" side_tool="true" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -590,38 +580,40 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="24">
+        <state relative-caret-position="1272">
           <caret line="53" column="12" selection-start-line="53" selection-start-column="12" selection-end-line="53" selection-end-column="12" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/canvas_test.html">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/test.html">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="3288">
+            <caret line="137" column="39" selection-start-line="137" selection-start-column="39" selection-end-line="137" selection-end-column="39" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/canvas_test.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3456" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="232">
-          <caret line="816" selection-start-line="816" selection-end-line="825" selection-end-column="1" />
+        <state relative-caret-position="349">
+          <caret line="826" column="38" lean-forward="true" selection-start-line="826" selection-start-column="38" selection-end-line="826" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="170" column="75" lean-forward="true" selection-start-line="169" selection-start-column="11" selection-end-line="170" selection-end-column="75" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="187">
-            <caret line="132" column="3" selection-start-line="132" selection-start-column="3" selection-end-line="132" selection-end-column="3" />
-          </first_editor>
-          <second_editor />
+        <state relative-caret-position="277">
+          <caret line="173" column="47" selection-start-line="173" selection-start-column="47" selection-end-line="173" selection-end-column="47" />
         </state>
       </provider>
     </entry>

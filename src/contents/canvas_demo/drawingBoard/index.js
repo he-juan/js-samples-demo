@@ -306,8 +306,11 @@ canvas.onmousedown = function (event) {
         textBox.style['z-index'] = 100000;
     }else{
         self.isMouseDown = true
-        self.loadImage();
+        // self.loadImage();
         points.push({ x: self.startX, y: self.startY });
+    }
+    document.onmouseup = function(){
+        canvas.onmouseup()
     }
 }
 
@@ -823,4 +826,17 @@ presentVideo.onloadedmetadata = function(){
     let {width, height} = presentVideo.getBoundingClientRect()
     canvas.style.width  = width + 'px'
     canvas.style.height = height + 'px'
+
+    let videoWidth = presentVideo.videoWidth
+    let videoHeight = presentVideo.videoHeight
+    let ratio = videoWidth / videoHeight
+    if(ratio > 1.7){
+        if(presentVideo.classList.contains('fitHeight')){
+            presentVideo.classList.remove('fitHeight')
+        }
+    }else{
+        if(!presentVideo.classList.contains('fitHeight')){
+            presentVideo.classList.add('fitHeight')
+        }
+    }
 }
