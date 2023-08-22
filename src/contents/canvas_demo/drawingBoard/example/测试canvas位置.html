@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试canvas位置</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+        }
+
+        #move-content {
+            position: absolute;
+            border: 1px solid red;
+            padding: 12px;
+            z-index: 999;
+            top: 0;
+            left: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 画布 -->
+    <canvas id="canvas"></canvas>
+    <!-- 拖拽的元素 -->
+    <div id="move-content">（0， 0）</div>
+
+</body>
+<script>
+
+    let canvasDom = document.getElementById("canvas");
+    canvasDom.width = canvasDom.parentNode.clientWidth;
+    canvasDom.height = canvasDom.parentNode.clientHeight;
+    let ctx = canvasDom.getContext("2d");
+
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 1;
+
+    ctx.font = "14px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    let draggableElement = document.getElementById("move-content");
+    let isDragging = false;
+    let offset = { x: 0, y: 0 };
+
+    function clearRect(){
+        ctx.clearRect(0,0, canvasDom.width, canvasDom.height)
+    }
+    /**元素位置显示**/
+    canvasDom.addEventListener("mousemove", (event) => {
+        clearRect();
+        let react = canvasDom.getBoundingClientRect();
+        let x = event.clientX - react.left;
+        let y = event.clientY - react.top;
+
+        // 绘制十字架
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvasDom.width, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvasDom.height);
+        ctx.stroke();
+        // 绘制文本
+        ctx.fillText(`(${x}, ${y})`, x, y);
+        draggableElement.innerText = `(${x}, ${y})`
+    })
+    // 清空画布
+    canvasDom.addEventListener("mouseout", () => {
+        clearRect();
+    })
+
+
+    /********元素拖拽**********/
+    draggableElement.addEventListener("mousedown", function(event) {
+        isDragging = true;
+
+        // 计算鼠标相对于元素的偏移量
+        let rect = draggableElement.getBoundingClientRect();
+        offset.x = event.clientX - rect.left;
+        offset.y = event.clientY - rect.top;
+    });
+
+    document.addEventListener('mousemove', function(event) {
+        if (!isDragging) return;
+
+        // 阻止默认事件，避免拖拽过程中选中文本等问题
+        event.preventDefault();
+
+        // 计算元素应该移动到的位置
+        var x = event.clientX - offset.x;
+        var y = event.clientY - offset.y;
+
+        // 应用新的位置到元素
+        draggableElement.style.transform = `translate(${x}px, ${y}px)`;
+    });
+
+    document.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+
+
+</script>
+</html>

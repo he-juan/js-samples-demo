@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -31,7 +29,7 @@
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="277">
-              <caret line="173" column="47" selection-start-line="173" selection-start-column="47" selection-end-line="173" selection-end-column="47" />
+              <caret line="59" column="34" lean-forward="true" selection-start-line="59" selection-start-column="34" selection-end-line="59" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -52,7 +50,7 @@
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="3288">
+              <first_editor relative-caret-position="24">
                 <caret line="137" column="39" selection-start-line="137" selection-start-column="39" selection-end-line="137" selection-end-column="39" />
               </first_editor>
               <second_editor />
@@ -63,8 +61,8 @@
       <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="349">
-              <caret line="826" column="38" lean-forward="true" selection-start-line="826" selection-start-column="38" selection-end-line="826" selection-end-column="38" />
+            <state relative-caret-position="325">
+              <caret line="768" column="23" lean-forward="true" selection-start-line="768" selection-start-column="23" selection-end-line="768" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -140,8 +138,8 @@
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/grid.html" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" />
-        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" />
       </list>
     </option>
   </component>
@@ -282,12 +280,12 @@
       <workItem from="1683594697400" duration="20661000" />
       <workItem from="1683768006506" duration="15250000" />
       <workItem from="1687233612206" duration="163000" />
-      <workItem from="1692582818947" duration="6567000" />
+      <workItem from="1692582818947" duration="8767000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="196115000" />
+    <option name="totallyTimeSpent" value="198315000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -588,32 +586,32 @@
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/test.html">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/canvas_test.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3456" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="3288">
+          <first_editor relative-caret-position="24">
             <caret line="137" column="39" selection-start-line="137" selection-start-column="39" selection-end-line="137" selection-end-column="39" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/canvas_test.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3456" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="349">
-          <caret line="826" column="38" lean-forward="true" selection-start-line="826" selection-start-column="38" selection-end-line="826" selection-end-column="38" />
+        <state relative-caret-position="325">
+          <caret line="768" column="23" lean-forward="true" selection-start-line="768" selection-start-column="23" selection-end-line="768" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="277">
-          <caret line="173" column="47" selection-start-line="173" selection-start-column="47" selection-end-line="173" selection-end-column="47" />
+          <caret line="59" column="34" lean-forward="true" selection-start-line="59" selection-start-column="34" selection-end-line="59" selection-end-column="34" />
         </state>
       </provider>
     </entry>
