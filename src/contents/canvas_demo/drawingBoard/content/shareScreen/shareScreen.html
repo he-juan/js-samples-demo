@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" href="#">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="../iconfont/iconfont.css">
+    <title>桌面共享</title>
+</head>
+<body>
+    <!----视频显示区域 -->
+    <div class="videoDisplayArea">
+        <div class="textContainer">
+            <h1 class="textCenter"></h1>
+            <div class="fileShare">
+                <span class="icon GRP-icon-file-white"></span>
+                <span class="fileShare-text"></span>
+                <!--  tip提示  -->
+            </div>
+        </div>
+        <div class="videoTips"></div>
+        <div class="videoWrapper">
+            <div class="videoContent">
+                <div class="videoContainer">
+                    <div class="videoContainerCenter">
+                        <figure class="presentVideoContainter">
+                            <!--工具栏-->
+                            <div class="canvasToolBar canvasToolBar_top_40" >
+                                <div class="content_one"></div>
+                                <div class="toolbarContent">
+                                    <div class="toolbar">
+                                        <div class="toolbar_button dragBtn">
+                                            <span class="toolbar_icon GRP-icon-drag"></span>
+                                        </div>
+                                        <div class="toolbar_button mouseBtn">
+                                            <span class="toolbar_icon GRP-icon-mouse-blue"></span>
+                                        </div>
+                                        <div class="toolbar_button pointerBtn">
+                                            <span class="toolbar_icon GRP-icon-laserPointer-white"></span>
+                                        </div>
+                                        <div class="toolbar_button brushBtn">
+                                            <span class="toolbar_icon GRP-icon-brush-white"></span>
+                                        </div>
+                                        <div class="toolbar_button textBtn">
+                                            <span class="toolbar_icon GRP-icon-text-white"></span>
+                                        </div>
+                                        <div class="toolbar_button noteBtn">
+                                            <span class="toolbar_icon GRP-icon-stickyNote-white"></span>
+                                        </div>
+                                        <div class="toolbar_button eraserBtn">
+                                            <span class="toolbar_icon GRP-icon-eraser-white"></span>
+                                        </div>
+                                        <div class="toolbar_button areaDeleteBtn">
+                                            <span class="toolbar_icon GRP-icon-areaDelete-white"></span>
+                                        </div>
+                                        <div class="toolbar_button clearBtn">
+                                            <span class="toolbar_icon GRP-icon-clear-white"></span>
+                                        </div>
+                                        <div class="toolbar_button settingsBtn">
+                                            <span class="toolbar_icon GRP-icon-settings-white"></span>
+                                        </div>
+
+                                    </div>
+                                    <div class="toolbarChild">
+                                        <div class="pointerChild">
+                                            <div class="pointerChildWrapper pointerBtn-red-Wrapper childWrapper-bg">
+                                                <div class="pointerBtn-red"></div>
+                                            </div>
+                                            <div class="pointerChildWrapper pointerBtn-yellow-Wrapper">
+                                                <div class="pointerBtn-yellow"></div>
+                                            </div>
+                                            <div class="pointerChildWrapper  pointerBtn-green-Wrapper">
+                                                <div class="pointerBtn-green"></div>
+                                            </div>
+                                            <div class="pointerChildWrapper pointerBtn-blue-wrapper">
+                                                <div class="pointerBtn-blue"></div>
+                                            </div>
+                                            <div class="pointerChildWrapper pointerBtn-purple-wrapper">
+                                                <div class="pointerBtn-purple"></div>
+                                            </div>
+                                        </div>
+                                        <div class="brushChild">
+                                            <div class="brushChildColorWrapper">
+                                                <div class="brushChildColor-Wrapper" >
+                                                    <div class="brushColorWrapper brushBtn-black-wrapper">
+                                                        <div class="brushBtn-black"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-white-wrapper">
+                                                        <div class="brushBtn-white"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-gray-wrapper">
+                                                        <div class="brushBtn-gray"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-red-wrapper childWrapper-bg">
+                                                        <div class="brushBtn-red"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-orange-wrapper">
+                                                        <div class="brushBtn-orange"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-yellow-wrapper">
+                                                        <div class="brushBtn-yellow"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-green-wrapper">
+                                                        <div class="brushBtn-green"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-cyan-wrapper">
+                                                        <div class="brushBtn-cyan"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-blue-wrapper">
+                                                        <div class="brushBtn-blue"></div>
+                                                    </div>
+                                                    <div class="brushColorWrapper brushBtn-purple-wrapper">
+                                                        <div class="brushBtn-purple"></div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="brushIsolationLine"></div>
+                                            <div class="brushChildFontWrapper">
+                                                <div class="brushChildFontContent">
+                                                    <div class="brush-font brush-font-small">
+                                                        <div class="brush-font-small-font"></div>
+                                                    </div>
+                                                    <div class="brush-font brush-font-middle childWrapper-bg">
+                                                        <div class="brush-font-middle-font"></div>
+                                                    </div>
+                                                    <div class="brush-font brush-font-big">
+                                                        <div class="brush-font-big-font"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="textChild">
+                                            <div class="textChildColorWrapper">
+                                                <div class="textChildColor-Wrapper" >
+                                                    <div class="textColorWrapper textBtn-black-wrapper">
+                                                        <div class="textBtn-black"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-white-wrapper">
+                                                        <div class="textBtn-white"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-gray-wrapper">
+                                                        <div class="textBtn-gray"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-red-wrapper childWrapper-bg">
+                                                        <div class="textBtn-red"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-orange-wrapper">
+                                                        <div class="textBtn-orange"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-yellow-wrapper">
+                                                        <div class="textBtn-yellow"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-green-wrapper">
+                                                        <div class="textBtn-green"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-cyan-wrapper">
+                                                        <div class="textBtn-cyan"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-blue-wrapper">
+                                                        <div class="textBtn-blue"></div>
+                                                    </div>
+                                                    <div class="textColorWrapper textBtn-purple-wrapper">
+                                                        <div class="textBtn-purple"></div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="textIsolationLine"></div>
+                                            <div class="textChildFontWrapper">
+                                                <div class="textChildFontContent">
+                                                    <div class="text-font text-font-small">
+                                                        <div class="text-font-small-txt">A</div>
+                                                    </div>
+                                                    <div class="text-font text-font-middle childWrapper-bg">
+                                                        <div class="text-font-middle-txt">A</div>
+                                                    </div>
+                                                    <div class="text-font text-font-big">
+                                                        <div class="text-font-big-txt">A</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="noteChild">
+                                            <div class="noteChildWrapper noteBtn-orange-Wrapper childWrapper-bg">
+                                                <div class="noteBtn-orange"></div>
+                                            </div>
+                                            <div class="noteChildWrapper noteBtn-yellow-Wrapper">
+                                                <div class="noteBtn-yellow"></div>
+                                            </div>
+                                            <div class="noteChildWrapper  noteBtn-cyan-Wrapper">
+                                                <div class="noteBtn-cyan"></div>
+                                            </div>
+                                            <div class="noteChildWrapper noteBtn-lightPurple-wrapper">
+                                                <div class="noteBtn-lightPurple"></div>
+                                            </div>
+                                            <div class="noteChildWrapper noteBtn-deepPurple-wrapper">
+                                                <div class="noteBtn-deepPurple"></div>
+                                            </div>
+                                        </div>
+                                        <div class="eraserChild">
+                                            <div class="eraserChildWrapper">
+                                                <input type="range" id="rangeEarser" name="volume" min="1"  max="10" step="1" value="5"/>
+                                                <span id="rangeEarserValue"></span>
+                                            </div>
+                                        </div>
+                                        <div class="settingsChild">
+                                            <div class="settingsWrapper">
+                                                <div class="settingsContent setting-status-text">
+                                                    <input class="setting-text setting-display-other" type="checkbox" >
+                                                    <!-- Allow other members to add comments 允许其他成员添加批注-->
+                                                    <div class="setting-text settingText">Allow other members to add comments </div>
+                                                </div>
+                                                <div class="settingsContent setting-status-content">
+                                                    <input class="setting-content setting-display-account" type="checkbox" >
+                                                    <!--show commenter name/account 显示批注者名称/账号-->
+                                                    <div class="setting-content settingText">show commenter name/account</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="hover">
+                                    <div class="hoverState">
+                                        <div class="hoverButton fullScreen"><span class="fullScreen icon GRP-icon-fullScreen-white"></span></div>
+                                        <div class="hoverButton pictureInPicture"><span class="pictureInPicture icon GRP-icon-pictureInPicture-white"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="areaContent">
+                                <video  class="presentVideo" muted autoplay></video>
+                                <canvas class="canvas" width="1600" height="1600"></canvas>
+                                <!--写字显示的输入框-->
+                                <textarea name="textBox" class="textBox" cols="1" rows="1"  class="text-style"></textarea>
+                                <!--框选删除的区域-->
+                                <div class="selectionArea" hidden></div>
+                                <!--跟随鼠标显示当前位置-->
+                                <div class="showPosition"></div>
+                                <!--更换鼠标的样式-->
+                                <div class="mouseStyle"></div>
+                            </div>
+                        </figure>
+
+                        <div class="shareIcon">
+                            <span class="icon GRP-icon-bg"></span>
+                            <span class="shareIcon-span"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="btnContainer">
+                <div class="btnContent">
+                    <!--- *************************************** 共享竖排按钮 ****************************************************-->
+                    <grp-button type="invite" disabled='true'></grp-button>
+                    <grp-button type="member" disabled='true'></grp-button>
+                    <grp-button type="switchShareScreen" disabled='true'></grp-button>
+                    <grp-button type="pauseShareScreen" disabled='true' ></grp-button>
+                    <grp-button type="stopShareScreen" disabled='true'></grp-button>
+                </div>
+            </div>
+        </div>
+        <!-- Invite Others -->
+        <div class="popup">
+            <div class="popup-content invitePopup">
+                <div class="popup-head">
+                    <span class="inviteOthers"></span>
+                    <span class="closeButton icon GRP-icon-close"></span>
+                </div>
+                <div class="popup-route">
+                    <span class="callExisted"></span>
+                    <span class="newCall"></span>
+                    <span class="callSubscript"></span>
+                </div>
+                <div class="popup-route-content">
+                    <!-- *********************************************** 被共享者邀请 ********************************************* -->
+                    <div class="popup-conter callExistedContent">
+                        <div class="head">
+                            <span class="tableName"></span>
+                            <span class="tableAccount"></span>
+                            <span class="tableState"></span>
+                        </div>
+                    </div>
+                    <!-- *********************************************** 被共享者邀请——新通话 ********************************************* -->
+                    <div class="popup-conter newCallContent">
+                        <input type="text" class="inviteInput">
+                        <!-- <div class="check">
+                            <div class="li">
+                                <span>Jacky</span>
+                                <span>3504</span>
+                                <span>Jacky567@grandstream.cn</span>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="button inviteButton"></div>
+                <div class="button dialButton"></div>
+            </div>
+            <!-- *********************************************** 被共享者邀请 ********************************************* -->
+            <div class="popup-content memberPopup">
+                <div class="popup-conter popup-conterMember">
+                    <div class="popup-head">
+                        <span class="memberTable"></span>
+                        <sapn class="closeButton icon GRP-icon-close"></sapn>
+                    </div>
+                    <input type="text" class="input inviteInput1">
+                    <div class="head">
+                        <input type="text" name="" id="in" style="display: none;" value="1">
+                        <span class="tableName1"></span>
+                        <span class="tableAccount1"></span>
+                        <span class="tableState1"></span>
+                    </div>
+                </div>
+                <div class="button kickOut"></div>
+            </div>
+        </div>
+
+        <!---- 弹框 提示 -->
+        <div class="tipsContent-wrapper">
+            <div class="tipsContent">
+                <div class="tip-head-wrapper">
+                    <div class="tip-head">
+                        <div class="tip-head-icon">
+                            <span class="tip-icon icon GRP-icon-logo"></span>
+                        </div>
+                        <div class="tip-head-text">
+                            <span class="tip-title">Quicall</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tip-content-wrapper">
+                    <div class="tip-content">
+                        <span class="tip-content-text"></span>
+                    </div>
+                </div>
+                <div class="tip-btn">
+                    <button class="closeWindowBtn"></button>
+                </div>
+            </div>
+        </div>
+
+        <!---- 等待对端回复的提示 -->
+        <div class="tips-remote-reply"></div>
+    </div>
+    <!---- 选择文件区域 -->
+    <div class="file-popup">
+        <div class="file-popup-content">
+            <span class="icon GRP-icon-add_s file-close"></span>
+            <div class="file-head">File Share</div>
+            <div class="file-body">
+                <div class="file-body-content">
+                    <span class="file-upload icon GRP-icon-upload"></span>
+                    <div class="file-body-content-text">
+                        <span class="icon GRP-icon-fileName file-name-icon"></span>
+                        <span class="file-content"></span>
+                    </div>
+                </div>
+                <div class="file-body-tips"></div>
+            </div>
+            <div class="file-tail">
+                <div class="file-tail-button"></div>
+            </div>
+        </div>
+    </div>
+    <!---- 文件接收拒接弹窗  -->
+    <div class="requestShareBox">
+        <div class="requestShare">
+            <div class="requestShare-head-wrapper">
+                <div class="requestShare-head">
+                    <div class="requestShare-head-left">
+                        <span class="icon GRP-icon-logo"></span>
+                        <span>Quicall</span>
+                    </div>
+                </div>
+            </div>
+            <div class="requestShare-text-wrapper">
+                <div class="requestShare-text"></div>
+            </div>
+            <div class="requestShare-bottom-wrapper">
+                <div class="requestShare-bottom">
+                    <button class="requestShare-bottom-reject"></button>
+                    <button class="requestShare-bottom-accept"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--webRTC 相关文件引用-->
+    <script type="text/javascript" src="../webRTC/lib/sdp_tools.js"></script>
+    <script type="text/javascript" src="../webRTC/lib/mediaDevice.js"></script>
+    <script type="text/javascript" src="../webRTC/lib/debug.js"></script>
+    <script type="text/javascript" src="../webRTC/src/gsrtc.js"></script>
+    <script type="text/javascript" src="../webRTC/src/gsrtc.api.js"></script>
+    <script type="text/javascript" src="../webRTC/src/gsrtc.common.js"></script>
+    <script type="text/javascript" src="../webRTC/src/gsrtc.event.js"></script>
+
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.jsep.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.sdp.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.connection.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.stream.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.ice.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.resolution.js"></script>
+
+    <!--页面处理-->
+    <script src="../locale/en/en-US.js"></script>
+    <script src="../locale/zh/zh-CN.js"></script>
+    <script src="../locale/language.js"></script>
+    <script src="../components/components.js"></script>
+    <script src="js/draw.js"></script>
+    <script src="js/initCanvas.js"></script>
+    <script src="js/shareScreen.js"></script>
+</body>
+</html>

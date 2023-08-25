@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -25,13 +25,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="277">
-              <caret line="59" column="34" lean-forward="true" selection-start-line="59" selection-start-column="34" selection-end-line="59" selection-end-column="34" />
+            <state relative-caret-position="397">
+              <caret line="178" column="52" lean-forward="true" selection-start-line="173" selection-start-column="12" selection-end-line="178" selection-end-column="52" />
+              <folding>
+                <element signature="n#div#0;n#figure#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" />
+              </folding>
             </state>
           </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="测试canvas位置.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/测试canvas位置.html">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file leaf-file-name="canvas_test.html" pinned="false" current-in-tab="false">
@@ -58,11 +66,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="325">
-              <caret line="768" column="23" lean-forward="true" selection-start-line="768" selection-start-column="23" selection-end-line="768" selection-end-column="23" />
+            <state relative-caret-position="61">
+              <caret line="819" selection-start-line="819" selection-end-line="821" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -140,6 +148,7 @@
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/readme.md" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html" />
         <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js" />
+        <option value="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/shareScreen/js/initCanvas.js" />
       </list>
     </option>
   </component>
@@ -155,9 +164,8 @@
       <path value="$PROJECT_DIR$/src/contents/webhid/webHid-demo-electron/package.json" />
     </packageJsonPaths>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="13" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
   </component>
@@ -201,15 +209,6 @@
               <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
               <item name="drawingBoard" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="js-samples-demo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="js-samples-demo" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="contents" type="462c0819:PsiDirectoryNode" />
-              <item name="canvas_demo" type="462c0819:PsiDirectoryNode" />
-              <item name="drawingBoard" type="462c0819:PsiDirectoryNode" />
-              <item name="example" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -220,23 +219,23 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editorconfig.notification" value="t.editorconfigrue" />
-    <property name="last_opened_file_path" value="E:/workspaceExternal/demo/iandevlin.github.io" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\example" />
-      <recent name="E:\private\js-samples-demo\src\contents" />
-      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\asset" />
-      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo" />
-      <recent name="E:\private\js-samples-demo\src\contents\webhid\webHid-demo-electron" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="E:\private\js-samples-demo\src\contents\mousePostion" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\clipVideo" />
       <recent name="E:\private\js-samples-demo\src\contents\webhid" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron" />
       <recent name="E:\private\js-samples-demo\src\contents\webHid-demo-electron\js" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard" />
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\example" />
+      <recent name="E:\private\js-samples-demo\src\contents" />
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\asset" />
+      <recent name="E:\private\js-samples-demo\src\contents\canvas_demo" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -280,16 +279,15 @@
       <workItem from="1683594697400" duration="20661000" />
       <workItem from="1683768006506" duration="15250000" />
       <workItem from="1687233612206" duration="163000" />
-      <workItem from="1692582818947" duration="8767000" />
+      <workItem from="1692582818947" duration="11954000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="198315000" />
+    <option name="totallyTimeSpent" value="201502000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="5" y="11" width="1936" height="1056" extended-state="0" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1564805" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -328,28 +326,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/clipVideo/index.html" />
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/play-video-canvas/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="17" column="23" selection-start-line="17" selection-start-column="23" selection-end-line="17" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/video-screen-record/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1944">
-          <caret line="72" column="21" selection-start-line="72" selection-start-column="20" selection-end-line="72" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/clipImage/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4590">
-          <caret line="170" column="40" selection-start-line="170" selection-start-column="40" selection-end-line="170" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/record_demo/popup/pop.js" />
     <entry file="file://$PROJECT_DIR$/src/contents/record_demo/img/icon.jpg" />
     <entry file="file://$PROJECT_DIR$/src/contents/record_demo/popup/popup.html" />
@@ -601,17 +577,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="768" column="23" lean-forward="true" selection-start-line="768" selection-start-column="23" selection-end-line="768" selection-end-column="23" />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/example/测试canvas位置.html">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="277">
-          <caret line="59" column="34" lean-forward="true" selection-start-line="59" selection-start-column="34" selection-end-line="59" selection-end-column="34" />
+        <state relative-caret-position="397">
+          <caret line="178" column="52" lean-forward="true" selection-start-line="173" selection-start-column="12" selection-end-line="178" selection-end-column="52" />
+          <folding>
+            <element signature="n#div#0;n#figure#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/shareScreen/js/draw.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/shareScreen/js/initCanvas.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="565">
+          <caret line="754" lean-forward="true" selection-start-line="754" selection-end-line="754" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/shareScreen/shareScreen.html">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="61">
+          <caret line="819" selection-start-line="819" selection-end-line="821" selection-end-column="2" />
         </state>
       </provider>
     </entry>

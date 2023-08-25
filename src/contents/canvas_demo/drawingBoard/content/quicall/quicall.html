@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" sizes="192x192" href="assets/logo.png">
+    <link rel="stylesheet" href="quicall.css">
+    <link rel="stylesheet" href="../iconfont/iconfont.css">
+    <title>GRP Click2Dial</title>
+</head>
+<body>
+<div class="center">
+    <div class="app-content">
+        <!----------------------------------------------登录--------------------------------------------------------->
+        <section class="login-container" style="display: none">
+            <!--   tip 提示     -->
+            <div class="login-tips login-verification"></div>
+
+            <div class="login">
+                <span class="login-logo GRP-icon-logo"></span>
+                <span class="login-extension-name">GRP Click2Dial</span>
+            </div>
+
+            <!--    输入框    -->
+            <div class="input-area">
+                <div class="login-input">
+                    <div class="login-input-message">
+                        <label class="address-label">Address</label>
+                        <span class="required"></span>
+                    </div>
+                    <input value="" class="login-input-box login-input-ordinary" type="text" id="address" placeholder="Device Address">
+                    <div class="error-tip address-error-tip">Address can not be empty.</div>
+                </div>
+
+                <div class="login-input">
+                    <div class="login-input-message">
+                        <label class="username-label">Username</label>
+                        <span class="required"></span>
+                        <div id="usernameAbout">
+                            <span class="about icon GRP-icon-about"></span>
+                            <!--  tip提示  -->
+                            <div class="prompt username-prompt">
+                                <div class="username-prompt-tip">The username is the login name of the device background management.</div>
+                                <div class="triangle-down"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <input value="" class="login-input-box login-input-ordinary" type="text" id="username" placeholder="Web login account">
+                    <div class="error-tip username-error-tip">Username can not be empty.</div>
+                </div>
+
+                <div class="login-input">
+                    <div class="login-input-message">
+                        <label class="password-label">Password</label>
+                        <span class="required"></span>
+                        <div id="passwordAbout">
+                            <span class="about icon GRP-icon-about"></span>
+                            <!--  tip提示  -->
+                            <div class="prompt password-prompt">
+                                <div class="password-prompt-tip">The password is the login password of the device background management.</div>
+                                <div class="triangle-down"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <input value="" class="login-input-box login-input-ordinary" id="password" type="password" placeholder="Web login password">
+                    <span class="eyes-icon icon GRP-icon-eyes-close" id="passwordModeSet"></span>
+                    <div class="error-tip password-error-tip">Password can not be empty.</div>
+                </div>
+            </div>
+
+            <!--  登录   -->
+            <div class="login-button">
+                <input id="login" type="button" value="Login">
+                <!--   登录中状态显示  -->
+                <div class="loadEffect">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </section>
+
+        <!----------------------------------------------拨号--------------------------------------------------------->
+        <section class="dialArea">
+            <!--Connection failed, please check your network.-->
+            <div class="popup-tips"></div>
+            <div class="dial">
+                <div class="dial-logo icon GRP-icon-logo"></div>
+                <div class="dial-extension-name">GRP Click2Dial</div>
+                <div class="logout icon GRP-icon-logout"></div>
+                <div class="security icon GRP-icon-security-ash" id="privacySettings"></div>
+            </div>
+
+            <!-- start: 关闭所有窗口时清除 Cookie 及网站数据 -->
+            <!--        <div class="data-clear-control">-->
+            <!--            <div class="triangle-up"></div>-->
+            <!--&lt;!&ndash;            <div class="clearTipperLabel" aria-hidden="true">关闭所有窗口时清除 Cookie 及网站数据</div>&ndash;&gt;-->
+            <!--            <div class="clearTipperLabel" aria-hidden="true">插件登出后清除设备登录信息和ldap等数据</div>-->
+            <!--            <span class="bar"></span>-->
+            <!--            <span class="knob"></span>-->
+            <!--        </div>-->
+            <!-- end: 关闭所有窗口时清除 Cookie 及网站数据 -->
+
+        <div class="dial-select">
+            <div class="dial-select-left">
+                <h2 class="dial-title">Dial</h2>
+                <h3>Contacts</h3>
+            </div>
+            <div class="account-list">
+                <div class="change-select-account">
+                    <div class="change-icon-parent GRP-icon-person">
+                        <div class="change-icon-txt"></div>
+                    </div>
+                    <div class="select-account">
+                        <div class="select-account-words"></div>
+                    </div>
+                    <span class="account-arrow-down icon GRP-icon-arrow_down"></span>
+                </div>
+                <!--  账号列表区域  -->
+                <ul class="device-account-list"></ul>
+            </div>
+        </div>
+
+            <!-- 号码输入区   -->
+            <div class="phoneNumber-input">
+                <div class="number-input">
+                    <input class="phone-number" id="phoneNumber" type="text" autocomplete="off"  placeholder="Enter number">
+                </div>
+                <div class="number-from">number form email <span id="tipEmail"></span></div>
+            </div>
+            <!-- 联系人搜索结果   -->
+            <div class="search-result" tabindex="0" outline="0"></div>
+
+            <div class="call-btn-area">
+                <input type="button" class="call-button" id="normalCall" value="Call">
+            </div>
+            <!--   线路数显示  -->
+            <div class="line-count">
+                <span class="line-segment"></span>
+                <span class="lines">Line 0/0</span>
+                <span class="line-segment"></span>
+            </div>
+            <!--  线路状态  -->
+            <div class="lines-display">
+            </div>
+            <!--  线路展开  -->
+            <div class="line-expand icon"></div>
+        </section>
+    </div>
+
+    <!--  版权信息  -->
+    <div class="footer">
+        <span class="copyright">© 2022 Grandstream Networks, Inc. All Rights Reserved.</span>
+    </div>
+</div>
+
+<!---------------------------------------------共享通知--------------------------------------------------------->
+<div class="requestShareBox">
+    <div class="requestShare">
+        <div class="requestShare-head-wrapper">
+            <div class="requestShare-head">
+                <div class="requestShare-head-left">
+                    <span class="icon GRP-icon-logo"></span>
+                    <span>Quicall</span>
+                </div>
+            </div>
+        </div>
+        <div class="requestShare-text-wrapper">
+            <div class="requestShare-text"></div>
+        </div>
+
+        <div class="requestShare-bottom-wrapper">
+            <div class="requestShare-bottom">
+                <button class="requestShare-bottom-reject"></button>
+                <button class="requestShare-bottom-accept"></button>
+            </div>
+        </div>
+        <div class="requestShare-tips-wrapper">
+            <div class="requestShare-tips">
+                <span class="icon GRP-icon-warning_s"></span>
+                <span class="requestShare-tips-span"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../locale/en/en-US.js"></script>
+<script src="../locale/zh/zh-CN.js"></script>
+<script src="../locale/language.js"></script>
+<script src="quicall.js"></script>
+<script src="../components/components.js"></script>
+</body>
+</html>
