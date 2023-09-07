@@ -285,6 +285,10 @@ WebRTCSession.prototype.setupDataChannel = function(){
         log.info("created dataChannel")
         pc.dataChannel.onopen = function(){
             log.info("data channel connect")
+            if(sendText){
+                gsRTC.sendFile(fileInfo)
+                gsRTC.sendFile({lineId: fileInfo.lineId, content: sendText})
+            }
         }
         pc.dataChannel.onmessage = function(e){
             log.info(`Got message`)

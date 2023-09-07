@@ -322,7 +322,6 @@ WebRTCSession.prototype.dataChannelSendMessage = function (data) {
 
     let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
     if (!session || !session.pc || !session.pc.dataChannel) {
-        notice({type: 'warn', value: currentLocale['L76']})
         log.warn("dataChannelSendMessage: session is not found")
         return
     }

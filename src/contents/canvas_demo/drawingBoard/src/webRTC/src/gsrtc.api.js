@@ -31,7 +31,6 @@ GsRTC.prototype.screenShare = function (data = {}){
     let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
     let type = 'slides'
     if(!session){
-        notice({ type: 'warn', value: currentLocale['L76']})
         log.warn("screenShare: session is not found")
         return
     }
@@ -349,7 +348,6 @@ GsRTC.prototype.dataChannel = function(data){
 
     let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
     if(!session){
-        notice({type: 'warn',value: currentLocale['L76'] })
         log.warn("dataChannel: session is not found")
         return
     }
@@ -473,10 +471,14 @@ GsRTC.prototype.sendFile = function(data){
             }else if(offset === file.size){
                 console.log('send success')
                 switchSendstatus('success')
+                fileInfo = null
+                sendText = null
             }
             }catch(e){
                 console.log('send fail')
-                notice({ type: 'warn', value: currentLocale['L129']})
+                if(pageName === 'shareScreen'){
+                    notice({ type: 'warn', value: currentLocale['L129']})
+                }
                 switchSendstatus('fail')
             }
         })

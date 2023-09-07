@@ -327,8 +327,15 @@ WebRTCSession.prototype.handleDataChannelMessage = function(message){
 
     let This = this
     let lineId
+    if(pageName === 'quicall'){
+        remoteShareInfo.lineId = message.lineId
+    }
     if(message.type){
-        lineId = message.lineId
+        if(message.lineContent){
+            lineId = message.lineContent.remote
+        }else{
+            lineId = message.lineId
+        }
         let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: lineId })
         if(!session){
             log.info( message.type + ': no session is found')
@@ -357,38 +364,61 @@ WebRTCSession.prototype.handleDataChannelMessage = function(message){
                 session.isRemoteHold = false
                 break;
             case 'fileInfo':
+                if(pageName === 'quicall'){
+                    remoteShareInfo.shareType = 'shareFile'
+                }
                 if(message.state === 'receive'){
                     console.log('remote consent')
-                    gsRTC.sendFile({lineId: currentLine, content: sendText})
+                    gsRTC.sendFile({lineId: session.lineId, content: sendText})
                 }else if(message.state === 'reject') {
                     console.log('remote reject')
-                    switchSendstatus('fail')
-                    notice({ type: 'error', value: currentLocale['L126']})
+                    switchSendstatus('reject')
                 }else if(message.state === 'cancel'){
-                    notice({ type: 'warn', value: currentLocale['L127']})
-                    fileCountDownTimer && countDownFile()
+                    if(pageName === 'shareScreen'){
+                        notice({ type: 'warn', value: currentLocale['L127']})
+                        fileCountDownTimer && countDownFile()
+                    }else if(pageName === 'quicall') {
+                        countDownTimer && countDown()
+                    }
                 }else if(message.state === 'timeout'){
-                    notice({ type: 'error', value: currentLocale['L128']})
-                    switchSendstatus('fail')
+                    switchSendstatus('timeout')
                 }else{
                     This.fileSize = message.size
                     This.fileName = message.name
                     This.receiveBuffer = []
                     This.receivedSize = 0
-                    console.warn("Receive the presentation, whether to accept the presentation")
-                    refuseShareBtn.innerText = currentLocale['L83']
-                    refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
-                    acceptShareBtn.innerText = currentLocale['L84']
-                    let remoteName
-                    for(let i in lineData){
-                        if(lineData[i].state !== 'idle' && lineData[i].line == message.lineId){
-                            remoteName = lineData[i].remotename || lineData[i].remotenumber
+                    log.info("Receive the presentation, whether to accept the presentation")
+                    if(pageName === 'shareScreen'){
+                        refuseShareBtn.innerText = currentLocale['L83']
+                        refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
+                        acceptShareBtn.innerText = currentLocale['L84']
+                        let remoteName
+                        for(let i in lineData){
+                            if(lineData[i].state !== 'idle' && lineData[i].line == message.lineId){
+                                remoteName = lineData[i].remotename || lineData[i].remotenumber
+                            }
                         }
+                        let fileName = This.fileName + ' (' + change(This.fileSize) + ')'
+                        requestShareText.innerHTML = currentLocale['L123'].replace('{0}', remoteName).replace('{1}', fileName)
+                        sharePopup.classList.toggle('requestShareBox-show',true)
+                        countDownFile()
+                    }else if(pageName === 'quicall' && message.popup){
+                        mb.classList.add('mb');
+                        document.body.appendChild(mb);
+                        refuseShareBtn.innerText = currentLocale['L83']
+                        refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
+                        acceptShareBtn.innerText = currentLocale['L84']
+                        let remoteName
+                        for(let i in grpClick2Talk.lineData){
+                            if(grpClick2Talk.lineData[i].state !== 'idle' && grpClick2Talk.lineData[i].line == message.lineId){
+                                remoteName = grpClick2Talk.lineData[i].remotename || grpClick2Talk.lineData[i].remotenumber
+                            }
+                        }
+                        let fileName = This.fileName + ' (' + change(This.fileSize) + ')'
+                        requestShareText.innerHTML = currentLocale['L123'].replace('{0}', remoteName).replace('{1}', fileName)
+                        sharePopup.classList.toggle('requestShareBox-show',true)
+                        countDown()
                     }
-                    requestShareText.innerHTML = currentLocale['L123'].replace('{0}', remoteName)
-                    shareFile = false
-                    sharePopup.classList.toggle('requestShareBox-show',true)
-                    countDownFile()
                 }
                 break;
             case 'mousedown':
@@ -396,8 +426,14 @@ WebRTCSession.prototype.handleDataChannelMessage = function(message){
             case 'mouseup':
             case 'mouseleave':
             case 'remotePosition':
-                gsRTC.trigger("currentMousePosition", message)
+                gsRTC.trigger("onRemoteMousePosition", message)
                 break
+            case 'streamChange':
+                gsRTC.trigger("onRemoteStreamChange")
+                break;
+            default:
+               log.info("get current type: " + message.type)
+               break;
         }
 
     }else{

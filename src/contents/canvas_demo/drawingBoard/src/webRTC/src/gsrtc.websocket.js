@@ -97,7 +97,7 @@ WebRTCSocketInstance.prototype.createWebSocket = function (url, protocols, callb
 
         This.wsKeepAliveInterval = setInterval(function () {
             if(This.keepAliveWithoutResponse >= This.WS_KEEP_ALIVE_TIMEOUT_FLAG){
-                console.warn('Keep alive failed, close webSocket')
+                console.log('Keep alive failed, close webSocket')
                 ws.close(4000)
                 clearInterval(This.wsKeepAliveInterval)
                 This.wsKeepAliveInterval = null
@@ -195,7 +195,7 @@ WebRTCSocketInstance.prototype.handleRecvMessage = function (message){
                 grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'remoteShareScreenHangup', content: message}))
                 break;
             default:
-                console.warn("get current requestType is " + action)
+                console.log("get current requestType is " + action)
                 break;
         }
     }
@@ -245,13 +245,13 @@ WebRTCSocketInstance.prototype.wsIsConnected = function(){
                 connected = true
                 break
             case WebSocket.CONNECTING:
-                console.warn('Socket has been created. The connection is not yet open.')
+                console.log('Socket has been created. The connection is not yet open.')
                 break
             case WebSocket.CLOSING:
-                console.warn('The connection is in the process of closing.')
+                console.log('The connection is in the process of closing.')
                 break
             case WebSocket.CLOSED:
-                console.warn('The connection is closed or could not be opened.')
+                console.log('The connection is closed or could not be opened.')
                 break
             default:
                 break
