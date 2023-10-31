@@ -8,25 +8,20 @@
     <link rel="shortcut icon" href="#">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="../iconfont/iconfont.css">
-    <title>桌面共享</title>
+    <title></title>
 </head>
 <body>
     <!----视频显示区域 -->
     <div class="videoDisplayArea">
         <div class="textContainer">
             <h1 class="textCenter"></h1>
-            <div class="fileShare">
-                <span class="icon GRP-icon-file-white"></span>
-                <span class="fileShare-text"></span>
-                <!--  tip提示  -->
-            </div>
         </div>
         <div class="videoTips"></div>
         <div class="videoWrapper">
             <div class="videoContent">
                 <div class="videoContainer">
                     <div class="videoContainerCenter">
-                        <figure class="presentVideoContainter">
+                        <figure class="presentVideoContainer">
                             <!--工具栏-->
                             <div class="canvasToolBar canvasToolBar_top_40" >
                                 <div class="content_one"></div>
@@ -94,7 +89,7 @@
                                                     <div class="brushColorWrapper brushBtn-gray-wrapper">
                                                         <div class="brushBtn-gray"></div>
                                                     </div>
-                                                    <div class="brushColorWrapper brushBtn-red-wrapper childWrapper-bg">
+                                                    <div class="brushColorWrapper brushBtn-red-wrapper">
                                                         <div class="brushBtn-red"></div>
                                                     </div>
                                                     <div class="brushColorWrapper brushBtn-orange-wrapper">
@@ -210,12 +205,12 @@
                                         <div class="settingsChild">
                                             <div class="settingsWrapper">
                                                 <div class="settingsContent setting-status-text">
-                                                    <input class="setting-text setting-display-other" type="checkbox" >
+                                                    <input class="setting-text setting-display-other" type="checkbox" checked>
                                                     <!-- Allow other members to add comments 允许其他成员添加批注-->
                                                     <div class="setting-text settingText">Allow other members to add comments </div>
                                                 </div>
                                                 <div class="settingsContent setting-status-content">
-                                                    <input class="setting-content setting-display-account" type="checkbox" >
+                                                    <input class="setting-content setting-display-account" type="checkbox" checked>
                                                     <!--show commenter name/account 显示批注者名称/账号-->
                                                     <div class="setting-content settingText">show commenter name/account</div>
                                                 </div>
@@ -233,7 +228,7 @@
 
                             <div class="areaContent">
                                 <video  class="presentVideo" muted autoplay></video>
-                                <canvas class="canvas" width="1600" height="1600"></canvas>
+                                <canvas class="canvas"></canvas>
                                 <!--写字显示的输入框-->
                                 <textarea name="textBox" class="textBox" cols="1" rows="1"  class="text-style"></textarea>
                                 <!--框选删除的区域-->
@@ -242,6 +237,11 @@
                                 <div class="showPosition"></div>
                                 <!--更换鼠标的样式-->
                                 <div class="mouseStyle"></div>
+                                <!--canvas右侧工具栏-->
+                                <div class="rightTools">
+                                    <div class="scaleContent"></div>
+                                    <ul class="toolsWrapper"></ul>
+                                </div>
                             </div>
                         </figure>
 
@@ -258,6 +258,7 @@
                     <!--- *************************************** 共享竖排按钮 ****************************************************-->
                     <grp-button type="invite" disabled='true'></grp-button>
                     <grp-button type="member" disabled='true'></grp-button>
+                    <grp-button type="shareFile" disabled='true'></grp-button>
                     <grp-button type="switchShareScreen" disabled='true'></grp-button>
                     <grp-button type="pauseShareScreen" disabled='true' ></grp-button>
                     <grp-button type="stopShareScreen" disabled='true'></grp-button>
@@ -396,9 +397,9 @@
     <script type="text/javascript" src="../webRTC/src/gsrtc.js"></script>
     <script type="text/javascript" src="../webRTC/src/gsrtc.api.js"></script>
     <script type="text/javascript" src="../webRTC/src/gsrtc.common.js"></script>
-    <script type="text/javascript" src="../webRTC/src/gsrtc.event.js"></script>
 
     <script type="text/javascript" src="../webRTC/src/webrtcSession.jsep.js"></script>
+    <script type="text/javascript" src="../webRTC/src/webrtcSession.dataChannel.js"></script>
     <script type="text/javascript" src="../webRTC/src/webrtcSession.js"></script>
     <script type="text/javascript" src="../webRTC/src/webrtcSession.sdp.js"></script>
     <script type="text/javascript" src="../webRTC/src/webrtcSession.connection.js"></script>
@@ -411,6 +412,7 @@
     <script src="../locale/zh/zh-CN.js"></script>
     <script src="../locale/language.js"></script>
     <script src="../components/components.js"></script>
+    <script src="../webRTC/lib/common.js"></script>
     <script src="js/draw.js"></script>
     <script src="js/initCanvas.js"></script>
     <script src="js/shareScreen.js"></script>

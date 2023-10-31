@@ -72,6 +72,7 @@ GsRTC.prototype.EVENTS = {
     error: undefined,                          // 发生错误时的通知事件
 
     holdStatus: undefined ,                   // hold线路状态
+    errorTip: undefined
 }
 
 GsRTC.prototype.CODE_TYPE = {
@@ -88,6 +89,7 @@ GsRTC.prototype.CODE_TYPE = {
     WEBSOCKET_RECONNECTING: { codeType: 139, message: 'The connection is reconnecting'},
     WEBSOCKET_RECONNECTION_FAILED: { codeType: 140, message: 'The connection reconnection failed'},
     WEBSOCKET_CREATE_FAILED: { codeType: 141, message: 'the connection creation failed'},
+    PEER_WEBSOCKET_CLOSED: { codeType: 480, message: 'The connection is closed or could not be opened.'},  // 对端ws未连接
 
     // ICE 重连
     ICE_CONNECTION_FAILED: { codeType: 151, message: 'ICE connection failed'},
@@ -97,6 +99,9 @@ GsRTC.prototype.CODE_TYPE = {
     // action success code
     ACTION_FAILED: { codeType: 119, message: 'action failed' },
     ACTION_SUCCESS: { codeType: 200, message: 'action success' },
+
+    REFUSE_ACCEPT_SHARE: { codeType: 300, message: 'refuse accept share' },   // 拒绝接受桌面共享或文件共享
+    NO_RESPONSE: { codeType: 486, message: 'no response' },
 
     // 麦克风取流错误码
     MIC_NOT_FOUND: { codeType: 932, message: 'NotFoundError' },
@@ -148,6 +153,8 @@ GsRTC.prototype.SIGNAL_EVENT_TYPE = {
     UPDATE_CANDIDATE_INFO_RET: { id: 14, name: 'updateCandidateRet' },    // trickle-ice 时收到candidate时的回复信令
     BYE: { id: 15, name: 'destroyMediaSession' },                         // 结束会话
     BYE_RET: { id: 16, name: 'destroyMediaSessionRet' },                  // 结束会话的回复
+    CANCEL: { id: 17, name: 'cancelRequest'},                             // 取消会话
+    CANCEL_RET: { id: 18, name: 'cancelRequestRet'}                       // 取消会话的回复
 }
 
 /**

@@ -102,7 +102,7 @@ input[type="password"]::-ms-reveal {
     word-break: break-all;
     white-space: nowrap;
 }
-.select-account-words{
+.select-account-words, .active-line li:nth-child(2){
     text-overflow: ellipsis;
     overflow: hidden;
     word-break: break-all;
@@ -184,7 +184,7 @@ input[type="password"]::-ms-reveal {
     text-align: center;
     display: none;
 }
-.address-error-login{
+input:disabled{
     cursor: not-allowed !important;
     background-color: rgb(192, 191, 191) !important;
 }
@@ -228,21 +228,6 @@ input[type="password"]::-ms-reveal {
 .input-area{
     padding: 0 40px;
 }
-.login-input-message {
-    width: 100%;
-    margin-bottom: 4px;
-    height: 16px;
-}
-
-.login-input-message label {
-    width: 44px;
-    height: 14px;
-    font-size: 12px;
-    color: #222222;
-    letter-spacing: 0;
-    font-weight: 400;
-    font-family: SFUIDisplay;
-}
 
 #usernameAbout, #passwordAbout{
     display: inline-block;
@@ -261,7 +246,7 @@ input[type="password"]::-ms-reveal {
 
 .login-input {
     width: 100%;
-    margin-bottom: 14px;
+    margin-bottom: 25px;
     position: relative;
 }
 
@@ -483,6 +468,10 @@ input[type="password"]::-ms-reveal {
     background: #FFECEC;
 }
 
+.success-tips{
+    color: #27CA15;
+    background: #E7FAE7;
+}
 
 .dial {
     height: 24px;
@@ -589,6 +578,18 @@ input[type="password"]::-ms-reveal {
     margin: auto;
 }
 
+.number-input-shake{
+    animation: shake 1s ease-in-out;
+}
+
+@keyframes shake { /* 水平抖动，核心代码 */
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(+2px, 0, 0); }
+    30%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(+4px, 0, 0); }
+    50% { transform: translate3d(-4px, 0, 0); }
+}
+
 .phone-number {
     min-width: 360px;
     width: 100%;
@@ -619,12 +620,81 @@ input[type="password"]::-ms-reveal {
     cursor: pointer;
 }
 
-.security{
+/**********************************设置***********************************/
+
+.setting-nav-list{
+    position: absolute;
+    right: 80px;
+    z-index: 9999;
+    top: 65px;
+    font-size: 14px;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    -webkit-box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+
+.setting-nav-list ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 4px 0;
+    text-align: left;
+    list-style-type: none;
+    background-color: #fff;
+    /* background-clip: padding-box; */
+    border-radius: 2px;
+    outline: none;
+}
+.setting-nav-list>ul:first-child{
+    padding: 4px 0 0 0;
+}
+.setting-nav-list>ul:last-child{
+    padding: 0 0 4px 0;
+}
+
+.setting-nav-list>ul>li{
+    padding: 6px 12px;
+}
+
+.setting-nav-list>ul>li>div{
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    float: left;
+}
+.setting-nav-list>ul>li>label{
+    height: 20px;
+    line-height: 20px;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.setting-nav-list>ul>li:hover{
+    background: #E9EAED;
+}
+
+#contact-source-list>li{
+    padding: 6px 12px 6px 34px
+}
+/**********************************设置***********************************/
+
+.setting-nav{
     width: 24px;
     height: 24px;
     float: right;
-    margin-right: 12px;
+    /*-webkit-mask: url(./assets/security.svg) no-repeat;*/
+    -webkit-mask-size: 100%;  /* 设置缩放 */
+    background-size: 24px;
     cursor: pointer;
+    margin-right: 12px;
+    background: #6c6c6e;
+    -webkit-mask: url(data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20version%3D%221.1%22%20width%3D%27100%25%27%20height%3D%27100%25%27%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20id%3D%22GRP-icon-settings-white%22%20viewBox%3D%220%200%201024%201024%22%3E%3Cpath%20d%3D%22M577.92%20128a32%2032%200%200%201%2031.573333%2026.752l4.522667%2027.093333a97.408%2097.408%200%200%200%2046.293333%2068.437334%2091.733333%2091.733333%200%200%200%2079.872%206.826666l25.173334-9.514666a32%2032%200%200%201%2039.253333%2014.165333l65.877333%20116.949333a32%2032%200%200%201-7.168%2040.106667l-20.650666%2017.536A98.645333%2098.645333%200%200%200%20808.021333%20512c0%2029.525333%2012.672%2056.96%2034.645334%2075.605333l20.693333%2017.493334a32%2032%200%200%201%207.168%2040.149333l-65.92%20116.906667a32%2032%200%200%201-39.253333%2014.250666l-25.173334-9.6a91.733333%2091.733333%200%200%200-79.872%206.869334%2097.408%2097.408%200%200%200-46.293333%2068.48l-4.522667%2027.093333a32%2032%200%200%201-31.573333%2026.794667h-131.84a32%2032%200%200%201-31.573333-26.794667l-4.48-27.093333a97.408%2097.408%200%200%200-46.293334-68.48%2091.733333%2091.733333%200%200%200-79.914666-6.826667l-25.173334%209.557333a32%2032%200%200%201-39.253333-14.208l-65.92-116.906666a32%2032%200%200%201%207.168-40.106667l20.693333-17.578667c21.973333-18.645333%2034.688-46.08%2034.688-75.605333s-12.672-56.96-34.645333-75.562667l-20.650667-17.536a32%2032%200%200%201-7.168-40.106666l65.92-116.949334a32%2032%200%200%201%2039.253334-14.208l25.173333%209.557334a91.733333%2091.733333%200%200%200%2079.786667-6.869334A97.408%2097.408%200%200%200%20410.026667%20181.845333l4.48-27.093333a32%2032%200%200%201%2031.573333-26.752z%20m-27.136%2064H473.173333a161.621333%20161.621333%200%200%201-68.821333%20108.288l-8.064%205.077333a155.733333%20155.733333%200%200%201-135.125333%2011.605334l0.512%200.170666-39.424%2070.016%207.594666%206.784a162.56%20162.56%200%200%201%2049.92%20108.373334l0.256%209.642666a162.645333%20162.645333%200%200%201-57.301333%20124.416l-0.554667%200.426667%2039.466667%2069.930667%208.405333-2.901334a155.562667%20155.562667%200%200%201%20117.888%2010.112l8.362667%204.608A161.365333%20161.365333%200%200%201%20473.173333%20832h77.610667a161.877333%20161.877333%200%200%201%2068.906667-108.373333l8.021333-5.077334a155.733333%20155.733333%200%200%201%20135.253333-11.605333l-0.597333-0.213333%2039.424-69.973334-7.552-6.741333a162.56%20162.56%200%200%201-49.92-108.458667L743.978667%20512c0-48.298667%2020.906667-93.568%2057.216-124.373333l0.512-0.469334-39.424-69.973333-8.362667%202.944a155.562667%20155.562667%200%200%201-117.888-10.112l-8.362667-4.608A161.706667%20161.706667%200%200%201%20550.826667%20192zM512%20341.333333a170.666667%20170.666667%200%201%201%200%20341.333334%20170.666667%20170.666667%200%200%201%200-341.333334z%20m0%2064a106.666667%20106.666667%200%201%200%200%20213.333334%20106.666667%20106.666667%200%200%200%200-213.333334z%22%20fill%3D%22%23FFFFFF%22%20%3E%3C%2Fpath%3E%3C%2Fsvg%3E);
+}
+
+.GRP-icon-help{
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgdmlld0JveD0iNjQgNjQgODk2IDg5NiIgZm9jdXNhYmxlPSJmYWxzZSIgY2xhc3M9IiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBkYXRhLWljb249InF1ZXN0aW9uLWNpcmNsZSIgd2lkdGg9IjFlbSIgaGVpZ2h0PSIxZW0iDQogICAgIGZpbGw9ImN1cnJlbnRDb2xvciIgYXJpYS1oaWRkZW49InRydWUiPg0KICAgIDxwYXRoIGQ9Ik01MTIgNjRDMjY0LjYgNjQgNjQgMjY0LjYgNjQgNTEyczIwMC42IDQ0OCA0NDggNDQ4IDQ0OC0yMDAuNiA0NDgtNDQ4Uzc1OS40IDY0IDUxMiA2NHptMCA4MjBjLTIwNS40IDAtMzcyLTE2Ni42LTM3Mi0zNzJzMTY2LjYtMzcyIDM3Mi0zNzIgMzcyIDE2Ni42IDM3MiAzNzItMTY2LjYgMzcyLTM3MiAzNzJ6Ij48L3BhdGg+DQogICAgPHBhdGggZD0iTTYyMy42IDMxNi43QzU5My42IDI5MC40IDU1NCAyNzYgNTEyIDI3NnMtODEuNiAxNC41LTExMS42IDQwLjdDMzY5LjIgMzQ0IDM1MiAzODAuNyAzNTIgNDIwdjcuNmMwIDQuNCAzLjYgOCA4IDhoNDhjNC40IDAgOC0zLjYgOC04VjQyMGMwLTQ0LjEgNDMuMS04MCA5Ni04MHM5NiAzNS45IDk2IDgwYzAgMzEuMS0yMiA1OS42LTU2LjEgNzIuNy0yMS4yIDguMS0zOS4yIDIyLjMtNTIuMSA0MC45LTEzLjEgMTktMTkuOSA0MS44LTE5LjkgNjQuOVY2MjBjMCA0LjQgMy42IDggOCA4aDQ4YzQuNCAwIDgtMy42IDgtOHYtMjIuN2E0OC4zIDQ4LjMgMCAwIDEgMzAuOS00NC44YzU5LTIyLjcgOTcuMS03NC43IDk3LjEtMTMyLjUuMS0zOS4zLTE3LjEtNzYtNDguMy0xMDMuM3pNNDcyIDczMmE0MCA0MCAwIDEgMCA4MCAwIDQwIDQwIDAgMSAwLTgwIDB6Ij48L3BhdGg+DQo8L3N2Zz4NCg==);
 }
 
 .security-enabled-tip {
@@ -951,10 +1021,9 @@ input[type="password"]::-ms-reveal {
     flex-grow: 1;
 }
 .lines-display{
-    margin: 12px 40px 0 40px;
+    margin: 12px 31px 0 40px;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
     height: 172px;
     overflow: hidden;
     transition: all .5s;
@@ -962,10 +1031,12 @@ input[type="password"]::-ms-reveal {
 }
 .active-line{
     position: relative;
-    width: 115px;
+    width: 111px;
     height: 160px;
     border: 2px solid #E1E3E6;
     border-radius: 6px;
+    margin-right: 8px;
+    margin-bottom: 8px;
     list-style: none
 }
 
@@ -1112,6 +1183,10 @@ input[type="password"]::-ms-reveal {
     width: 24px;
     height: 24px;
     background-size: 18px !important;
+}
+
+.changeStyle{
+    cursor: not-allowed !important;
 }
 
 /*************************** 弹框通知样式 ********************************/
@@ -1284,6 +1359,183 @@ input[type="password"]::-ms-reveal {
     bottom:0;
     top:0;
     background:rgb(2 1 1 / 77%);
+}
+
+.file-popup{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 0;
+    height: 0;
+    position: absolute;
+    z-index: 9;
+    background-color: rgba(10, 11, 17, .3);
+    transition: all 0.5s ease-in-out;
+    overflow: hidden;
+}
+
+.minimized {
+    width: 100%;
+    height: 100%;
+}
+
+.file-popup-content{
+    /* display: none; */
+    width: 37.5%;
+    min-width: 320px;
+    min-height: 225px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 32px 0 #00000014;
+    border-radius: 4px;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    position: relative;
+}
+
+.file-head{
+    width: 100%;
+    padding: 8px 0;
+    font-family: OpenSans-Bold;
+    font-weight: 700;
+    font-size: 15px;
+    color: #222222;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 24px;
+}
+
+.file-body{
+    width: 58.3%;
+    padding-top: 12px;
+}
+
+.file-body-content{
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 80px;
+    background: #F2F3F5;
+    border: 1px solid #DDDFE4;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.file-body-content_disable {
+    opacity: 0.6;
+    cursor: not-allowed
+}
+
+.file-body-content span:nth-child(1){
+    width: 48px;
+    height: 48px;
+}
+
+.file-body-content-text{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-family: OpenSans;
+    font-size: 13px;
+    color: #222222;
+    letter-spacing: 0;
+}
+.file-body-content-text span:nth-child(1){
+    width: 24px;
+    height: 24px;
+}
+
+.file-body-tips{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 32px;
+    font-family: OpenSans-SNaNpxibold;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 32px;
+}
+
+.file-body-tips-success{
+    display: block;
+    color: #27CA15;
+}
+
+.file-body-tips-failed{
+    display: block;
+    color: #F02F2B;
+}
+.file-tail{
+    width: 100%;
+    padding: 12px 0;
+    justify-content: center;
+    text-align: center;
+}
+
+.file-tail-button{
+    display: inline-block;
+    background: #B5D7FF;
+    font-family: OpenSans;
+    font-size: 14px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 20px;
+    padding: 6px 24px;
+    cursor: not-allowed;
+}
+
+.file-tail-button-show{
+    background: #2F91FF;
+    cursor: pointer;
+}
+
+.file-tail-button-none{
+    display: none;
+}
+
+.file-content{
+    color: #288EF6;
+}
+
+.file-content_selected {
+    color: #222222;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.file-close {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+}
+
+progress{
+    width: 90%;
+    height: 6px;
+    background: #F2F3F5;
+    border-radius: 3px;
+}
+
+progress::-webkit-progress-bar{
+    background-color: #F2F3F5;
+    border-radius: 3px;
+}
+
+progress::-webkit-progress-value{
+    background: #288EF6;
+    border-radius: 3px;
 }
 
 @font-face {

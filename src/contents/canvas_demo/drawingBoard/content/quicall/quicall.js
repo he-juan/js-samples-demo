@@ -1,4 +1,5 @@
 let grpClick2Talk
+let pageName = 'quicall'
 let popupPort
 let extensionNamespace
 let TIP_CLOSE_DELAY = 3 * 1000
@@ -33,7 +34,15 @@ let searchResult
 let lineExpand
 let popupTip
 
-let privacySettings         // 隐私和安全性设置
+let ringLineData = []       // 保存振铃线路信息
+let settingNav
+let settingNavList
+let privacySettings // 隐私和安全性设置
+let wordDialing
+let popupTipTimeoutEvent
+let contactSource
+let contactSourceLdap
+let contactSourceLocal
 
 /********************************蒙版***************************************/
 
@@ -41,7 +50,9 @@ let mb= document.createElement('div');
 let currentShareContent     // 当前共享内容
 let clickContent = {        // 当前点击线路的Id
     lineId: '',
-    shareType: ''
+    localLineId:'',
+    shareType: '',
+    localShare: false
 }
 
 /****************************弹框按钮************************************/
@@ -53,8 +64,29 @@ let requestShareTipsSpan    // 共享结果
 let countDownNumber = 40    // 桌面倒计时时间
 let countDownTimer          // 弹框通知定时器
 let countDownNumText
+let peerInfoMessage
+let fileInfo                // 选择的文件信息
+let sendText                // 发送的文件
+let sendStatus              // 发送文件状态
+let schedule                // 发送文件进度
+let progress                // 发送文件进度条
+let fileHead                // 弹窗头部标题
+let fileClose               // 关闭文件弹窗按钮
+let filePopup               // 文件选择弹窗
+let fileUpload              // 文件上传 icon
+let fileContent             // 弹窗内容
+let fileBodyTips            // 是否发送成功文案
+let fileNameIcon            // 文件icon，没有选择文件前是隐藏的
+let fileTailButton          // 发送/取消按钮
+let fileBodyContent         // 弹窗主体部分
+let filePopupState = false  // 共享文件弹窗开关状态
+let isShareScreen = false   // 是否开启共享
+let remoteShareInfo = {     // 对端共享状态
+    lineId: '',
+    shareType: ''
+}
 
-let popupTipTimeoutEvent
+let requestShareTipsWrapper
 /*************************************************页面处理*********************************************************/
 
 /**
@@ -63,20 +95,8 @@ let popupTipTimeoutEvent
 function setDomBindingEvent() {
     // 页面message设置
     // 登录区
-    let addressLabel = document.getElementsByClassName('address-label')[0]
-    addressLabel.innerText = currentLocale['L0']
     let addressErrorTip = document.getElementsByClassName('address-error-tip')[0]
     addressErrorTip.innerText = currentLocale['L6']
-    let usernamePromptTip = document.getElementsByClassName('username-prompt-tip')[0]
-    usernamePromptTip.innerText = currentLocale['L15']
-    let usernameLabel = document.getElementsByClassName('username-label')[0]
-    usernameLabel.innerText = currentLocale['L1']
-    let usernameErrorTip = document.getElementsByClassName('username-error-tip')[0]
-    usernameErrorTip.innerText = currentLocale['L3']
-    let passwordPromptTip = document.getElementsByClassName('password-prompt-tip')[0]
-    passwordPromptTip.innerText = currentLocale['L16']
-    let passwordLabel = document.getElementsByClassName('password-label')[0]
-    passwordLabel.innerText = currentLocale['L2']
     let passwordErrorTip = document.getElementsByClassName('password-error-tip')[0]
     passwordErrorTip.innerText = currentLocale['L4']
     // 拨号区
@@ -90,21 +110,16 @@ function setDomBindingEvent() {
     console.log('set dom binding event')
     // 登录区
     loginArea = document.getElementsByClassName('login-container')[0]
-
     addressInput = document.getElementById('address')
     usernameInput = document.getElementById('username')
     passwordInput = document.getElementById('password')
     // 添加输入监听事件
     addressInput.addEventListener('input', handleInputStyle)
+    addressInput.placeholder = currentLocale['L15']
     addressInput.addEventListener('blur', addressCheck)
     usernameInput.addEventListener('input', handleInputStyle)
     passwordInput.addEventListener('input', handleInputStyle)
-
-    // 账号密码说明
-    usernameAbout = document.getElementById('usernameAbout')
-    setInputAboutHover(usernameAbout, 'username-prompt')
-    passwordAbout = document.getElementById('passwordAbout')
-    setInputAboutHover(passwordAbout, 'password-prompt')
+    passwordInput.placeholder = currentLocale['L16']
 
     // 密码明文、密文切换
     passwordModeSet = document.getElementById('passwordModeSet')
@@ -123,6 +138,7 @@ function setDomBindingEvent() {
 
     // 登录
     loginButton = document.getElementById('login')
+    loginButton.value = currentLocale['L9']
     loginButton.addEventListener('click', login)
 
     // tip 提示
@@ -143,7 +159,7 @@ function setDomBindingEvent() {
 
     callButton = document.getElementById('normalCall')
     callButton.value = currentLocale['L24']
-    callButton.addEventListener('click', call)
+    callButton.addEventListener('click', handleCall)
 
     // 号码输入区
     phoneNumber = document.getElementById('phoneNumber')
@@ -171,7 +187,7 @@ function setDomBindingEvent() {
             let number = event.target.value.trim()
             if (number){                           // 回车事件 处理 呼叫流程
                 console.log("start call number:" , number)
-                call()
+                handleCall()
             }
         }
     });
@@ -186,32 +202,81 @@ function setDomBindingEvent() {
     lineExpand.addEventListener('click', lineExpandClick)
     popupTip = document.getElementsByClassName('popup-tips')[0]
 
-    // 隐私设置
-    privacySettings = document.getElementById('privacySettings')
-    privacySettings.addEventListener('click', function () {
-        if (!privacySettings.classList.contains('GRP-icon-security-blue')) {
-            // 启用安全策略
-            console.log('enable security.')
-            privacySettings.classList.add('GRP-icon-security-blue')
-            privacySettings.classList.remove('GRP-icon-security-ash')
-            popupTip.classList.remove('security-disabled-tip')
-            showPopupTip("L17", true, 'security-enabled-tip')
+    /***************************设置菜单***********************/
+    settingNav = document.getElementById('setting-nav')
+    settingNavList = document.querySelector('.setting-nav-list')
+    settingNav.addEventListener('click', function (){
+        console.log('settingNavList.style.display：', settingNavList.style.display)
+        if(settingNavList.style.display === 'none'){
+            settingNavList.style.display = 'block'
+        }else {
+            settingNavList.style.display = 'none'
+        }
+    })
+    document.querySelector('.privacy-settings-tip').innerText = currentLocale['L17']
+    document.querySelector('.word-dialing-tip').innerText = currentLocale['L18']
+    document.querySelector('.contact-source-tip').innerText = currentLocale['L150']
+    document.querySelector('.contact-source-ldap-tip').innerText = currentLocale['L151']
+    document.querySelector('.contact-source-local-tip').innerText = currentLocale['L152']
 
-            // 不保留用户数据
+    // 安全登出设置
+    privacySettings = document.getElementById('privacy-settings')
+    privacySettings.addEventListener('click', function () {
+        console.log('privacySettings.checked:', privacySettings.checked)
+        if (privacySettings.checked) {
+            console.log('enable security.')
             grpClick2Talk.keepUserInfo = false
             popupSendMessage2Background({ cmd: 'userDataControl', data: { keep: false } })
         } else {
-            // 关闭安全策略
             console.log('disable security.')
-            privacySettings.classList.remove('GRP-icon-security-blue')
-            privacySettings.classList.add('GRP-icon-security-ash')
-            popupTip.classList.remove('security-enabled-tip')
-            showPopupTip('L18', true, 'security-disabled-tip')
-
-            // 保留用户数据
             grpClick2Talk.keepUserInfo = true
             popupSendMessage2Background({ cmd: 'userDataControl', data: { keep: true } })
         }
+    })
+
+    // 划词拨号
+    wordDialing = document.getElementById('word-dialing')
+    wordDialing.addEventListener('click', function (){
+        if (wordDialing.checked) {
+            console.log('enable word dialing.')
+        } else {
+            console.log('disable word dialing.')
+        }
+        grpClick2Talk.wordDialingEnabled = wordDialing.checked
+        popupSendMessage2Background({ cmd: 'setWordDialing', data: {wordDialing:grpClick2Talk.wordDialingEnabled }})
+    })
+
+    // 通讯录来源
+    contactSource = document.getElementById('contact-source')
+    contactSourceLdap = document.getElementById('contact-source-ldap')
+    contactSourceLocal = document.getElementById('contact-source-local')
+    contactSource.addEventListener('click', function (){
+        if (contactSource.checked) {
+            console.log('enable word dialing.')
+            contactSourceLdap.checked = true
+            contactSourceLocal.checked = true
+
+            grpClick2Talk.contactSearchFrom.ldap = true
+            grpClick2Talk.contactSearchFrom.localAddressBook = true
+        } else {
+            console.log('disable word dialing.')
+            contactSourceLdap.checked = false
+            contactSourceLocal.checked = false
+
+            grpClick2Talk.contactSearchFrom.ldap = false
+            grpClick2Talk.contactSearchFrom.localAddressBook = false
+        }
+        updateContactSource()
+    })
+    contactSourceLdap.addEventListener('click', function (){
+        console.log('contactSourceLdap.checked:', contactSourceLdap.checked)
+        grpClick2Talk.contactSearchFrom.ldap = contactSourceLdap.checked
+        updateContactSource()
+    })
+    contactSourceLocal.addEventListener('click', function (){
+        console.log('contactSourceLocal.checked:', contactSourceLocal.checked)
+        grpClick2Talk.contactSearchFrom.localAddressBook = contactSourceLocal.checked
+        updateContactSource()
     })
 
     // 共享弹窗
@@ -229,42 +294,56 @@ function setDomBindingEvent() {
 
     // 是否存在共享的提示
     requestShareTipsWrapper = document.getElementsByClassName('requestShare-tips-wrapper')[0]
+
+    /****************************共享文件相关************************************/
+    schedule = document.createElement('span')
+    progress = document.createElement('progress')
+    fileHead = document.getElementsByClassName('file-head')[0]
+    fileClose = document.getElementsByClassName('file-close')[0]
+    filePopup = document.getElementsByClassName('file-popup')[0]
+    fileUpload = document.getElementsByClassName('file-upload')[0]
+    fileContent = document.getElementsByClassName('file-content')[0]
+    fileBodyTips = document.getElementsByClassName('file-body-tips')[0]
+    fileNameIcon = document.getElementsByClassName('file-name-icon')[0]
+    fileTailButton = document.getElementsByClassName('file-tail-button')[0]
+    fileBodyContent = document.getElementsByClassName('file-body-content')[0]
+
+    fileBodyContent.onclick = fileUploadOnClick
+    fileClose.onclick = closeFilePopup
+    fileTailButton.onclick = handleFileAction
+    fileHead.innerHTML = currentLocale['L117']
+    fileContent.innerHTML = currentLocale['L125']
+    schedule.className = 'schedule'
+}
+
+/**
+ * 根据之前的选择设置配置项是否启用
+ */
+function setConfigurationItems(){
+    console.log('set configuration items')
+    privacySettings.checked = !grpClick2Talk.keepUserInfo
+    wordDialing.checked = grpClick2Talk.wordDialingEnabled
+
+    contactSourceLdap.checked = grpClick2Talk.contactSearchFrom.ldap
+    contactSourceLocal.checked = grpClick2Talk.contactSearchFrom.localAddressBook
+    contactSource.checked = !!(contactSourceLocal.checked || contactSourceLdap.checked);
+}
+
+/**
+ * 更新联系人搜索源
+ */
+function updateContactSource(){
+    contactSource.checked = !!(contactSourceLocal.checked || contactSourceLdap.checked);
+    popupSendMessage2Background({
+        cmd: 'setContactSearch',
+        data: {
+            ldap: grpClick2Talk.contactSearchFrom.ldap,
+            localAddressBook: grpClick2Talk.contactSearchFrom.localAddressBook
+        }
+    })
 }
 
 /***************************************************登录区*********************************************/
-/**
- * 设置username和password提示
- * @param target
- * @param promptClass
- */
-function setInputAboutHover(target, promptClass) {
-    if (!target) {
-        return
-    }
-
-    let promptTarget = document.getElementsByClassName(promptClass)[0]
-    target.addEventListener('mouseover', function (e) {
-        console.log('mouseover')
-        e.preventDefault()
-        if (promptTarget) {
-            if (currentLocale.language === 'en-US') {
-                // 重新设置tip提示的位置
-                console.log('promptTarget.parentElement:', promptTarget.parentElement)
-                promptTarget.style.height = '32px'
-                promptTarget.style.top = '-68px'
-            }
-            promptTarget.style.display = 'block'
-        }
-    })
-
-    target.addEventListener('mouseout', function (e) {
-        console.log('mouseout')
-        e.preventDefault()
-        if (promptTarget) {
-            promptTarget.style.display = 'none'
-        }
-    })
-}
 
 /**
  * 显示登录结果 成功、失败、鉴权
@@ -281,19 +360,13 @@ function handleInputStyle(event) {
                 // 判断是否是https访问
                 let content = event.target.value
                 if(content && content.indexOf('https://') >= 0){
-                    errorTip.innerText =  currentLocale['noSupportHttps']
+                    errorTip.innerText =  currentLocale["L140"]
                     errorTip.style.display = "block"
-                    if(!loginButton.classList.contains('address-error-login')){
-                        loginButton.classList.add('address-error-login')
-                        loginButton.disabled = true
-                    }
+                    loginButton.disabled = true
                 }else{
                     errorTip.innerText = ''
                     errorTip.style.display = "none"
-                    if(loginButton.classList.contains('address-error-login')){
-                        loginButton.classList.remove('address-error-login')
-                        loginButton.disabled = false
-                    }
+                    loginButton.disabled = false
                 }
             }
         }
@@ -388,6 +461,51 @@ function setLoginTips(type, messageKey, num) {
 }
 
 /**
+ * 设置拨号页面提示
+ * @param tipKey
+ * @param autoCloseTip  是否自己关闭tip提示
+ * @param className
+ */
+function setPopupTips(tipKey, autoCloseTip, className) {
+    if (!tipKey) {
+        return
+    }
+
+    if (!popupTip) {
+        popupTip = document.getElementsByClassName('popup-tips')[0]
+    }
+    let classLists = popupTip.classList
+    for(let i = 0; i<classLists.length; i++){
+        if(classLists[i] !== "popup-tips"){
+            popupTip.classList.remove(classLists[i])
+        }
+    }
+    if (className) {
+        popupTip.classList.add(className)
+    }
+
+    popupTip.textContent = currentLocale[tipKey]
+    popupTip.classList.remove('popup-tips-opacity-0')
+    popupTip.classList.add('popup-tips-opacity-1')
+
+    // 2秒后关闭提示
+    if (autoCloseTip) {
+        if (popupTipTimeoutEvent) {
+            clearTimeout(popupTipTimeoutEvent)
+            popupTipTimeoutEvent = null
+        }
+
+        popupTipTimeoutEvent = setTimeout(function () {
+            popupTip.classList.remove('popup-tips-opacity-1')
+            popupTip.classList.add('popup-tips-opacity-0')
+            if (className) {
+                popupTip.classList.remove(className)
+            }
+        }, TIP_CLOSE_DELAY)
+    }
+}
+
+/**
  * 自动填充已有的登录信息
  * @param data
  * {
@@ -422,6 +540,22 @@ function setLoginFromData(data) {
 }
 
 /***************************************************拨号区*********************************************/
+/**
+ * 判断之前选择的账号是否还处于激活状态
+ * @param accounts
+ * @returns {boolean}
+ */
+function isPreSelectAccountActive(accounts){
+    let active = false
+    for(let i = 0; i<accounts.length; i++){
+        if(parseInt(accounts[i].reg) === 1 && parseInt(accounts[i].id) === parseInt(grpClick2Talk.loginData.selectedAccountId)){
+            active = true
+            break
+        }
+    }
+    console.log('pre select account active ? ', active)
+    return active
+}
 
 /**
  * 设置当前设备的账号列表
@@ -433,7 +567,7 @@ function setLoginFromData(data) {
  */
 function setDeviceAccountList(accounts) {
     console.log('set device account list:', accounts)
-    if (!accounts || !accounts.length) {
+    if (!accounts) {
         return
     }
 
@@ -441,124 +575,93 @@ function setDeviceAccountList(accounts) {
     let hasRegisteredAccount = false  // 是否存在注册成功的账号
     let firstActiveAccount = null   // 保存第一个成功注册的账号
     let fragment = document.createDocumentFragment()
-    let deleteUl = function(){
-        if(deviceAccounts && deviceAccounts.children.length > 0 ){
-            for(let i = deviceAccounts.children.length - 1; i >= 0; i--){
-                let li = deviceAccounts.children[i]
-                deviceAccounts.removeChild(li)
-                if(!deviceAccounts.children.length){
-                    addLiContent()
+
+    let addAccountLists = function(){
+        for (let i = 0; i < accounts.length; i++) {
+            let account = accounts[i]
+            let accountId = parseInt(account.id)
+            let name = account['name']
+            let sipId = account['sip_id']
+            let id = account['id']
+            let accountClass = 'account' + accountId
+            let targetAccount = null
+
+            /*** 账号列表没有创建过，先创建节点 ***/
+            let newAccount = document.createElement('li').cloneNode(true)
+            newAccount.setAttribute('accountId', id)
+            newAccount.setAttribute('accountType', account.auto_cfg)
+            newAccount.setAttribute('sipId', sipId)
+            newAccount.setAttribute('name', name)
+            newAccount.className = 'device-account ' + accountClass
+
+            newAccount.onclick = switchAccount
+
+            /** 处理显示icon***/
+            let icon = document.createElement('div').cloneNode(true)
+            icon.className = `change-icon-parent GRP-icon-person`
+            icon.setAttribute('sipId', sipId)
+            icon.setAttribute('accountId', id)
+            icon.setAttribute('name', name)
+            icon.setAttribute('accountType', account.auto_cfg)
+            let iconText = document.createElement('div').cloneNode(true)
+            iconText.className = 'change-icon-txt'
+            iconText.setAttribute('sipId', sipId)
+            iconText.setAttribute('accountId', id)
+            iconText.setAttribute('accountType', account.auto_cfg)
+            iconText.setAttribute('name', name)
+            iconText.textContent = id
+            icon.appendChild(iconText)
+            newAccount.appendChild(icon)
+
+            /*** 处理显示账号内容***/
+            let span = document.createElement('span').cloneNode(true)
+            span.className = `accountContentWrap account_${name}_${sipId}`
+            span.setAttribute('accountId', id)
+            span.setAttribute('accountType', account.auto_cfg)
+            span.setAttribute('sipId', sipId)
+            span.textContent = `${name} (${sipId})`
+            span.onmousemove = mousemoveHandle
+            newAccount.appendChild(span)
+
+            fragment.appendChild(newAccount)
+            targetAccount = newAccount
+
+            if (parseInt(account.reg) === 1){
+                // 账号已激活
+                hasRegisteredAccount = true
+                targetAccount.style.display = 'flex'
+                // 更新账号信息
+                targetAccount.setAttribute('sipid', sipId)
+                targetAccount.setAttribute('accountType', account.auto_cfg)
+
+                if (!firstActiveAccount) {
+                    firstActiveAccount = targetAccount
                 }
+            }else {
+                // 账号从激活状态->未激活状态时，webSocket不会推送未激活状态的账号信息
             }
-        }else{
-            addLiContent()
-        }
-    }
 
-
-    let addLiContent = function(){
-        if (accounts.length) {
-            for (let i = 0; i < accounts.length; i++) {
-                let account = accounts[i]
-                let accountId = parseInt(account.id)
-                let name = account['name']
-                let sipId = account['sip_id']
-                let id = account['id']
-                let accountClass = 'account' + accountId
-                let targetAccount = null
-
-                /*** 账号列表没有创建过，先创建节点 ***/
-                let newAccount = document.createElement('li').cloneNode(true)
-                newAccount.setAttribute('accountId', id)
-                newAccount.setAttribute('accountType', account.auto_cfg)
-                newAccount.setAttribute('sipId', sipId)
-                newAccount.setAttribute('name', name)
-                newAccount.className = 'device-account ' + accountClass
-
-                newAccount.onclick = switchAccount
-
-                /** 处理显示icon***/
-                let icon = document.createElement('div').cloneNode(true)
-                icon.className = `change-icon-parent GRP-icon-person`
-                icon.setAttribute('sipId', sipId)
-                icon.setAttribute('accountId', id)
-                icon.setAttribute('name', name)
-                icon.setAttribute('accountType', account.auto_cfg)
-
-                let iconText = document.createElement('div').cloneNode(true)
-                iconText.className = 'change-icon-txt'
-                iconText.setAttribute('sipId', sipId)
-                iconText.setAttribute('accountId', id)
-                iconText.setAttribute('name', name)
-                iconText.setAttribute('accountType', account.auto_cfg)
-                iconText.textContent = id
-                icon.appendChild(iconText)
-                newAccount.appendChild(icon)
-
-                /*** 处理显示账号内容***/
-                let span = document.createElement('span').cloneNode(true)
-                span.className = `accountContentWrap account_${name}_${sipId}`
-                span.setAttribute('accountId', id)
-                span.setAttribute('accountType', account.auto_cfg)
-                span.setAttribute('sipId', sipId)
-                span.textContent = `${name} (${sipId})`
-                span.onmousemove = mousemoveHandle
-                newAccount.appendChild(span)
-
-                fragment.appendChild(newAccount)
-                targetAccount = newAccount
-
-                if (parseInt(account.reg) === 0) {  // 账号未注册时列表中不显示该账号
-                    targetAccount.style.display = 'none'
-                    if (targetAccount.classList.contains('device-account-active')) {
-                        targetAccount.classList.remove('device-account-active')
-                    }
-
-                    // 选择的账号变为inactive时，清除selectedAccountId
-                    if (accountId === parseInt(grpClick2Talk.loginData.selectedAccountId)) {
-                        console.log('previous select account is inactive.')
-                        updateSelectedAccountId('')
-                    }
-                } else {
-                    // 账号已激活
-                    hasRegisteredAccount = true
-                    targetAccount.style.display = 'flex'
-                    // 更新账号信息
-                    targetAccount.setAttribute('sipid', sipId)
-                    targetAccount.setAttribute('accountType', account.auto_cfg)
-
-                    if (!firstActiveAccount) {
-                        firstActiveAccount = targetAccount
-                    }
-                }
-
-                if(i === 0){
-                    if(changeIcontxt){
-                        changeIcontxt.textContent = id
-                    }
-                    selectAccount.innerText = `${name} (${sipId})`
-                    if (!targetAccount.classList.contains('device-account-active')) {
-                        targetAccount.classList.add('device-account-active')
-                        targetAccount.lastChild && targetAccount.lastChild.classList.add('device-account-active')
-                    }
-
-                    if( selectAccount && selectAccount.classList.contains('select-account-words_hover')){
-                        selectAccount.classList.remove('select-account-words_hover')
-                        selectAccount.setAttribute('title', '')
-                    }
-                }
-
-                if (i === accounts.length - 1) {
-                    deviceAccounts.appendChild(fragment)
-                }
+            if (i === accounts.length - 1) {
+                deviceAccounts.appendChild(fragment)
             }
         }
     }
 
-    deleteUl()
-    if (!grpClick2Talk.loginData.selectedAccountId && firstActiveAccount) {
-        // 重新设置选择的账号ID，默认为第一个激活的账号
-        updateSelectedAccountId(firstActiveAccount.getAttribute('accountid'))
+    for(let i = deviceAccounts.children.length - 1; i >= 0; i--){
+        let li = deviceAccounts.children[i]
+        deviceAccounts.removeChild(li)
+    }
+    if(accounts.length){
+        if(!isPreSelectAccountActive(accounts)){
+            updateSelectedAccountId('')
+        }
+
+        addAccountLists()
+
+        if (!grpClick2Talk.loginData.selectedAccountId && firstActiveAccount) {
+            // 重新设置选择的账号ID，默认为第一个激活的账号
+            updateSelectedAccountId(firstActiveAccount.getAttribute('accountid'))
+        }
     }
 
     for (let j = 0; j < deviceAccounts.children.length; j++) {
@@ -589,13 +692,16 @@ function setDeviceAccountList(accounts) {
 function setSelectAccount(hasRegisteredAccount) {
     if (hasRegisteredAccount) {
         changeSelectAccount.style.display = 'flex'
+        popupTip.innerHTML = ''
+        popupTip.classList.remove('popup-tips-opacity-1')
+        popupTip.classList.add('popup-tips-opacity-0')
 
         callButton.disabled = false
         callButton.style.backgroundColor = "#27CA15";
     } else {
         changeSelectAccount.style.display = 'none'
         // 没有账号时，页面显示tip提示
-        showPopupTip("L19")
+        setPopupTips("L19")
         callButton.disabled = true
         callButton.style.backgroundColor = "#c5c5c5";
     }
@@ -713,10 +819,10 @@ function updateLineStatus(lines) {
     if (!lines) {
         return
     }
-
+    grpClick2Talk.lineData = lines
     // 添加挂断，接听，hold按钮
     function createLi(line) {
-        let btn
+        let btn = ''
         if (line.state === 'ringing') {
             btn = `<grp-call-button type="answer" line="${line.line}"></grp-call-button>
                    <grp-call-button type="reject" line="${line.line}"></grp-call-button>`
@@ -737,16 +843,9 @@ function updateLineStatus(lines) {
         let lineClass = 'line' + line.line
         let existLineItem = lineDisplay.getElementsByClassName(lineClass)[0]
 
-        let tag = 'incomingCallNotification' + line.line
         if (line.state !== 'idle') {  // 空闲状态的线路不显示
             activeLineCount++
-
             let remoteShowNumber = line.remotenumber
-            // if(remoteShowNumber){
-            //     /*css已经设置文本方向为从右到左显示，使用 js 颠倒文字原本的顺序，并显示颠倒后的结果*/
-            //     remoteShowNumber = remoteShowNumber.split('').reverse().join('')
-            // }
-
             if (!existLineItem) {
                 let newLine = document.createElement('ul')
                 newLine.className = 'active-line ' + lineClass
@@ -877,28 +976,29 @@ async function getLocalStorage(){
  */
 async function getPhoneBookArray() {
     let result = []
+    if(!grpClick2Talk.contactSearchFrom.ldap && !grpClick2Talk.contactSearchFrom.localAddressBook){
+        console.log('contacts disabled')
+        return result
+    }
     let phoneBooks = await getLocalStorage()
     if (phoneBooks) {
-        if (phoneBooks.ldap && phoneBooks.ldap.length && phoneBooks.ldap[0] !== 'timeout') {
+        if (grpClick2Talk.contactSearchFrom.ldap && phoneBooks.ldap && phoneBooks.ldap.length && phoneBooks.ldap[0] !== 'timeout') {
             result = result.concat(phoneBooks.ldap)
         }
-        if (phoneBooks.localAddressBook && phoneBooks.localAddressBook.length) {
+        if (grpClick2Talk.contactSearchFrom.localAddressBook && phoneBooks.localAddressBook && phoneBooks.localAddressBook.length) {
             result = result.concat(phoneBooks.localAddressBook)
         }
     }
     return result
 }
 
-// 文本高亮显示
-function highlight(string, key) {
-    if (!string) {
-        return
-    }
-    let replaceKey = "<span class='search-highlight'>" + key + "</span>"
-    let replaceStr = new RegExp(key, "g");
-    return string.replace(replaceStr, replaceKey);
-}
 
+/**
+ * 匹配文本高亮设置
+ * @param filter
+ * @param regTarget
+ * @param parentNode
+ */
 function addHighlightSpan(filter, regTarget, parentNode) {
     let replaceReg = new RegExp(filter, "g");
     if (replaceReg.test(regTarget)) {
@@ -909,14 +1009,18 @@ function addHighlightSpan(filter, regTarget, parentNode) {
         let targetIndex = regTarget.indexOf(filter)
         let preContent = regTarget.substring(0, targetIndex)
         let endContent = regTarget.substring(targetIndex + filter.length)
-        let preSpan = document.createElement('span')
-        preSpan.textContent = preContent
-        let endSpan = document.createElement('span')
-        endSpan.textContent = endContent
 
-        parentNode.appendChild(preSpan)
+        if(preContent){
+            let preSpan = document.createElement('span')
+            preSpan.textContent = preContent
+            parentNode.appendChild(preSpan)
+        }
         parentNode.appendChild(highlightChild)
-        parentNode.appendChild(endSpan)
+        if(endContent){
+            let endSpan = document.createElement('span')
+            endSpan.textContent = endContent
+            parentNode.appendChild(endSpan)
+        }
     } else {
         parentNode.textContent = regTarget
     }
@@ -935,6 +1039,7 @@ let searchKeys = ['AccountNumber', 'CallerIDName', 'email', 'FirstName', 'LastNa
 async function searchForContacts() {
     document.querySelector("div.number-from").style.display = 'none'
     let filter = phoneNumber.value
+    filter = filter.replace(/\s/g, "") // 去除空格
     if (!filter) {
         // 没有内容时，清除搜索内容
         searchResult.innerHTML = ''
@@ -955,10 +1060,7 @@ async function searchForContacts() {
         if (isSearchNumber) {
             let inputNumberEle = document.createElement('div')
             inputNumberEle.className = 'result-menu result-menu-select phone-number-text'
-            let child = document.createElement('div')
-            child.className = 'number-input-text'
-            child.textContent = filter
-            // inputNumberEle.innerHTML = '<div class="number-input-text">' + filter + '</div>'
+            inputNumberEle.innerHTML = '<div class="number-input-text">' + filter + '</div>'
             inputNumberEle.onclick = function () {
                 phoneNumber.value = filter
                 searchResult.style.display = 'none'
@@ -975,18 +1077,38 @@ async function searchForContacts() {
             }
             // 兼容ldap 和 本地通讯录搜索字段
             let email = currentItem['email'] || currentItem['Mail']
-            let phonenumber = currentItem['AccountNumber'] || (currentItem['Phone'] && currentItem['Phone']['phonenumber'])
-            /**
-             ldap = [{AccountNumber: '3593',CallerIDName: '欧欧',email: 'chrou@grandstream.cn'}]
-             localAddressBook = [{
-             id: '269311',
-             FirstName: '1370',
-             Frequent: '0',
-             Phone: {phonenumber: '1370', accountindex: '0', _type: 'Work'},
-             Primary: '0',
-             id: "269311"
-             }]
-             */
+            let phonenumber
+            if("AccountNumber" in currentItem){
+                // ldap 数据[{AccountNumber: '3593',CallerIDName: '欧欧',email: 'chrou@grandstream.cn'}]
+                phonenumber = currentItem['AccountNumber']
+            }else if("Phone" in currentItem){
+                if (Object.prototype.toString.call(currentItem['Phone']) === '[object Object]') {
+                    // Phone 只有一个号码时，数据为对象格式
+                    // {"phonenumber": "1002","accountindex": "0","_type": "Work"}
+                    phonenumber = currentItem['Phone'].phonenumber
+                } else if (Object.prototype.toString.call(currentItem['Phone']) === '[object Array]') {
+                    // Phone 存在多个号码时，数据为数组格式。
+                    // [{"phonenumber": "1001","accountindex": "1","_type": "Home"},{"phonenumber": "1001","accountindex": "1","_type": "Cell"}]
+                    let firstMarch = ''
+                    for (let j = 0; j < currentItem['Phone'].length; j++) {
+                        let number = currentItem['Phone'][j].phonenumber
+                        if (number) {
+                            // 1.优先获取与输入文本匹配的号码
+                            if(number.toLowerCase().indexOf(filter) > -1){
+                                phonenumber = number
+                                break
+                            }
+                            // 2.都不匹配时使用第一个
+                            if(!firstMarch){
+                                firstMarch = number
+                            }
+                        }
+                    }
+                    if(!phonenumber){
+                        phonenumber =firstMarch
+                    }
+                }
+            }
             let name = currentItem['CallerIDName'] || currentItem['calleridname']   // ldap匹配
             if (!name) {  // localAddressBook
                 /**
@@ -1008,9 +1130,6 @@ async function searchForContacts() {
 
             // 匹配文本设置高亮
             let number = phonenumber
-            // name = name ? highlight(name, filter) : ''
-            // let number = phonenumber ? highlight(phonenumber, filter) : ''
-            // email = email ? highlight(email, filter) : ''   // 邮箱仅匹配前面部分
             if (number) {
                 let resultMenu = document.createElement('div')
                 resultMenu.className = 'result-menu'
@@ -1058,7 +1177,7 @@ async function searchForContacts() {
             for (let key in currentItem) {
                 let itemValue = currentItem[key]   // 默认使用key 对应的value
                 if (key === 'email') {
-                    itemValue = itemValue.split('@')[0]  // 获取邮箱的前缀部分
+                    // itemValue = itemValue.split('@')[0]  // 获取邮箱的前缀部分
                 } else if (key === 'Phone') {
                     // Todo: 只有一个号码时，xml_str2json解析后返回的数据格式为Object
                     // 本地联系人，获取 phonenumber
@@ -1069,6 +1188,9 @@ async function searchForContacts() {
                         // Phone 存在多个号码时，数据为数组格式
                         itemValue = currentItem[key]
                     }
+                }else if (key.toLowerCase() === 'calleridname'){
+                    // TODO: CallerIDName 存在 “王无名” 和 “无名 王” 两种格式
+                    itemValue = itemValue?.split(' ').reverse().join("").replace(/[ ]/g,"")
                 }
 
                 if (searchKeys.includes(key)) {
@@ -1135,45 +1257,6 @@ function switchDisplayPage(isLogin, loginData) {
             // 自动填充之前的账号信息
             setLoginFromData(loginData)
         }
-    }
-}
-
-/**
- * 显示提示
- * @param tipKey
- * @param autoCloseTip  是否自己关闭tip提示
- * @param className
- */
-function showPopupTip(tipKey, autoCloseTip, className) {
-    if (!tipKey) {
-        return
-    }
-
-    if (!popupTip) {
-        popupTip = document.getElementsByClassName('popup-tips')[0]
-    }
-    if (className) {
-        popupTip.classList.add(className)
-    }
-
-    popupTip.textContent = currentLocale[tipKey]
-    popupTip.classList.remove('popup-tips-opacity-0')
-    popupTip.classList.add('popup-tips-opacity-1')
-
-    // 2秒后关闭提示
-    if (autoCloseTip) {
-        if (popupTipTimeoutEvent) {
-            clearTimeout(popupTipTimeoutEvent)
-            popupTipTimeoutEvent = null
-        }
-
-        popupTipTimeoutEvent = setTimeout(function () {
-            popupTip.classList.remove('popup-tips-opacity-1')
-            popupTip.classList.add('popup-tips-opacity-0')
-            if (className) {
-                popupTip.classList.remove(className)
-            }
-        }, TIP_CLOSE_DELAY)
     }
 }
 
@@ -1362,6 +1445,30 @@ function doLogout() {
         // 清除输入框数据
         addressInput.value = ''
         passwordInput.value = ''
+
+        // 恢复默认值
+        grpClick2Talk.keepUserInfo = true
+        grpClick2Talk.wordDialingEnabled = true
+        grpClick2Talk.contactSearchFrom.ldap = true
+        grpClick2Talk.contactSearchFrom.localAddressBook = true
+        setConfigurationItems()
+    }
+    for(let i in gsRTC.webrtcSessions){
+        gsRTC.clearSession({lineId: gsRTC.webrtcSessions[i].lineId})
+    }
+}
+
+/**
+ * 处理呼叫
+ **/
+
+function handleCall(){
+    // 首先判断是否存在共享，若存在共享，需要向提示；否则直接呼叫；
+    // 提示信息：当前已存在共享，发起新呼叫后共享将被暂停
+    if(currentShareContent && currentShareContent.isEstablishSuccessPc){
+        callPrompt({from: 'call', role: 'caller'})
+    }else {
+        call()
     }
 }
 
@@ -1372,7 +1479,7 @@ function call() {
     let callNumber = phoneNumber.value
     console.log('[EXT] call number ', callNumber)
     if (!callNumber) {
-        showPopupTip("L20", true)
+        setPopupTips("L20", true)
         return
     } else {
         if (callNumber.trim) {
@@ -1393,6 +1500,241 @@ function call() {
 }
 
 /**
+ * 更新登录状态
+ * @param msg
+ */
+function updateLoginStatus(msg){
+    if (msg && msg.grpClick2TalObj) {
+        // 已包含所有信息：通讯录，登录账号信息等
+        grpClick2Talk = msg.grpClick2TalObj
+
+        extensionNamespace.storage.local.get('phoneBooks', function (obj) {
+            if (obj && obj['phoneBooks']) {
+                grpClick2Talk.phoneBooks = JSON.parse(obj['phoneBooks'])
+                console.log('[EXT] get phone book!', grpClick2Talk.phoneBooks)
+            }
+        });
+        setConfigurationItems()
+    }
+
+    if(!msg || !msg.data || !msg.data.response){
+        return
+    }
+
+    switch (msg.data.response) {
+        case "unauthorized":
+            console.log('[EXT] login unauthorized.')
+            setLoginTips('UNAUTHORIZED', 'L14')
+            break
+        case "success":
+            console.log('[EXT] login success.')
+            setLoginTips('SUCCESS', 'L22')
+
+            // auto close the tip after 3 seconds
+            setTimeout(function () {
+                console.log('[EXT] close tip')
+                setLoginTips('CLOSE', 'L21')
+                switchDisplayPage(grpClick2Talk.isLogin, grpClick2Talk.loginData)
+            }, 500)
+
+            let { ver: version}  =  msg.data.body
+            if(version && version.split(".")[2] < 4){
+                console.log(`[EXT]The current version ${version} does not support connecting to websockets. Please upgrade the version`)
+                setTimeout(function(){
+                    setPopupTips("L118",true)
+                },500)
+            }
+            break
+        case 'failed':
+            setLoginTips('ERROR', 'L13')
+            break
+        case "requestTimeout":
+            console.log('[EXT] request timeout.')
+            setLoginTips('TIMEOUT', 'L10')
+            break
+        case 'SyntaxError':
+            console.log('[EXT] SyntaxError', msg.data.message)
+            let num
+            num = msg.data.body && msg.data.body.split && msg.data.body.split('wrong')[1]
+            setLoginTips('SyntaxError', 'L12', num)
+            break
+        default:
+            console.log('[EXT] login error.', msg.data)
+            if(msg.data.body && msg.data.body === 'locked'){
+                setLoginTips('ERROR', 'L114')
+            } else if(msg.data.response.url && msg.data.response.url.indexOf('cgi-bin/access') >=0 && msg.data.response.status === 403){
+                setLoginTips('ERROR', 'L48')
+            } else {
+                let num = msg.data.body && msg.data.body.split && msg.data.body.split('wrong')[1]
+                if(num){
+                    setLoginTips('ERROR', 'L12', num)
+                }else {
+                    setLoginTips('ERROR', 'L13')
+                }
+            }
+            break
+    }
+}
+
+/**
+ * 收到共享
+ * @param msg
+ */
+function handleIncomingCall(msg){
+    if(!msg || !msg.message){
+        return
+    }
+
+    console.log("Receive the presentation, whether to accept the presentation")
+    /**1.添加蒙版样式  2.处理按钮文案  3.判断是否是共享 4.获取对端来电名字 5.处理注释内容 6.倒计时内容 6.显示整个弹框  **/
+    mb.classList.add('mb');
+    document.body.appendChild(mb);
+
+    refuseShareBtn.innerText = currentLocale['L83']
+    refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
+    acceptShareBtn.innerText = currentLocale['L84']
+
+    let remoteName
+    // 判断是否在共享
+    if(msg.message.currentShareContent && msg.message.currentShareContent.shareType === 'shareScreen'){     // 共享
+        remoteShareInfo.shareType = 'shareScreen'
+        remoteName = msg.message.currentShareContent.remoteCallInfo.remotename ||  msg.message.currentShareContent.remoteCallInfo.remotenumber
+        requestShareText.innerHTML = currentLocale['L85'].replace('{0}', remoteName)
+
+        // 显示注释内容
+        if(msg.message.receiveSharePopupNum >=2){
+            // (1) 显示标注消息 ; (2) 若点击确定，关闭前一路peerConnection
+            requestShareTipsWrapper.classList.toggle('requestShare-tips-wrapper-show', true)
+        }
+    }else{
+        // 文件传输提示
+        remoteShareInfo.shareType = 'shareFile'
+        remoteName = msg.message.data.remoteCallInfo.remotename || msg.message.data.remoteCallInfo.remotenumber
+        let fileName = msg.message.data.fileInfo.name + ' (' + formatFileSize(msg.message.data.fileInfo.size) + ')'
+        requestShareText.innerHTML = currentLocale['L123'].replace('{0}', remoteName).replace(' {1} ', fileName)
+        peerInfoMessage = msg.message.data
+    }
+
+    // 显示整个弹框
+    sharePopup.classList.toggle('requestShareBox-show',true)
+    // 倒计时内容
+    countDown()
+}
+
+/**
+ * 处理quicall页面的remote answer sdp
+ * @param msg
+ */
+function handleQuicallRemoteAnswerSdp(msg){
+    if(!msg || !msg.data){
+        return;
+    }
+
+    let content = msg.data
+    let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: content.localLineId })
+    if(!session){
+        log.warn("quicall remoteAnswerSdp: session is not found")
+        return
+    }
+    if (msg.data.rspInfo && msg.data.rspInfo.rspCode === 200) {
+        console.log("handle remoteAnswerSdp")
+        let sdp = content.sdp.data
+        session.remoteLineId = content.remoteLineId
+        if (sdp) {
+            session.handleServerResponseSdp(sdp)
+        } else {
+            console.log('answer sdp is not offer now.')
+        }
+    } else {
+        session.isHandleDestroy = true
+        session.JSEPStatusRollback()
+        gsRTC.clearSession({lineId: content.localLineId})
+        switchSendStatus('reject')
+    }
+}
+
+/**
+ * 设置webSocket连接状态
+ * @param msg
+ */
+function setWebsocketStatus(msg){
+    if(!msg || !msg.data){
+        return;
+    }
+
+    console.log('websocket status:', msg.data)
+    if(msg.data.code === 999){
+        console.log("[EXT] webSocket success")
+        if(msg.data.status === 1){
+            setPopupTips("L46", true, "success-tips")
+        }else {
+            popupTip.classList.remove('popup-tips-opacity-1')
+            popupTip.classList.add('popup-tips-opacity-0')
+        }
+    }else {
+        if(msg.data.status === -1){
+            console.log('websocket abnormal onclose, auto logout.')
+            doLogout()
+            setLoginTips('ERROR', 'L47')
+        } else if(msg.data.status === 2){
+            console.log('reconnecting...')
+            setPopupTips("L143", false)
+        }
+    }
+}
+
+/**
+ * 线路状态中共享图标是否高亮设置
+ * @param msg
+ */
+function setSharingState(msg){
+    if(!msg){
+        return;
+    }
+
+    let shareState = msg?.shareState
+    if(shareState){
+        /**改变共享文件的样式**/
+        if(msg.changeIconState && msg.content){
+            changeShareBtnStyle({state: msg.changeIconState, content: msg.content})
+        }
+
+        /**修改popup内容**/
+        if(shareState === 'open'){
+            if(msg.content && msg.content.isEstablishSuccessPc){
+                iconStyleToggle(msg.content)
+                currentShareContent = msg.content
+                if(clickContent.shareType === 'shareScreen'){
+                    currentShareContent.localShare = true
+                }
+            }
+        }else if(shareState === 'close'){
+            currentShareContent = null
+        }
+    }else{
+        // 再次点击显示提示
+        setPopupTips("L72", true)
+    }
+}
+
+/**
+ * In firefox, background pages do not support the use of alert(),confirm() or prompt()
+ * @param msg
+ */
+function guideToEnableClickToDial(msg){
+    console.info('Click-To-Dial Feature is not enabled')
+    let serverURL = grpClick2Talk.loginData.url.split('/addon')[0] + '/phset/call/outgoing'
+    // 非admin账号，需要引导用户使用admin账号登录普通Tab页并启用“Click-To-Dial Feature”功能
+    let confirmTip = currentLocale['L1004'].replace('{0}', serverURL)
+    if (confirm(confirmTip) === true) {
+        window.open(serverURL, '_blank');
+    } else {
+        console.log('refuse enable "Click-To-Dial Feature".')
+        confirm(currentLocale["L1003"])
+    }
+}
+
+/**
  * 处理background.js 返回的结果
  */
 function handleBackgroundMessage(msg) {
@@ -1401,6 +1743,7 @@ function handleBackgroundMessage(msg) {
     }
     msg = JSON.parse(msg)
 
+    console.log('handle background message cmd:', msg.cmd, '; data: ', msg.data)
     switch (msg.cmd) {
         case "popupShowConfig":
             console.log('set popup config of click2Talk ')
@@ -1413,106 +1756,19 @@ function handleBackgroundMessage(msg) {
                     console.log('[EXT] get phone book!', grpClick2Talk.phoneBooks)
                 }
             });
+
+            // 设置配置项默认值
+            setConfigurationItems()
             break
         case 'loginStatus':  // 更新当前登录状态
-            if (msg.grpClick2TalObj) {
-                // 已包含所有信息：通讯录，登录账号信息等
-                grpClick2Talk = msg.grpClick2TalObj
-
-                extensionNamespace.storage.local.get('phoneBooks', function (obj) {
-                    if (obj && obj['phoneBooks']) {
-                        grpClick2Talk.phoneBooks = JSON.parse(obj['phoneBooks'])
-                        console.log('[EXT] get phone book!', grpClick2Talk.phoneBooks)
-                    }
-                });
-            }
-
-            switch (msg.data.response) {
-                case "limitedAccess":
-                    setLoginTips('VERIFICATION', 'L13')
-
-                    let serverURL = grpClick2Talk.loginData.url
-                    if(serverURL && serverURL.startsWith("https")){
-                        if (confirm('Please visit ' + serverURL + ' webpage for authorization first, and return to this page to login again after success.') === true) {
-                            window.open(serverURL, '_blank');
-                        } else {
-                            console.log('permission check refuse')
-                            grpClick2Talk.permissionCheckRefuse = true
-                            popupSendMessage2Background({ cmd: 'permissionCheckRefuse' })
-                        }
-                    }
-                    break
-                case "unauthorized":
-                    console.log('[EXT] login unauthorized.')
-                    setLoginTips('UNAUTHORIZED', 'L14')
-                    break
-                case "success":
-                    console.log('[EXT] login success.')
-                    setLoginTips('SUCCESS', 'L22')
-
-                    // auto close the tip after 3 seconds
-                    setTimeout(function () {
-                        console.log('[EXT] close tip')
-                        setLoginTips('CLOSE', 'L21')
-                        switchDisplayPage(grpClick2Talk.isLogin, grpClick2Talk.loginData)
-                    }, 500)
-
-                    autoFillNumber()
-                    let { ver: version}  =  msg.data.body
-                    if(version && version.split(".")[2] < 4){
-                        console.warn(`[EXT]The current version ${version} does not support connecting to websockets. Please upgrade the version`)
-                        setTimeout(function(){
-                            showPopupTip("L118",true)
-                        },500)
-                    }
-                    break
-                case "requestTimeout":
-                    console.log('[EXT] request timeout.')
-                    setLoginTips('TIMEOUT', 'L10')
-                    break
-                case 'SyntaxError':
-                    console.log('[EXT] SyntaxError', msg.data.message)
-                    let num
-                    num = msg.data.body && msg.data.body.split('wrong')[1]
-                    setLoginTips('SyntaxError', 'L12', num)
-                    break
-                default:
-                    console.log('[EXT] login error.', msg.data)
-                    if(msg.data.body && msg.data.body === 'locked'){
-                        setLoginTips('ERROR', 'L114')
-                    } else if(msg.data.response.url && msg.data.response.url.indexOf('cgi-bin/access') >=0 && msg.data.response.status === 403){
-                        setLoginTips('ERROR', 'L48')
-                    } else {
-                        let num = msg.data.body && msg.data.body.split('wrong')[1]
-                        setLoginTips('ERROR', 'L12', num)
-                    }
-                    break
-            }
+            updateLoginStatus(msg)
             break
         case 'clickToDialDisabled':
-            console.info('Click-To-Dial Feature is not enabled')
-            if ((grpClick2Talk.loginData.username).toLowerCase() === 'admin') {
-                // admin登录时，弹框确定是否直接开启点击开启 “Click-To-Dial Feature”功能
-                if (confirm('"Click-To-Dial Feature" is not enabled, enable now?') === true) {
-                    popupSendMessage2Background({ cmd: 'enableClickToDial', data: msg.data })
-                } else {
-                    confirm('You have refused to enable "Click-To-Dial Feature" and cannot dial normally')
-                }
-            } else {
-                let serverURL = grpClick2Talk.loginData.url + '/phset/call'
-                // 非admin账号，需要引导用户使用admin账号登录普通Tab页并启用“Click-To-Dial Feature”功能
-                if (confirm('Please visit "' + serverURL + '" webpage and login as admin to enable "Click-To-Dial Feature".') === true) {
-                    window.open(serverURL, '_blank');
-                } else {
-                    console.log('refuse enable "Click-To-Dial Feature".')
-                    confirm('"Click-To-Dial Feature" is not enabled, cannot dial normally')
-                }
-            }
+            guideToEnableClickToDial(msg)
             break
         case 'updateAccountLists':
-            if (msg.accountLists && msg.accountLists.length) {
+            if (msg.accountLists) { // 可用账号从有变无时需要更新页面显示
                 grpClick2Talk.loginData.accountLists = msg.accountLists
-                // console.log('selectedAccountId可能是空的')
                 setDeviceAccountList(msg.accountLists)
             } else {
                 console.log('[EXT] no account.')
@@ -1520,74 +1776,296 @@ function handleBackgroundMessage(msg) {
             break
         case 'setLineStatus':   // 显示线路信息
             if (msg.lines) {
+                // 处理线路问题
                 updateLineStatus(msg.lines)
+
+                // 已知当前线路开启共享，接收到来电，提示信息：当前存在点对点共享桌面，点击接听后共享将被暂停
+                callPrompt({from: 'call', role: 'callee'})
+                saveRingLineData(msg)
             }
             break
         case 'makeCallCallback':
-            if(msg.data.code === 2){
-                showPopupTip("L119", true)
-            }else if(msg.data.code === 8){
-                showPopupTip("lineFull", true)
+            console.log('makeCallCallback msg:', msg)
+            if(msg.data === 'Invalid Request' || (msg.data && msg.data.response === 'failed')){
+                // Invalid Request case:1. 未开启拨打功能  2. 号码为空 3. 找不到可用账号进行呼叫 4. 键盘被锁
+                setPopupTips("L1001", true)
+            }else {
+                if (msg.data.code === 2) {
+                    setPopupTips("L119", true)
+                } else if (msg.data.code === 8) {
+                    setPopupTips("L139", true)
+                }
             }
             break
         case 'isSharingTurnedOn':
-            if(msg.content){
-                if(msg.content.isEstablishSuccessPc){
-                    iconStyleToggle(msg.content)
-                    currentShareContent = msg.content
-                }
-            }else{
-                showPopupTip("L72", true)
-            }
+            setSharingState(msg)
             break
         case 'websocketStatus':
-             if(msg.data.code !== 999){
-                 console.log('[EXT] webSocket failed, cause:' , msg.data && msg.data.data && msg.data.data.reason)
-                 showPopupTip('L108')
-             }else{
-                 console.warn("[EXT] webSocket success")
-                 popupTip.classList.remove('popup-tips-opacity-1')
-                 popupTip.classList.add('popup-tips-opacity-0')
-             }
+            setWebsocketStatus(msg)
             break
         case 'isIncomingCall':
-            if(msg.message){
-                console.warn("Receive the presentation, whether to accept the presentation")
-                mb.classList.add('mb');
-                document.body.appendChild(mb);
-                refuseShareBtn.innerText = currentLocale['L83']
-                refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
-                acceptShareBtn.innerText = currentLocale['L84']
-                let remoteName =  msg.message.currentShareContent.remoteLineInfo.remotename ||  msg.message.currentShareContent.remoteLineInfo.remotenumber
-                if(msg.message.currentShareContent && msg.message.currentShareContent.shareType === 'shareScreen'){
-                    requestShareText.innerHTML = currentLocale['L85'].replace('{0}', remoteName)
-                }else{
-                    // 文件传输提示
-                }
-                sharePopup.classList.toggle('requestShareBox-show',true)
-                countDown()
-
-                if(msg.message.receiveSharePopupNum >=2){
-                    // (1) 显示标注消息 ; (2) 若点击确定，关闭前一路peerConnection
-                    requestShareTipsWrapper.classList.toggle('requestShare-tips-wrapper-show', true)
-                }
-            }
+            handleIncomingCall(msg)
             break
-        case 'closeSharePopup':
+        case 'closeShareInformForPopup':
             if(sharePopup.classList.contains('requestShareBox-show')){
                 mb.parentNode.removeChild(mb);
                 sharePopup.classList.toggle('requestShareBox-show',false)
                 countDown()
             }
             break
-        case 'clearShareContentforPop':
+        case 'clearShareContentForPop':
+            changeShareBtnStyle({state: 'end', content: currentShareContent})
             currentShareContent = null
             clickContent.lineId = null
+            clickContent.localLineId = null
             clickContent.shareType = null
+            clickContent.localShare = false
+            isShareScreen = false
+            break
+        case 'quicallRemoteAnswerSdp':
+            handleQuicallRemoteAnswerSdp(msg)
+            break
+        case 'shareScreenOnOpen':
+            console.log('Sharing on')
+            isShareScreen = true
+            break
+        case 'changeShareScreenIcon':
+            if(msg?.data){
+                changeShareBtnStyle({state: msg.data?.state, lineId: msg.data?.lineId})
+            }
+            break
+        case 'cancelRequest':
+            countDownTimer && countDown()
+            break
+        case 'cancelRequestRet':
+            let rspInfo = msg.data?.rspInfo
+            if(rspInfo && rspInfo.rspCode === 200){
+                gsRTC.clearSession({lineId: msg.data?.line})
+                closeFilePopup()
+            }else {
+                console.log('cancel error')
+            }
             break
         default:
             break
     }
+}
+
+/**
+ * 保存振铃线路信息
+ * **/
+function saveRingLineData(content={}){
+    if(!content.lines){
+        console.log("saveRingLineData: No route information obtained currently")
+        return
+    }
+    let isCurrentLineExists
+    for(let i in content.lines){
+        let line = content.lines[i]
+        if(line.state === 'ringing'){
+            isCurrentLineExists = getLine(line)
+            if(!isCurrentLineExists){
+                ringLineData.push(line)
+            }
+
+        }else if(line.state === 'idle'){                 // 主要针对挂断时已经保存的振铃线路
+            isCurrentLineExists = getLine(line, 'idle')
+            if(isCurrentLineExists){
+                ringLineData.splice(i,1)
+            }
+        }
+    }
+}
+
+/**
+ * 查找对应的线路
+ * @param data: 线路内容
+ * @param type: 线路类型,如振铃、或者空闲
+ **/
+
+function getLine(data,type){
+    if(!data || !data.line){
+        console.log('getLine: current line error')
+        return
+    }
+    let target
+
+    if(type === 'ringing'){
+        target = ringLineData.find(item => item.line === data.line && item.remotenumber === data.remotenumber && item.state === type)
+    }else if(type === 'idle'){
+        target = ringLineData.find(item => item.line === data.line)
+    }else{
+        target = ringLineData.find(item => item.line === data.line && item.remotenumber === data.remotenumber)
+    }
+    return target
+}
+
+/**
+ * 已知多线路共享，发起或者接受呼叫显示提示内容
+ * @param content.from: call(来电)、shareScreen（共享）
+ * @param content.role: caller(发起方)、 callee（接收方）
+ * */
+function callPrompt(content){
+    console.log(" current get content:", content)
+    if(currentShareContent && currentShareContent.isEstablishSuccessPc){
+        /**1.添加蒙版样式  2.处理按钮文案  3.显示tips内容  4.默认隐藏注释内容**/
+        let getRingLine = grpClick2Talk?.lineData.find(item => item.state === 'ringing')
+        if(!getRingLine){
+            console.log("Currently, the contents of the ringing line are not obtained")
+            return
+        }else{
+            let isCurrentLineExists = getLine(getRingLine, 'ringing')
+            if(isCurrentLineExists){
+                console.log("Obtain current line already exists.")
+                return
+            }
+        }
+
+
+        let handleTipContent = function(data, lineContent){
+            mb.classList.add('mb');
+            document.body.appendChild(mb);
+
+            refuseShareBtn.innerText = currentLocale['L60']
+            refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
+            acceptShareBtn.innerText = currentLocale['L59']
+
+            //为区分是来电还是共享，在div中添加属性进行辨别 type: call(来电)、 shareScreen（共享）
+            refuseShareBtn.setAttribute("type", data.from)
+            acceptShareBtn.setAttribute("type", data.from)
+            refuseShareBtn.setAttribute("role", data.role)
+            acceptShareBtn.setAttribute("role", data.role)
+
+            if(data.role === 'callee'){
+                refuseShareBtn.setAttribute("line", lineContent.line)
+                acceptShareBtn.setAttribute("line", lineContent.line)
+            }
+
+            //提示内容
+            if(data.role === 'caller'){
+                requestShareText.innerHTML = currentLocale['L141']
+            }else if(data.role === 'callee'){
+                requestShareText.innerHTML = currentLocale['L142']
+            }
+
+            //默认隐藏注释内容
+            requestShareTipsWrapper.classList.toggle('requestShare-tips-wrapper-show', false)
+            // 显示整个弹框
+            sharePopup.classList.toggle('requestShareBox-show',true)
+        }
+
+        if(content.from === 'call'){
+            if(content.role === 'caller'){         // 呼叫方
+                handleTipContent(content)
+            }else if(content.role === 'callee' && getRingLine){       // 接收方
+                handleTipContent(content, getRingLine)
+            }
+        }
+    }
+}
+
+/**
+ * 删除标签属性*
+ * */
+function deleteAttrubite(){
+    refuseShareBtn.removeAttribute('type')
+    refuseShareBtn.removeAttribute('role')
+    refuseShareBtn.removeAttribute('line')
+
+    acceptShareBtn.removeAttribute('type')
+    acceptShareBtn.removeAttribute('role')
+    acceptShareBtn.removeAttribute('line')
+}
+
+/**
+ * 更改共享文件按钮样式
+ * **/
+function changeShareBtnStyle(data){
+    let line = data?.content?.remoteCallInfo?.line || data.lineId
+    if(!line) return
+    let matchElement = function(param, type){
+        let grpFunBtn = document.getElementsByTagName("grp-fun-button")
+        if(grpFunBtn.length){
+            for(let element of grpFunBtn){
+                if(element.getAttribute("type") === type && element.line === param.line){
+                    return element
+                }
+            }
+        }
+        return null
+    }
+
+    if(!data.state || !grpClick2Talk.lineData){
+        return;
+    }
+
+   for(let item of grpClick2Talk.lineData){
+       if(item.line === line){
+           // 匹配获取线路icon
+           let shareEle = matchElement({line: item.line}, 'share')
+           let fileEle = matchElement({line: item.line}, 'file')
+           let shareFirstNode = shareEle?.firstChild
+           let fileFirstNode = fileEle?.firstChild
+
+           if(!shareFirstNode || !fileFirstNode){
+               continue
+           }
+           if(data.state === 'start'){
+               // 改变icon样式
+               shareFirstNode.classList.remove('GRP-icon-share-black')
+               shareFirstNode.classList.add('GRP-icon-share-green')
+
+               //改变属性
+               shareEle.setAttribute("isSharing", true)
+
+           }else if(data.state === 'end'){
+               // 改变icon样式
+               shareFirstNode.classList.remove('GRP-icon-share-green')
+               shareFirstNode.classList.add('GRP-icon-share-black')
+
+               //改变属性
+               shareEle.setAttribute("isSharing", false)
+           }else if(data.state === 'interrupt'){
+               // 设置icon样式为灰色
+               shareFirstNode.classList.remove('GRP-icon-share-green')
+               shareFirstNode.classList.remove('GRP-icon-share-black')
+               shareFirstNode.classList.add('GRP-icon-share-ash')
+
+               fileFirstNode.classList.remove('GRP-icon-file-black')
+               fileFirstNode.classList.add('GRP-icon-file-ash')
+
+               // 设置不可点击按钮
+               shareEle.setAttribute("disabled", 'true')
+               shareEle.setAttribute("title", currentLocale['L148'])
+               shareFirstNode.classList.add("changeStyle")
+
+               fileEle.setAttribute("disabled", 'true')
+               fileEle.setAttribute("title", currentLocale['L148'])
+               fileFirstNode.classList.add("changeStyle")
+           }else if(data.state === 'recovery'){
+               if(shareEle.isSharing){  // 表示当前在共享
+                    shareFirstNode.classList.remove('GRP-icon-share-ash')
+                    shareFirstNode.classList.add('GRP-icon-share-green')
+               }else{
+                    shareFirstNode.classList.remove('GRP-icon-share-ash')
+                    shareFirstNode.classList.add('GRP-icon-share-black')
+               }
+
+               //取消设置不可点击按钮
+               shareEle.setAttribute("disabled", 'false')
+               shareEle.removeAttribute('title')
+               shareFirstNode.classList.remove("changeStyle")
+
+               fileEle.removeAttribute('title')
+               fileEle.setAttribute("disabled", 'false')
+               fileFirstNode.classList.remove("changeStyle")
+               fileFirstNode.classList.remove('GRP-icon-file-ash')
+               fileFirstNode.classList.add('GRP-icon-file-black')
+
+           }
+       }
+   }
+
 }
 
 window.handleBackgroundMessage = handleBackgroundMessage
@@ -1595,7 +2073,7 @@ window.handleBackgroundMessage = handleBackgroundMessage
 /**样式切换
  * **/
 function iconStyleToggle(data){
-    console.warn("iconStyleToggle data: "+ JSON.stringify(data, null, '    '))
+    console.log("iconStyleToggle data: "+ JSON.stringify(data, null, '    '))
     let lineId = data.lineId
     let type = data.shareType
     let value
@@ -1669,13 +2147,7 @@ function autoFillNumber(callInfo, isShake) {
             },3000)
         }
         phoneNumber.value = callInfo.number
-        if (callInfo.email) {
-            // 根据邮箱查找到号码时，页面显示号码来源
-            document.getElementById('tipEmail').innerText = callInfo.email
-            document.querySelector("div.number-from").style.display = 'block'
-        } else {
-            document.querySelector("div.number-from").style.display = 'none'
-        }
+        searchForContacts()
         extensionNamespace.storage.local.remove(key)
     }
 
@@ -1751,6 +2223,33 @@ window.onload = function () {
             language: window.currentLocale
         })
     }
+    gsRTC.on('quicallLocalSDPCompleted', function (message, localShare) {
+        console.log('on quicall local sdp completed.')
+        if (localShare) {
+            popupSendMessage2Background({ cmd: 'quicallLocalOfferSdp', data: JSON.stringify(message) })
+        } else {
+            popupSendMessage2Background({ cmd: 'quicallLocalAnswerSdp', data: JSON.stringify(message) })
+        }
+    })
+
+    gsRTC.on('quicallFileConfirmPopup', function (data) {
+        console.log('on quicall local sdp completed.')
+        mb.classList.add('mb');
+        document.body.appendChild(mb);
+        refuseShareBtn.innerText = currentLocale['L83']
+        refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
+        acceptShareBtn.innerText = currentLocale['L84']
+        let remoteName
+        for(let i in grpClick2Talk.lineData){
+            if(grpClick2Talk.lineData[i].state !== 'idle' && grpClick2Talk.lineData[i].line == data.lineId){
+                remoteName = grpClick2Talk.lineData[i].remotename || grpClick2Talk.lineData[i].remotenumber
+            }
+        }
+        let fileName = data.fileName + ' (' + formatFileSize(data.fileSize) + ')'
+        requestShareText.innerHTML = currentLocale['L123'].replace('{0}', remoteName).replace('{1}', fileName)
+        sharePopup.classList.toggle('requestShareBox-show',true)
+        countDown()
+    })
 }
 
 /**
@@ -1809,6 +2308,12 @@ document.addEventListener('click', (e) => {
         accountArrowSwitch.classList.remove('GRP-icon-arrow_up')
         accountArrowSwitch.classList.add('GRP-icon-arrow_down')
     }
+    // 收起设置菜单
+    if ((e.path && !e.path.includes(settingNav) && !e.path.includes(settingNavList))
+        || (e.target !== settingNav && !parentElementCompare(e.target, settingNav) && e.target !== settingNavList && !parentElementCompare(e.target, settingNavList))) {
+        // 收起账号列表
+        settingNavList.style.display = 'none'
+    }
 
     let phoneNumberInputArea = document.getElementsByClassName('phoneNumber-input')[0]
     if ((e.path && !e.path.includes(phoneNumberInputArea)) || (e.target !== phoneNumberInputArea && !parentElementCompare(e.target, phoneNumberInputArea))) {
@@ -1841,7 +2346,28 @@ function countDown(countDownNum = 40){
             if(countDownNum <= 0){
                 console.log(" end of countDown")
                 countDownCallback()
-                popupSendMessage2Background({ cmd: 'sharePopupTimeOut' })
+                if(peerInfoMessage){
+                    // 共享文件响应超时
+                    console.log('Shared file response timeout')
+                    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: peerInfoMessage.localLineId})
+                    if(!session){
+                        popupSendMessage2Background({
+                            cmd: 'sharePopupTimeOut',
+                            message:{
+                                localLineId: peerInfoMessage.localLineId,
+                                reqId: peerInfoMessage.reqId,
+                                action: peerInfoMessage.action,
+                                shareType: peerInfoMessage.shareType
+                            }
+                        })
+                    }else {
+                        session.sendMessageByDataChannel({lineId: peerInfoMessage.localLineId, type: 'fileInfo', state: 'timeout'})
+                    }
+                }else{
+                    // 共享屏幕响应超时
+                    console.log('Shared screen response timeout')
+                    popupSendMessage2Background({ cmd: 'sharePopupTimeOut' })
+                }
             }
         }, 1000);
     }else{
@@ -1849,29 +2375,245 @@ function countDown(countDownNum = 40){
     }
 }
 
+/**
+ * 处理点击事件
+ * @param event
+ */
 function handleClickEvent(event){
     if (!event || !event.target) {
         return
     }
-    let value = event.target.textContent
+    let target = event.target
+    let value = target.textContent
+    let type = target.getAttribute("type")          // 类型： call（来电）、shareScreen（共享）
+    let role = target.getAttribute("role")          // 角色： caller（发起方）、 receive（接收方）
+    let line = target.getAttribute("line")
+
     switch(value){
-        case currentLocale['L84']:                  // 接受共享
+        case currentLocale['L84']:                  // 接受共享或共享文件
             console.log('Accept sharing')
             countDown()
-            popupSendMessage2Background({cmd: 'isReceiveScreen', message:{isReceive: true}})
+            if(remoteShareInfo.shareType === 'shareFile'){
+                let session = WebRTCSession.prototype.getSession({key: 'lineId', value: remoteShareInfo.lineId})
+                if(session && session.pc && session.pc.dataChannel && session.pc.dataChannel.readyState === 'open'){
+                    console.log('Accept sharing file')
+                    // （2）popup页面二次接收共享
+                    session.sendMessageByDataChannel({lineId: remoteShareInfo.lineId, type: 'fileInfo', state: 'receive'})
+                }else {
+                    // （1）popup页面首次收到共享请求
+                    let content = peerInfoMessage
+                    let lineId = content.localLineId
+                    let param = {
+                        sdp: content.sdp.data,
+                        lineId: lineId,
+                        remoteLineId: content.remoteLineId,
+                        reqId: content.reqId,
+                        shareType: content.shareType,
+                        action: content.action
+                    }
+                    gsRTC.acceptShareFile(param)
+                }
+            }else {
+                popupSendMessage2Background({cmd: 'isReceiveScreen', message:{isReceive: true}})
+            }
             break
-        case currentLocale['L83']:                 // 拒绝共享
+        case currentLocale['L83']:                 // 拒绝共享或共享文件
             console.log('Deny sharing')
             countDown()
-            popupSendMessage2Background({cmd: 'isReceiveScreen', message:{isReceive: false}})
+            if(peerInfoMessage){
+                // 拒绝共享文件
+                console.log('Deny sharing files')
+                let session = WebRTCSession.prototype.getSession({key: 'lineId', value: peerInfoMessage.localLineId})
+                if(session && session.pc && session.pc.dataChannel && session.pc.dataChannel.readyState === 'open'){
+                    console.log('Accept sharing file')
+                    session.sendMessageByDataChannel({lineId: peerInfoMessage.localLineId, type: 'fileInfo', state: 'reject'})
+                }else {
+                    popupSendMessage2Background({
+                        cmd: 'isReceiveScreen',
+                        message:{
+                            isReceive: false,
+                            localLineId: peerInfoMessage.localLineId,
+                            reqId: peerInfoMessage.reqId,
+                            action: peerInfoMessage.action,
+                            shareType: peerInfoMessage.shareType
+                        }
+                    })
+                }
+            }else {
+                // 拒绝共享屏幕
+                console.log('Reject screen sharing')
+                popupSendMessage2Background({cmd: 'isReceiveScreen', message:{isReceive: false}})
+            }
             break
         case currentLocale['L59']:                 // 确定发起新的共享
-            console.warn("Confirm")
-            // 确定开启新共享，关闭之前的pc
-            popupSendMessage2Background({cmd: 'localShareScreenRequest', data:{ clickContent }})
+            console.log("Confirm  open new line:",line)
+            // 首先判断是来电还是共享
+            if(type === 'call'){
+                if(role === 'caller'){
+                    call()
+                }else if(role === 'callee' && line){
+                    // 表示接受来电
+                    console.log("receive caller")
+                    popupSendMessage2Background({cmd: 'popupAcceptLine', lineId: line})
+                }
+            }else if(type === 'shareScreen'){
+                // 确定开启新共享，关闭之前的pc
+                popupSendMessage2Background({cmd: 'localShareScreenRequest', data: clickContent })
+            }
+
+            //取消蒙版
+            if(sharePopup.classList.contains('requestShareBox-show')){
+                mb.parentNode.removeChild(mb);
+                sharePopup.classList.toggle('requestShareBox-show',false)
+            }
+
+            //删除标签属性
+            deleteAttrubite()
             break
         case currentLocale['L60']:                 // 取消发起新共享
-            console.log("cancel")
+            console.log("cancel line：", line)
+
+            // 首先判断是来电还是共享
+            if(type === 'call'){
+                if(role === 'caller'){
+                    // 不做任何处理
+                }else if(role === 'callee' && line){
+                    // 表示拒绝来电
+                    console.log("refuse caller")
+                    popupSendMessage2Background({
+                        cmd: 'popupRejectLine',
+                        lineId: line
+                    })
+                }
+            }else if(type === 'shareScreen'){
+                // 暂时不做任何处理
+            }
+            //取消蒙版
+            if(sharePopup.classList.contains('requestShareBox-show')){
+                mb.parentNode.removeChild(mb);
+                sharePopup.classList.toggle('requestShareBox-show',false)
+            }
+
+            //删除标签属性
+            deleteAttrubite()
             break;
+        default:
+            console.log("value:",value)
+            break
     }
 }
+
+/**
+ * 解析浏览器UA信息
+ * @returns {{}}
+ */
+function getBrowserDetail() {
+    function extractVersion(uastring, expr, pos) {
+        let match = uastring.match(expr)
+        return match && match.length >= pos && parseInt(match[pos], 10)
+    }
+
+    // Returned result object.
+    var result = {}
+    result.browser = null
+    result.version = null
+    result.UIVersion = null
+    result.chromeVersion = null
+    result.systemFriendlyName = null
+
+    if (navigator.userAgent.match(/Windows/)) {
+        result.systemFriendlyName = 'windows'
+    } else if (navigator.userAgent.match(/Mac/)) {
+        result.systemFriendlyName = 'mac'
+    } else if (navigator.userAgent.match(/Linux/)) {
+        result.systemFriendlyName = 'linux'
+    }
+
+    // Fail early if it's not a browser
+    if (typeof window === 'undefined' || !window.navigator) {
+        result.browser = 'Not a browser.'
+        return result
+    }
+
+    // Edge.
+    if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
+        result.browser = 'edge'
+        result.version = extractVersion(navigator.userAgent, /Edge\/(\d+).(\d+)$/, 2)
+        result.UIVersion = navigator.userAgent.match(/Edge\/([\d.]+)/)[1] // Edge/16.17017
+    } else if (!navigator.mediaDevices && (!!window.ActiveXObject || 'ActiveXObject' in window || navigator.userAgent.match(/MSIE (\d+)/) || navigator.userAgent.match(/rv:(\d+)/))) {
+        // IE
+        result.browser = 'ie'
+        if (navigator.userAgent.match(/MSIE (\d+)/)) {
+            result.version = extractVersion(navigator.userAgent, /MSIE (\d+).(\d+)/, 1)
+            result.UIVersion = navigator.userAgent.match(/MSIE ([\d.]+)/)[1] // MSIE 10.6
+        } else if (navigator.userAgent.match(/rv:(\d+)/)) {
+            /* For IE 11 */
+            result.version = extractVersion(navigator.userAgent, /rv:(\d+).(\d+)/, 1)
+            result.UIVersion = navigator.userAgent.match(/rv:([\d.]+)/)[1] // rv:11.0
+        }
+
+        // Firefox.
+    } else if (navigator.mozGetUserMedia) {
+        result.browser = 'firefox'
+        result.version = extractVersion(navigator.userAgent, /Firefox\/(\d+)\./, 1)
+        result.UIVersion = navigator.userAgent.match(/Firefox\/([\d.]+)/)[1] // Firefox/56.0
+
+        // all webkit-based browsers
+    } else if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+        // Chrome, Chromium, Webview, Opera, Vivaldi all use the chrome shim for now
+        var isOpera = !!navigator.userAgent.match(/(OPR|Opera).([\d.]+)/)
+        // var isVivaldi = navigator.userAgent.match(/(Vivaldi).([\d.]+)/) ? true : false;
+        if (isOpera) {
+            result.browser = 'opera'
+            result.version = extractVersion(navigator.userAgent, /O(PR|pera)\/(\d+)\./, 2)
+            result.UIVersion = navigator.userAgent.match(/O(PR|pera)\/([\d.]+)/)[2] // OPR/48.0.2685.39
+            if (navigator.userAgent.match(/Chrom(e|ium)\/([\d.]+)/)[2]) {
+                result.chromeVersion = extractVersion(navigator.userAgent, /Chrom(e|ium)\/(\d+)\./, 2)
+            }
+        } else {
+            result.browser = 'chrome'
+            result.version = extractVersion(navigator.userAgent, /Chrom(e|ium)\/(\d+)\./, 2)
+            result.UIVersion = navigator.userAgent.match(/Chrom(e|ium)\/([\d.]+)/)[2] // Chrome/61.0.3163.100
+        }
+    } else if ((!navigator.webkitGetUserMedia && navigator.userAgent.match(/AppleWebKit\/([0-9]+)\./)) || (navigator.webkitGetUserMedia && !navigator.webkitRTCPeerConnection)) {
+        if (navigator.userAgent.match(/Version\/(\d+).(\d+)/)) {
+            result.browser = 'safari'
+            result.version = extractVersion(navigator.userAgent, /AppleWebKit\/(\d+)\./, 1)
+            result.UIVersion = navigator.userAgent.match(/Version\/([\d.]+)/)[1] // Version/11.0.1
+        } else { // unknown webkit-based browser.
+            result.browser = 'Unsupported webkit-based browser ' + 'with GUM support but no WebRTC support.'
+            return result
+        }
+        // Default fallthrough: not supported.
+    } else {
+        result.browser = 'Not a supported browser.'
+        return result
+    }
+
+    return result
+}
+
+/**
+ * 监听页面隐藏和显示事件
+ */
+var hidden, visibilityChange;
+if (typeof document.hidden !== "undefined") {
+    // Opera 12.10 and Firefox 18 and later support
+    hidden = "hidden";
+    visibilityChange = "visibilitychange";
+} else if (typeof document.msHidden !== "undefined") {
+    hidden = "msHidden";
+    visibilityChange = "msvisibilitychange";
+} else if (typeof document.webkitHidden !== "undefined") {
+    hidden = "webkitHidden";
+    visibilityChange = "webkitvisibilitychange";
+}
+document.addEventListener(visibilityChange, function (){
+    if (document.hidden){
+        if(getBrowserDetail().browser === 'safari'){
+            // TODO: Safari popup页面打开一段时间后Service Worker 脚本会失效。需重新加载插件才能使用。为避免该问题，页面最小化时直接关闭popup页面
+            console.log('document hidden')
+            window.close()
+        }
+    }
+}, false);

@@ -25,44 +25,16 @@
             <!--    输入框    -->
             <div class="input-area">
                 <div class="login-input">
-                    <div class="login-input-message">
-                        <label class="address-label">Address</label>
-                        <span class="required"></span>
-                    </div>
                     <input value="" class="login-input-box login-input-ordinary" type="text" id="address" placeholder="Device Address">
                     <div class="error-tip address-error-tip">Address can not be empty.</div>
                 </div>
 
                 <div class="login-input">
-                    <div class="login-input-message">
-                        <label class="username-label">Username</label>
-                        <span class="required"></span>
-                        <div id="usernameAbout">
-                            <span class="about icon GRP-icon-about"></span>
-                            <!--  tip提示  -->
-                            <div class="prompt username-prompt">
-                                <div class="username-prompt-tip">The username is the login name of the device background management.</div>
-                                <div class="triangle-down"></div>
-                            </div>
-                        </div>
-                    </div>
                     <input value="" class="login-input-box login-input-ordinary" type="text" id="username" placeholder="Web login account">
                     <div class="error-tip username-error-tip">Username can not be empty.</div>
                 </div>
 
                 <div class="login-input">
-                    <div class="login-input-message">
-                        <label class="password-label">Password</label>
-                        <span class="required"></span>
-                        <div id="passwordAbout">
-                            <span class="about icon GRP-icon-about"></span>
-                            <!--  tip提示  -->
-                            <div class="prompt password-prompt">
-                                <div class="password-prompt-tip">The password is the login password of the device background management.</div>
-                                <div class="triangle-down"></div>
-                            </div>
-                        </div>
-                    </div>
                     <input value="" class="login-input-box login-input-ordinary" id="password" type="password" placeholder="Web login password">
                     <span class="eyes-icon icon GRP-icon-eyes-close" id="passwordModeSet"></span>
                     <div class="error-tip password-error-tip">Password can not be empty.</div>
@@ -90,7 +62,35 @@
                 <div class="dial-logo icon GRP-icon-logo"></div>
                 <div class="dial-extension-name">GRP Click2Dial</div>
                 <div class="logout icon GRP-icon-logout"></div>
-                <div class="security icon GRP-icon-security-ash" id="privacySettings"></div>
+                <div class="setting-nav" id="setting-nav"></div>
+
+                <!--  设置菜单  -->
+                <div class="setting-nav-list" style="display: none">
+                    <ul>
+                        <li>
+                            <div><input type="checkbox" class="icon GRP-icon-security-ash" id="privacy-settings"></div>
+                            <label class="privacy-settings-tip" for="privacy-settings">登出清除个人数据</label>
+                        </li>
+                        <li>
+                            <div><input type="checkbox" id="word-dialing"></div>
+                            <label class="word-dialing-tip" for="word-dialing">划词拨号</label>
+                        </li>
+                        <li>
+                            <div><input type="checkbox" id="contact-source"></div>
+                            <label class="contact-source-tip" for="contact-source">通讯录来源</label>
+                        </li>
+                    </ul>
+                    <ul id="contact-source-list">
+                        <li>
+                            <div><input type="checkbox" id="contact-source-ldap"></div>
+                            <label class="contact-source-ldap-tip" for="contact-source-ldap">LDAP</label>
+                        </li>
+                        <li>
+                            <div><input type="checkbox" id="contact-source-local"></div>
+                            <label class="contact-source-local-tip" for="contact-source-local">本地联系人</label>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <!-- start: 关闭所有窗口时清除 Cookie 及网站数据 -->
@@ -106,7 +106,7 @@
         <div class="dial-select">
             <div class="dial-select-left">
                 <h2 class="dial-title">Dial</h2>
-                <h3>Contacts</h3>
+                <h3 style="display: none">Contacts</h3>
             </div>
             <div class="account-list">
                 <div class="change-select-account">
@@ -186,9 +186,48 @@
     </div>
 </div>
 
+<!---- 选择文件区域 -->
+<div class="file-popup">
+    <div class="file-popup-content">
+        <span class="icon GRP-icon-add_s file-close"></span>
+        <div class="file-head">File Share</div>
+        <div class="file-body">
+            <div class="file-body-content">
+                <span class="file-upload icon GRP-icon-upload"></span>
+                <div class="file-body-content-text">
+                    <span class="icon GRP-icon-fileName file-name-icon"></span>
+                    <span class="file-content"></span>
+                </div>
+            </div>
+            <div class="file-body-tips"></div>
+        </div>
+        <div class="file-tail">
+            <div class="file-tail-button"></div>
+        </div>
+    </div>
+</div>
+
+<!--webRTC 相关文件引用-->
+<script type="text/javascript" src="../webRTC/lib/sdp_tools.js"></script>
+<script type="text/javascript" src="../webRTC/lib/mediaDevice.js"></script>
+<script type="text/javascript" src="../webRTC/lib/debug.js"></script>
+<script type="text/javascript" src="../webRTC/src/gsrtc.js"></script>
+<script type="text/javascript" src="../webRTC/src/gsrtc.api.js"></script>
+<script type="text/javascript" src="../webRTC/src/gsrtc.common.js"></script>
+
+<script type="text/javascript" src="../webRTC/src/webrtcSession.jsep.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.dataChannel.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.sdp.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.connection.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.stream.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.ice.js"></script>
+<script type="text/javascript" src="../webRTC/src/webrtcSession.resolution.js"></script>
+
 <script src="../locale/en/en-US.js"></script>
 <script src="../locale/zh/zh-CN.js"></script>
 <script src="../locale/language.js"></script>
+<script src="../webRTC/lib/common.js"></script>
 <script src="quicall.js"></script>
 <script src="../components/components.js"></script>
 </body>

@@ -28,18 +28,15 @@ GsRTC.prototype.screenShare = function (data = {}){
         return
     }
 
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
     let type = 'slides'
-    if(!session){
-        notice({ type: 'warn', value: currentLocale['L76']})
-        log.warn("screenShare: session is not found")
-        return
-    }
-
     if(This.screenSharing){
         notice({type: 'info',  value: currentLocale['L74']})
         log.info("current open shareScreen")
         return
+    }
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
+    if(!session){
+        session = WebRTCSession.prototype.getSessionInstance(data.lineId)
     }
     This.sharingPermission = 1
 
@@ -73,7 +70,7 @@ GsRTC.prototype.screenShare = function (data = {}){
 
             session.setStream(stream, type, true)
             session.localShare = true
-            gsRTC.clickShareBar({ lineId: data.lineId, stream: stream})
+            gsRTC.setStreamInactiveEvent({ lineId: data.lineId, stream: stream})
 
             session.shareType = data.shareType || 'audio' // 默认仅共享音频
             session.action = This.action
@@ -142,7 +139,7 @@ GsRTC.prototype.switchScreenSource = function (data) {
     function getMediaCallBack(event) {
         if (event.stream) {
             stream = event.stream
-            gsRTC.clickShareBar({ lineId: data.lineId, stream: stream})
+            gsRTC.setStreamInactiveEvent({ lineId: data.lineId, stream: stream})
             let preSlidesStream = session.getStream(type, true)
             if (preSlidesStream) {
                 log.info('clear pre slides stream')
@@ -171,6 +168,69 @@ GsRTC.prototype.switchScreenSource = function (data) {
             callback: getMediaCallBack
         }
         session.getStreamFromDevice(param)
+    }
+}
+
+/**
+ * 监听流的结束，如点击共享条结束共享
+ * @param data
+ */
+GsRTC.prototype.setStreamInactiveEvent = function(data){
+    log.info('click shareBar: ' + JSON.stringify(data, null, '    '))
+    if(!data || !data.lineId || !data.stream){
+        log.info('set stream inactive event: invalid parameters!')
+        return
+    }
+    let This = this
+    let stream = data.stream
+    let stopCallback = function(){
+        log.info("click bar: stopShareScreen")
+        gsRTC.trigger("stopShareScreen")
+    }
+    let streamOnInactive = function (){
+        log.warn('user clicks the bottom share bar to stop sharing')
+        log.warn('stream inactive, stop screen share.')
+        This.stopScreenShare({ lineId: data.lineId, isInitiativeStopScreen: true, callback: stopCallback})
+    }
+    if (This.getBrowserDetail().browser === 'firefox') {
+        let tracks = stream.getVideoTracks();
+        tracks[0].onended = streamOnInactive
+    }else {
+        stream.oninactive = streamOnInactive
+    }
+}
+
+/**
+ * 暂停屏幕共享
+ * @param data.isMute：true 暂停，false 取消暂停
+ * @param data.lineId: 1 , 表示当前线路
+ * @param data.callback
+ */
+GsRTC.prototype.pauseScreenShare = function(data){
+    log.info("pause screen data: " + JSON.stringify(data, null, '    '))
+    if(!data || !data.lineId){
+        log.info('pause screen: invalid parameters')
+        data && data.callback && data.callback({message: "accept screenShare failed"})
+        return
+    }
+    let This = this
+    let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: data.lineId })
+    if(!session){
+        log.info('pause screen: no session is found')
+        return
+    }
+
+    if(!This.screenSharing){
+        log.info('pause screen: no session is found')
+        return
+    }
+
+    let type = 'slides'
+    let stream = session.getStream(type, true)
+    log.info('pause present stream')
+    session.streamMuteSwitch({type: type, stream: stream, mute: data.isMute})
+    if(data.callback){
+        data.callback({message: 'pausePresent success'})
     }
 }
 
@@ -210,7 +270,20 @@ GsRTC.prototype.stopScreenShare = function (data = {}){
         }else {
             session.localShare = false
             This.screenSharing = false
-            gsRTC.closeShareWindow({lineId: session.lineId, action: session.action})
+
+            // 销毁窗口以及添加提示内容
+            if(session.action === 'stopShareScreen'){
+                let param = {
+                    type: gsRTC.SIGNAL_EVENT_TYPE.BYE,
+                    action: session.action,
+                    line: session.lineId,
+                    shareType: session.shareType,
+                    reqId: parseInt(Math.round(Math.random() * 100)),
+                    isLocalDestroy: true
+                }
+                session.handleSendMessage(param)
+            }
+
             session.action = null
             session.actionCallback = null
         }
@@ -240,7 +313,7 @@ GsRTC.prototype.stopScreenShare = function (data = {}){
 }
 
 /**
- * 接受演示
+ * 接受对端桌面共享请求
  * @param data.sdp  offer 端生成的sdp
  * @param data.action  当前动作类型（开启演示、关闭演示）
  * @param data.lineId 线路line，即本终端线路对应的lineId
@@ -251,21 +324,18 @@ GsRTC.prototype.stopScreenShare = function (data = {}){
  * @param data.callback  回调
  *
  */
-
-GsRTC.prototype.handleAccept = function(data){
-    let This = this
-    log.info("handleAccept data: " + JSON.stringify(data, null, '    '))
+GsRTC.prototype.acceptScreenShare = function(data){
+    log.info("handle accept data: " + JSON.stringify(data, null, '    '))
     if(!data || !data.lineId){
         log.info('sipAccept: invalid parameters')
         data && data.callback && data.callback({message: "accept screenShare failed"})
         return
     }
-    let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: data.lineId })
-    if(!session){
-        log.info('sipAccept: no session is found')
-        return
-    }
 
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
+    if(!session){
+        session = WebRTCSession.prototype.getSessionInstance(data.lineId)
+    }
     async function sipAcceptCallBack(event){
         event.lineId = session.lineId
         log.info('call accept data ' + JSON.stringify(event, null, '    '))
@@ -304,99 +374,13 @@ GsRTC.prototype.handleAccept = function(data){
 }
 
 /**
- * 暂停屏幕共享
- * @param data.isMute：true 暂停，false 取消暂停
- * @param data.lineId: 1 , 表示当前线路
+ * 线路hold / unhold 切换
+ * @param data.type   hold / unhold
+ * @param data.lineId
  * @param data.callback
  */
-GsRTC.prototype.pauseScreen = function(data){
-    log.info("pauseScreen data: " + JSON.stringify(data, null, '    '))
-    if(!data || !data.lineId){
-        log.info('pauseScreen: invalid parameters')
-        data && data.callback && data.callback({message: "accept screenShare failed"})
-        return
-    }
-    let This = this
-    let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: data.lineId })
-    if(!session){
-        log.info('pauseScreen: no session is found')
-        return
-    }
-
-    if(!This.screenSharing){
-        log.info('pauseScreen: no session is found')
-        return
-    }
-
-    let type = 'slides'
-    let stream = session.getStream(type, true)
-    log.info('pause present stream')
-    session.streamMuteSwitch({type: type, stream: stream, mute: data.isMute})
-    if(data.callback){
-        data.callback({message: 'pausePresent success'})
-    }
-}
-
-GsRTC.prototype.dataChannel = function(data){
-    let This = this
-    This.action = 'dataChannel'
-    log.info('dataChannel data: ' + JSON.stringify(data, null, '    '))
-    if(!data.lineId){
-        log.info('invalid parameters!')
-        data && data.callback && data.callback({message: "dataChannel failed"})
-        return
-    }
-
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
-    if(!session){
-        notice({type: 'warn',value: currentLocale['L76'] })
-        log.warn("dataChannel: session is not found")
-        return
-    }
-
-    if(This.fileSharing){
-        notice({ type: 'info', value: currentLocale['L74'] })
-        log.info("currently sharing")
-        return
-    }
-
-    let shareScreenCallback = function (evt){
-        log.warn('share screen callback data: ' + JSON.stringify(evt, null, '   '))
-        if(evt.message.codeType !== This.CODE_TYPE.ACTION_SUCCESS.codeType){
-            log.info('dataChannel failed')
-        }else {
-            session.action = null
-            session.actionCallback = null
-            session.isSuccessUseWebsocket = true
-            This.fileSharing = true
-        }
-
-        This.action = null
-        if(data.callback ){
-            data.callback(evt)
-        }else {
-            // 接口没有callback回调时，使用注册事件返回结果
-            This.trigger(This.action, {type: This.action, message: { message: evt.message.message,  codeType:evt.message.codeType} })
-        }
-
-    }
-
-    // 创建Session
-    session.shareType = data.shareType
-    session.action = This.action
-    session.localShare = data.localShare === true ? data.localShare : true
-    if(!session.isSuccessUseWebsocket){
-        session.actionCallback = shareScreenCallback
-        session.createRTCSession()
-    }else{
-        session.dataChannelSendMessage(data)
-    }
-}
-
-/** hold 线路
- * */
-GsRTC.prototype.holdStream = function(data){
-    log.info('holdLine: ' + JSON.stringify(data, null, '    '))
+GsRTC.prototype.lineHold = function(data){
+    log.info('line hold data: ' + JSON.stringify(data, null, '    '))
     if (!data || !data.lineId ) {
         log.info('hold invalid parameters!')
         data && data.callback && data.callback({message: "holdLine failed"})
@@ -416,25 +400,25 @@ GsRTC.prototype.holdStream = function(data){
             if(session.localShare){
                 param.type = 'remoteHoldLine'
                 if(!session.isMute && !session.isRemoteHold){
-                    gsRTC.pauseScreen({isMute: true, lineId: data.lineId})
+                    gsRTC.pauseScreenShare({isMute: true, lineId: data.lineId})
                     gsRTC.trigger("holdStatus", {type: 'localHold' , localHold: session.isLocalHold, remoteHold: session.isRemoteHold})
                 }
             } else{
                 param.type = 'localHoldLine'
             }
-            session.dataChannelSendMessage(param)
+            session.sendMessageByDataChannel(param)
             break
         case 'unHold':
             session.isLocalHold = false
             if(session.localShare){
                 param.type = 'remoteUnHoldLine'
                 if(session.isMute && !session.isRemoteHold){
-                    gsRTC.pauseScreen({isMute: false, lineId: data.lineId})
+                    gsRTC.pauseScreenShare({isMute: false, lineId: data.lineId})
                 }
             } else{
                 param.type = 'localUnHoldLine'
             }
-            session.dataChannelSendMessage(param)
+            session.sendMessageByDataChannel(param)
             break
         default:
             log.info("get current type: " + data.type)
@@ -442,48 +426,99 @@ GsRTC.prototype.holdStream = function(data){
 }
 
 /**
- * 发送文件
- * @param data.content：文件内容
- * @param data.lineId: 1 , 表示当前线路
+ * 创建仅包含dataChannel的 PC
+ * @param data
+ * {
+ *     lineId: 1,
+ *     localShare: true,
+ *     shareType: 'shareFile'
+ * }
  */
-GsRTC.prototype.sendFile = function(data){
-    log.info('send file')
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
-    if(!session){
-        log.warn("screenShare: session is not found")
+GsRTC.prototype.createSessionWithChannelOnly = function(data){
+    log.info('create new data channel params:', data)
+    let This = this
+    This.action = 'dataChannel'
+    log.info('dataChannel data: ' + JSON.stringify(data, null, '    '))
+    if(!data.lineId){
+        log.info('invalid parameters!')
+        data && data.callback && data.callback({message: "dataChannel failed"})
         return
     }
-    if(data.type){
-        session.pc.dataChannel.send(JSON.stringify(data))
-    }else{
-        let file = data.content
-        let chunkSize = 16384
-        fileReader = new FileReader()
-        let offset = 0
-        fileReader.addEventListener('error', error => log.error('Error reading file:', error))
-        fileReader.addEventListener('abort', event => log.info('File reading aborted:', event))
-        fileReader.addEventListener('load', e => {
-            try {
-                session.pc.dataChannel.send(e.target.result)
-                offset += e.target.result.byteLength
-                progress.value = offset
-                schedule.textContent = (offset/file.size*100).toFixed() + '%'
-            if (offset < file.size) {
-                readSlice(offset)
-            }else if(offset === file.size){
-                console.log('send success')
-                switchSendstatus('success')
-            }
-            }catch(e){
-                console.log('send fail')
-                notice({ type: 'warn', value: currentLocale['L129']})
-                switchSendstatus('fail')
-            }
-        })
-        let readSlice = o => {
-            let slice = file.slice(offset, o + chunkSize)
-            fileReader.readAsArrayBuffer(slice)
+
+    let session = WebRTCSession.prototype.getSessionInstance(data.lineId)
+    let shareFileCallback = function (evt){
+        log.warn('share file callback data: ' + JSON.stringify(evt, null, '   '))
+        if(evt.message.codeType !== This.CODE_TYPE.ACTION_SUCCESS.codeType){
+            log.info('dataChannel failed')
+        }else {
+            session.action = null
+            session.actionCallback = null
+            session.isSuccessUseWebsocket = true
+            This.fileSharing = true
         }
-        readSlice(0)
+
+        if(data.callback){
+            data.callback(evt)
+        }else {
+            // 接口没有callback回调时，使用注册事件返回结果
+            This.trigger(This.action, {type: This.action, message: { message: evt.message.message,  codeType:evt.message.codeType} })
+        }
+        This.action = null
+    }
+
+    // 创建Session
+    session.shareType = data.shareType
+    session.action = This.action
+    session.actionCallback = shareFileCallback
+
+    session.pc = session.createPeerConnection({})
+    session.createSendDataChannel()
+    session.doOffer(true)
+}
+
+/**
+ * 针对未开启桌面共享场景下，直接在popup通话页面接收共享文件
+ * @param data.content：文件内容
+ * @param data.lineId: 1 , 表示当前线路
+ * @param data.callback
+ * @param data.reqId
+ * @param data.remoteLineId
+ * @param data.action
+ * @param data.sdp
+ */
+GsRTC.prototype.acceptShareFile = function(data){
+    log.info("file accept data: " + JSON.stringify(data, null, '    '))
+    if(!data || !data.lineId){
+        log.info('file accept: invalid parameters')
+        data && data.callback && data.callback({message: "accept screenShare failed"})
+        return
+    }
+    let session = WebRTCSession.prototype.getSessionInstance(peerInfoMessage.localLineId)
+    function fileAcceptCallBack(event){
+        event.lineId = session.lineId
+        log.info('file accept callback data:' + JSON.stringify(event, null, '    '))
+        if(event.message.codeType === gsRTC.CODE_TYPE.ACTION_SUCCESS.codeType){
+            log.info(session.action + " success")
+        }else{
+            log.info(session.action + " Failed")
+        }
+        session.actionCallback = null
+        session.action = null
+        session.reqId = null
+        data.callback && data.callback(event)
+    }
+
+    session.isRecvRequest = true
+    session.remoteShare = true
+    session.reqId = data.reqId
+    session.actionCallback = fileAcceptCallBack
+    session.remoteLineId = data.remoteLineId
+    session.action =  data.action
+
+    let sdp = data.sdp
+    if(sdp){
+        session.handleServerRequestSdp(sdp)
+    }else {
+        log.warn('file accept: no sdp found')
     }
 }

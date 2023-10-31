@@ -29,8 +29,8 @@ let text = document.getElementsByClassName("setting-status-text")[0]
 let content = document.getElementsByClassName("setting-status-content")[0]
 let other = document.getElementsByClassName("setting-display-other")[0]
 let account = document.getElementsByClassName("setting-display-account")[0]
-let isShowComment = false   // 是否显示其他成员的内容
-let isShowAccount = false   // 是否显示其他成员的账户
+let isShowComment = true   // 是否显示其他成员的内容
+let isShowAccount = true   // 是否显示其他成员的账户
 
 /**子组件空地方被点击（隐藏子组件且设置zIndex）**/
 toolbarChild.onclick = function(){
@@ -70,16 +70,13 @@ eraserChild.onclick = function(e){
     can.canvasToolsBar.handleChildClickOfEraser(e)
 }
 
-
 /**设置监听事件**/
 text.onclick = (e)=> {
     if(!isShowComment){
-        console.warn("text text: true")
         isShowComment = true
         other.checked = true
         can.setShowComment(true)
     }else{
-        console.warn("text text: false")
         isShowComment = false
         other.checked = false
         can.setShowComment(false)
@@ -88,12 +85,10 @@ text.onclick = (e)=> {
 
 content.onclick = (e)=>{
     if(!isShowAccount){
-        console.warn("content content: true")
         isShowAccount = true
         account.checked = true
         can.setShowAccount(true)
     }else{
-        console.warn("content content: false")
         isShowAccount = false
         account.checked = false
         can.setShowAccount(false)
@@ -126,10 +121,10 @@ let CanvasToolsBar = function(){
 
     /***子工具栏默认状态***/
     this.pointerColor = '#FE4737'
-    this.brushColor = '#FE4737'
+    this.brushColor = getRandomColor()
     this.brushStrokeSize = '4'
     this.textColor = "#FE4737"
-    this.textFontSize = "16px"
+    this.textFontSize = "16"
     this.noteColor = "#F9EC96"
     this.eraserSize = "5"
 
@@ -233,6 +228,15 @@ let CanvasToolsBar = function(){
             this.canvas.style.cursor = 'default'
         }
     }
+
+    this.getCurrentSelectedTool = function(){
+        let toolArray = ['mouseFlag', 'pointerFlag', 'brushFlag', 'textFlag', 'noteFlag', 'eraserFlag', 'areaDeleteFlag', 'clearFlag']
+        let content = toolArray.find((item)=>{
+            if(this[item]) return item
+        })
+        return content
+    }
+
     this.setDefaultOfChild = function(){
         /**子级工具栏***/
         if(pointerChild && pointerChild.classList.contains('toolbarChild_child_show')){
@@ -272,9 +276,8 @@ let CanvasToolsBar = function(){
         this.pointerColor = color
     }
     this.setBrushColor = function(color){
-        console.warn("brushColor:",color)
         this.brushColor = color
-
+        can.changeToolColor({account: localAccount, brushColor: this.brushColor})
     }
     this.setBrushStrokeSize = function(size){
         this.brushStrokeSize = size
@@ -291,6 +294,38 @@ let CanvasToolsBar = function(){
     }
     this.setEraserSize = function(size){
         this.eraserSize = size
+    }
+
+    this.getBrushColor = function(){
+        return this.brushColor
+    }
+
+    this.getTextFontSize = function(){
+        return this.textFontSize
+    }
+
+    this.getBrushStrokeSize = function(){
+        return this.brushStrokeSize
+    }
+
+    this.getNoteColor =function(){
+        return this.noteColor
+    }
+
+    this.getEraserSize = function(){
+        return this.eraserSize
+    }
+
+    this.getPointerColor = function(){
+        return this.pointerColor
+    }
+
+    this.getTextColor = function(){
+        return this.textColor
+    }
+
+    this.getTextFontSize = function(){
+        return this.textFontSize
     }
 
     this.changeToolBarStyle = function(data){
@@ -380,7 +415,17 @@ let CanvasToolsBar = function(){
                 break
             case 'clear':
                 can.clearCanvas()
+                can.notes = []
+                can.texts = []
                 can.canvasToolsBar.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
+
+                /**告知对端清除全部内容**/
+                let param = {
+                    type: 'allDelete',
+                    lineContent: can.getCurrentLine(),
+                    canvas: can.canvas
+                }
+                sendCurrentMousePosition(param)
                 break
             case 'settings':
                 if(settingsBtn.firstElementChild.classList.contains("GRP-icon-settings-white")) {
@@ -392,7 +437,7 @@ let CanvasToolsBar = function(){
                 }
                 break
             default:
-                console.warn("e:",data.type)
+                console.log("e:",data.type)
         }
     }
     this.handleParentClick = function(e){
@@ -581,11 +626,11 @@ let CanvasToolsBar = function(){
         }
         /**针对大小处理**/
         if(element.classList.value.indexOf("text-font-small") !== -1){
-            this.setTextFontSize('1px')
+            this.setTextFontSize('12')
         }else if(element.classList.value.indexOf("text-font-middle") !== -1){
-            this.setTextFontSize('4px')
+            this.setTextFontSize('16')
         }else if(element.classList.value.indexOf("text-font-big") !== -1){
-            this.setTextFontSize('8')
+            this.setTextFontSize('24')
         }
     }
     this.handleChildClickOfNote = function(e){
@@ -613,13 +658,13 @@ let CanvasToolsBar = function(){
         /**获取当前颜色**/
         if(element.classList.value.indexOf("noteBtn-orange") !== -1){
             this.setNoteColor('#F9EC96')
-        }else if(element.classList.value.indexOf("pointerBtn-yellow") !== -1){
+        }else if(element.classList.value.indexOf("noteBtn-yellow") !== -1){
             this.setNoteColor('#FFCA96')
-        }else if(element.classList.value.indexOf("pointerBtn-cyan") !== -1){
+        }else if(element.classList.value.indexOf("noteBtn-cyan") !== -1){
             this.setNoteColor('#8DE7B8')
-        }else if(element.classList.value.indexOf("pointerBtn-lightPurple") !== -1){
+        }else if(element.classList.value.indexOf("noteBtn-lightPurple") !== -1){
             this.setNoteColor('#A7D0FF')
-        }else if(element.classList.value.indexOf("pointerBtn-deepPurple") !== -1){
+        }else if(element.classList.value.indexOf("noteBtn-deepPurple") !== -1){
             this.setNoteColor('#E2D0FF')
         }
     }
@@ -673,27 +718,30 @@ let CanvasToolsBar = function(){
     }
 }
 
-/**************************************** canvas 绘制 ************************************************/
-let showPosition = document.getElementsByClassName("showPosition")[0]
-let textBox = document.getElementsByClassName("textBox")[0]
-let initCanvas = document.getElementsByClassName("canvas")[0]
-let ctx = initCanvas.getContext("2d")
-let canvasPos = initCanvas.getBoundingClientRect()
-
+/**随机生成颜色**/
+function getRandomColor () {
+    let r = Math.floor(Math.random()*255);
+    let g = Math.floor(Math.random()*255);
+    let b = Math.floor(Math.random()*255);
+    let color = 'rgb('+ r +','+ g +','+ b +')';
+    return color
+}
 
 /** 发送当前鼠标显示位置
  * */
 function sendCurrentMousePosition(data){
-    if(!data ||!data.lineId) {
-        console.warn("setCurrentMousePosition  invalid")
+    if(!data) {
+        console.log("setCurrentMousePosition  invalid")
         return
     }
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
+    let lineId = data.lineContent?.local
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: lineId})
     if(!session){
         log.warn("setCurrentMousePosition: session is not found")
         return
     }
-    session.dataChannelSendMessage(data)
+    data.lineId = lineId
+    session.sendMessageByDataChannel(data)
 }
 
 
@@ -710,10 +758,10 @@ function changeMouseStyle(x, y){
         mouseStyle.style.display = "block";
     }else if(can.canvasToolsBar.eraserFlag){
         let mouseRadius =  can.canvasToolsBar.eraserSize
-        mouseStyle.style.width = Number(mouseRadius) * 10 + 'px'
-        mouseStyle.style.height = Number(mouseRadius) * 10 + 'px'
-        mouseStyle.style.left = x - 5 * mouseRadius + 'px'
-        mouseStyle.style.top = y - 5 * mouseRadius + 'px'
+        mouseStyle.style.width = Number(mouseRadius) * 10 * can.canvasStyleRatio.x + 'px'
+        mouseStyle.style.height = Number(mouseRadius) * 10 * can.canvasStyleRatio.y + 'px'
+        mouseStyle.style.left = x - 5 * mouseRadius  * can.canvasStyleRatio.x + 'px'
+        mouseStyle.style.top = y - 5 * mouseRadius * can.canvasStyleRatio.y + 'px'
         mouseStyle.style.boxShadow = `0 0 8px 0 #00000033`
         mouseStyle.style.display = "block";
     }
@@ -721,21 +769,24 @@ function changeMouseStyle(x, y){
 
 
 /***************************************************************全屏********************************************************************/
-let canvasToolBar = document.getElementsByClassName("canvasToolBar")[0]
-let toolbarContent = document.getElementsByClassName("toolbarContent")[0]
-let isCurrentFullScreen = false
 
 let fullScreenParam ={
     clickEl: document.getElementsByClassName("dragBtn")[0],
-    targetEl: document.getElementsByClassName("presentVideoContainter")[0],
+    targetEl: document.getElementsByClassName("presentVideoContainer")[0],
     videoElement: document.getElementsByClassName("presentVideo")[0],
     canvasToolBar: document.getElementsByClassName("canvasToolBar")[0],
     toolBarContent: document.getElementsByClassName("toolbarContent")[0],
     toolbar: document.getElementsByClassName("toolbar")[0],
     clickElement: document.getElementsByClassName("hoverState")[0],
+    canvas:document.getElementsByClassName("canvas")[0],
     isLoading: true
 }
-let dragParam = {  clickEl: dragBtn, targetEl: toolbarContent, limitMoveBorder: true }
+
+let dragParam = {
+    clickEl: dragBtn,
+    targetEl: document.getElementsByClassName("toolbarContent")[0],
+    limitMoveBorder: true
+}
 
 
 /**当页面加载解析完成**/
@@ -745,15 +796,4 @@ can = new CanvasExample({
     videoWrapper: document.getElementsByClassName("videoWrapper")[0],
     toolParam: fullScreenParam,
     dragParam: dragParam
-})
-
-
-/** 关于双方canvas大小不一致情况的处理
- * **/
-let remoteWidth = can.canvas.getBoundingClientRect().width
-let remoteHeight = can.canvas.getBoundingClientRect().height
-
-let video = document.getElementsByClassName("presentVideo")[0]
-navigator.mediaDevices.getDisplayMedia({video:{width:1920, height: 1080}}).then(function(stream){
-    video.srcObject = stream
 })

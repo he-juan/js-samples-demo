@@ -60,92 +60,123 @@ let tipsRemoteReply = document.getElementsByClassName('tips-remote-reply')[0]   
 /****************************共享文件相关************************************/
 let schedule = document.createElement('span')                                                   // 发送文件进度
 let progress = document.createElement('progress')                                               // 发送文件进度条
-let fileHead = document.getElementsByClassName('file-head')[0]                                  // 弹窗头部标题
-let fileShare = document.getElementsByClassName('fileShare')[0]                                 // 打开文件弹窗按钮
+let fileHead = document.getElementsByClassName('file-head')[0]                                  // 弹窗头部标题 // 打开文件弹窗按钮
 let fileClose = document.getElementsByClassName('file-close')[0]                                // 关闭文件弹窗按钮
 let filePopup = document.getElementsByClassName('file-popup')[0]                                // 文件选择弹窗
 let fileUpload = document.getElementsByClassName('file-upload')[0]                              // 文件上传 icon
 let fileContent = document.getElementsByClassName('file-content')[0]                            // 弹窗内容
 let sharePopup = document.getElementsByClassName('requestShareBox')[0]                          // 共享文件弹窗
 let fileBodyTips = document.getElementsByClassName('file-body-tips')[0]                         // 是否发送成功文案
-let fileNameIcon = document.getElementsByClassName('file-name-icon')[0]                         // 文件icon，没有选择文件前是隐藏的
-let fileShareText = document.getElementsByClassName('fileShare-text')[0]                        // 打开文件弹窗按钮文案
+let fileNameIcon = document.getElementsByClassName('file-name-icon')[0]                         // 文件icon，没有选择文件前是隐藏的 // 打开文件弹窗按钮文案
 let fileTailButton = document.getElementsByClassName('file-tail-button')[0]                     // 发送/取消按钮
 let fileBodyContent = document.getElementsByClassName('file-body-content')[0]                   // 弹窗主体部分
 let requestShareText = document.getElementsByClassName('requestShare-text')[0]                  // 共享文件通知
 let refuseShareBtn = document.getElementsByClassName('requestShare-bottom-reject')[0]           // 拒绝共享文件按钮
 let acceptShareBtn = document.getElementsByClassName('requestShare-bottom-accept')[0]           // 接受共享文件按钮
+refuseShareBtn.onclick = handleShareFileRequest                                                    // 拒接文件
+acceptShareBtn.onclick = handleShareFileRequest                                                       // 接收文件 // 弹窗外选择文件
 
-fileBodyContent.onclick = selectFile                                                            // 选择文件
-refuseShareBtn.onclick = handleClickEvent                                                       // 拒接文件
-acceptShareBtn.onclick = handleClickEvent                                                       // 接收文件
-fileShare.onclick = openFilePopup                                                               // 打开文件弹窗
+fileBodyContent.onclick = fileUploadOnClick                                                            // 弹窗内选择文件
 fileClose.onclick = closeFilePopup                                                              // 关闭文件弹窗
-fileTailButton.onclick = sendFile                                                               // 发送/取消文件
+fileTailButton.onclick = handleFileAction                                                        // 发送/取消文件
 
-let currentLine
+let currentLocalLine                                                                           // 当前本端线路id
+let currentRemoteLine                                                                          // 当前远端线路id
 let localShare = false
 let isMark = false                                                                              // 是否做标记
-let sendStatus = 'prepare'                                                                      // 发送文件状态
+let sendStatus                                                                                  // 发送文件状态
 let isLoadingOfShareScreen = false                                                              // 演示流是否加载
+let filePopupState = false                                                                      // 共享文件弹窗开关状态
 let fileInfo                                                                                    // 选择的文件信息
 let sendText                                                                                    // 发送的文件
 let remoteName                                                                                  // 等待对端响应提示的名字
 let lineData                                                                                    // 线路信息
+let localAccountLists                                                                           // 本端总体账号信息
+let localAccount                                                                                // 本端演示账号内容(id,name)
+let pageName = 'shareScreen'
 showContent()
+
+function setDocumentTitle(){
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
+    if(!session) {
+        return
+    }
+
+    let stream = session.getStream('slides', true)
+    if(stream){
+        let shareType = WebRTCSession.prototype.getShareTypeByTrackSetting(stream)
+        let title
+        switch (shareType){
+            case 'tab':  // tab页
+                title = currentLocale['L132']
+                break
+            case 'screen':  // 屏幕
+                title = currentLocale['L133']
+                break
+            case 'window':   // 窗口
+                title = currentLocale['L134']
+                break
+            default:
+                title = currentLocale['L133']  // for firefox
+                break
+        }
+        document.title = currentLocale['L136'] + title
+        console.log('set Sharing title ', title)
+    }
+}
 
 /**
  * 开启演示
  **/
 function startShareScreen(shareType = null) {
-    if (!currentLine) {  // 判断当前是否存在线路
+    if (!currentLocalLine) {  // 判断当前是否存在线路
         notice({type: 'warn',value: currentLocale['L73'] })
-        console.warn("shareScreen: current no lineId")
+        console.log("shareScreen: current no lineId")
         return
     }
 
     let param =  {
-        lineId: currentLine,
+        lineId: currentLocalLine,
         localShare: localShare || true,
         shareType:  shareType || 'shareScreen'
     }
     if(!shareType || shareType === 'shareScreen'){
-        let shareScreenCallback = function(event){
-            console.warn("shareScreen callback:", JSON.stringify(event, null, '    '))
+        param.callback = function(event){
+            console.log("shareScreen callback:", JSON.stringify(event, null, '    '))
             tipsRemoteReply.classList.toggle('tips-remote-reply-show', false)
             if(event.message.codeType === 200){
                 iconStyleToggle('startShareScreen')
+                setDocumentTitle()
             }else if(event.message.codeType === 955){
                 // 提示： 取消开启演示。
-                console.info("取消开启演示,准备关闭共享窗口")
-                popupSendMessage2Background({cmd: 'closeScreenTab', lineId: currentLine})
+                console.info("close share tab for cancel share.")
+                popupSendMessage2Background({cmd: 'closeScreenTab', lineId: currentLocalLine})
             }
         }
-        param.callback = shareScreenCallback
-        gsRTC.screenShare(param)
-    }else if(shareType === 'shareFile') {
-        console.log("current share type is " + shareType)
-        let shareFileCallback = function(event){
-            console.warn("shareFile callback:" + JSON.stringify(event, null, '    '))
+
+        /**针对firefox、safari 做处理***/
+        let shareBtn = document.querySelector("grp-button[type='shareScreen']")
+        if(shareBtn){
+            shareBtn.setAttribute('disabled', 'true')
         }
-        param.callback = shareFileCallback
-        gsRTC.dataChannel(param)
+
+        gsRTC.screenShare(param)
     }
 }
 /**
  * 关闭演示
  **/
 function stopShareScreen(lineId) {
-    if (!currentLine) {  // 判断当前是否存在线路
-        console.warn("stopShareScreen: current no lineId")
+    if (!lineId && !currentLocalLine) {  // 判断当前是否存在线路
+        console.log("stopShareScreen: current no lineId")
         return
     }
 
     let param = {
-        lineId: lineId  || currentLine,
+        lineId: lineId  || currentLocalLine,
         isInitiativeStopScreen: true,
         callback: function (event) {
-            console.warn("stopScreenShare:", event)
+            console.log("stopScreenShare:", event)
             localShare = false
             iconStyleToggle('stopShareScreen')
         }
@@ -157,65 +188,232 @@ function stopShareScreen(lineId) {
  * 暂停演示/ 恢复演示
  **/
 function pauseShareScreen(type) {
-    if (!currentLine) {  // 判断当前是否存在线路
-        console.warn("pauseShareScreen: current no lineId")
+    if (!currentLocalLine) {  // 判断当前是否存在线路
+        console.log("pauseShareScreen: current no lineId")
         return
     }
 
     let data = {
         isMute: false,
-        lineId: currentLine,
+        lineId: currentLocalLine,
         callback: function (data) {
             if (type === 'pauseShareScreen') {
-                log.info("暂停演示callback： ", data)
+                console.log("pause share screen callback： ", data)
             } else if(type === 'resumeShareScreen'){
-                log.info("恢复演示callback： ", data)
+                console.log("restore share screen callback： ", data)
             }
             iconStyleToggle(type)
+            let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
+            if(!session){
+                log.warn("pauseShareScreen: session is not found")
+                return
+            }
+            can.pausePainting = type === 'pauseShareScreen'
+            session.sendMessageByDataChannel({
+                type: 'pausePainting',
+                lineId: currentRemoteLine,
+                value: can.pausePainting,
+                account: localAccount
+            })
         }
     }
 
     if (type === 'pauseShareScreen') {
         data.isMute = true
-        gsRTC.pauseScreen(data)
-    } else if (type === 'resumeShareScreen') {
-        gsRTC.pauseScreen(data)
     }
+    gsRTC.pauseScreenShare(data)
 }
 
 /**
  * 切换演示
  **/
 function switchScreenScreen() {
-    if (!currentLine) {  // 判断当前是否存在线路
-        console.warn("switchScreenScreen: current no lineId")
+    if (!currentLocalLine) {  // 判断当前是否存在线路
+        console.log("switchScreenScreen: current no lineId")
         return
     }
 
     let param = {
-        lineId: currentLine,
+        lineId: currentLocalLine,
         callback: function (event) {
-            console.warn("switchScreenScreen callback:", event)
+            console.log("switchScreenScreen callback:", event)
+            if(event && event.codeType === 200){
+                setDocumentTitle()
+            }
         }
     }
     gsRTC.switchScreenSource(param)
 }
 
 let webExtension
+let extensionNamespace
+if (window.chrome && window.chrome.runtime && window.chrome.runtime.connect) {  // chrome
+    extensionNamespace = chrome
+    webExtension = window.chrome.runtime.connect({ name: 'shareScreen' })
+} else if (window.browser && window.browser.runtime && window.browser.runtime.connect) {  // firefox
+    extensionNamespace = browser
+    webExtension = window.browser.runtime.connect({ name: 'shareScreen' });
+}
+
+/**
+ * 桌面共享页发送消息到背景页
+ * @param message
+ */
 function popupSendMessage2Background(message) {
     if (!message) {
         return
     }
     message.requestType = 'shareScreenToBackground'
-    webExtension.postMessage(message)
+    try{
+        webExtension.postMessage(message)
+    }catch(e){
+        webExtension = extensionNamespace.runtime.connect({ name: 'shareScreen' })
+        webExtension.onMessage.addListener(handleBackgroundMessage)
+        webExtension.postMessage(message)
+    }
 }
 
-if (window.chrome && window.chrome.runtime && window.chrome.runtime.connect) {  // chrome
-    webExtension = window.chrome.runtime.connect({ name: 'shareScreen' })
-} else if (window.browser && window.browser.runtime && window.browser.runtime.connect) {  // firefox
-    webExtension = window.browser.runtime.connect({ name: 'shareScreen' });
+/**
+ * 设置本地canvas相关属性
+ * @param message
+ */
+function updateLocalCanvasData(message){
+    if(!message || !message.lines){
+        return
+    }
+
+    lineData  = message.lines
+    localAccount = getLocalAccountContent()
+    /**针对本地canvas 创建工具栏**/
+    can.createTools({account: localAccount, brushColor: can.canvasToolsBar.getBrushColor()})
+    /**针对本地canvas 添加属性name 和 brushColor****/
+    let localCanvas = document.getElementsByClassName('canvas')
+    if(localCanvas.length ){
+        for(let canvas of localCanvas){
+            if(canvas.classList.contains('canvas')){
+                canvas.name = localAccount.name
+                canvas.nameId = localAccount.id
+                canvas.setAttribute('name', localAccount.name)
+                canvas.setAttribute('nameId', localAccount.id)
+                canvas.setAttribute('brushColor', can.canvasToolsBar.getBrushColor())
+                break
+            }
+        }
+    }
 }
 
+/**
+ * 处理共享请求：包含本地和远端
+ * @param message
+ */
+function handleScreenShareRequest(message){
+    let param
+    let content = message.data
+    let lineId = content.localLineId
+    let shareType  = content.shareType
+    let infoMsg = content.rspInfo
+    let session
+    currentLocalLine = lineId
+    currentRemoteLine = content?.remoteLineId
+    localShare = message.localShare || content.localShare
+
+    switch (message.cmd) {
+        case 'remoteScreenShare':
+            console.log('handle remote offer sdp')
+            param = {
+                sdp: content.sdp.data,
+                lineId: lineId,
+                isUpdate: false,
+                remoteLineId: content.remoteLineId,
+                reqId: content.reqId,
+                shareType: content.shareType,
+                action: content.action,
+                callback: function (event) {
+                    console.log("sipAccept:", event)
+                    if(event && event.message && event.message.codeType === 200){
+                        document.title = currentLocale['L137']
+                    }
+                    iconStyleToggle('remoteScreenShare')
+                }
+            }
+            gsRTC.acceptScreenShare(param)
+            break
+        case 'localScreenShare':
+            console.log('local screen share')
+            let browserDetails = gsRTC.getBrowserDetail()
+            remoteName = content.remoteName
+            if (shareType === 'shareScreen') {
+                if (browserDetails.browser === 'firefox' || browserDetails.browser === 'safari') {
+                    // TODO: Firefox 取流存在报错：Uncaught (in promise) DOMException: getDisplayMedia requires transient activation from a user gesture.
+                    alert(currentLocale['L144'].replace('{0}', currentLocale['L92'] ))
+                } else {
+                    startShareScreen(shareType)
+                }
+            } else {
+                startShareScreen(shareType)
+            }
+            break
+        case 'remoteAnswerSdp':
+            session = WebRTCSession.prototype.getSession({ key: 'lineId', value: lineId })
+            if (!session) {
+                console.log("handle remoteAnswerSdp :no session")
+                return
+            }
+            if (infoMsg && infoMsg.rspCode === 200) {
+                console.log("handle remoteAnswerSdp")
+                let sdp = content.sdp.data
+                session.remoteLineId = content.remoteLineId
+                if (sdp) {
+                    session.handleServerResponseSdp(sdp)
+                } else {
+                    console.log('answer sdp is not offer now.')
+                }
+            } else {
+                console.log("cause: " + infoMsg && infoMsg.rspMsg)
+                session.isHandleDestroy = true
+                errorCodeTips(infoMsg && infoMsg.rspCode)
+                session.JSEPStatusRollback()
+                gsRTC.clearSession({lineId: currentLocalLine})
+            }
+            break
+        case 'updateScreen':
+            session = WebRTCSession.prototype.getSession({ key: 'lineId', value: lineId })
+            if (!session) {
+                console.log("handle updateScreen :no session")
+                return
+            }
+            console.log("ready relay updateScreen")
+            content.updateMessage.isFromBackground = true
+            session.handleShareRequestMessage(content.updateMessage)
+            break
+        case 'updateScreenRet':
+            session = WebRTCSession.prototype.getSession({ key: 'lineId', value: lineId })
+            if (!session) {
+                console.log("handle updateScreenRet :no session")
+                return
+            }
+            console.log("ready relay updateScreenRet")
+            if (infoMsg && infoMsg.rspCode === 200) {
+                content.updateMessage.isFromBackground = true
+                session.handleShareRequestMessage(content.updateMessage)
+            } else {
+                localShare = false
+                log.info("updateMediaSessionRet: current get codeType : " + infoMsg.rspCode + " cause: " + infoMsg.rspMsg)
+                // 提示内容
+                errorCodeTips(infoMsg && infoMsg.rspCode)
+                session.JSEPStatusRollback()
+            }
+            break
+        default:
+            console.log("current no data")
+            break
+    }
+}
+
+/**
+ * 处理背景页发送过来的消息
+ * @param message
+ */
 function handleBackgroundMessage(message) {
     if (!message) {
         console.log('receive handle background message null')
@@ -225,142 +423,71 @@ function handleBackgroundMessage(message) {
         message = JSON.parse(message)
     }
 
+    if(message.localAccountLists){
+        localAccountLists = message.localAccountLists
+    }
+
     console.log('receive handle background message: ', message)
 
     if(message.type){
         let data = message.data
         switch(message.type){
-           case 'holdLine':
-               gsRTC.holdStream({lineId: data.lineId, type: 'hold'})
-               break;
-           case 'unHoldLine':
-               gsRTC.holdStream({lineId: data.lineId, type: 'unHold'})
-               break;
-           case 'localShareScreenHangup':
-               stopShareScreen({lineId: data.lineId})
-               break
-           case 'closeWindow':                                  // 挂断时关闭共享窗口
-               gsRTC.clearSession({lineId: data.lineId})
-               gsRTC.trigger('closeScreenTab',{lineId: data.lineId})
-               break
-           case 'clearSession':
-               gsRTC.clearSession({lineId: data.lineId})
-               break
+            case 'holdLine':
+                gsRTC.lineHold({lineId: data.lineId, type: 'hold'})
+                break;
+            case 'unHoldLine':
+                gsRTC.lineHold({lineId: data.lineId, type: 'unHold'})
+                break;
+            case 'localShareScreenHangup':
+                stopShareScreen({lineId: data.lineId})
+                break
+            case 'closeWindow':                                  // 挂断时关闭共享窗口
+                gsRTC.clearSession({lineId: data.lineId})
+                gsRTC.trigger('closeScreenTab',{lineId: data.lineId})
+                break
+            case 'clearSession':
+                gsRTC.clearSession({lineId: data.lineId})
+                break
             case 'shareContent':
                 startShareScreen(data.shareType)
                 break
             case 'setLineStatus':
-                if (message.lines) {
-                    lineData = message.lines
-                }
+                updateLocalCanvasData(message)
                 break
-           default:
-               console.warn("print current type: "+ message.type)
+            case 'quicallSendFile':
+                openFilePopup()
+                fileNameIcon.classList.toggle('file-name-icon_show', true)
+                fileTailButton.classList.toggle('file-tail-button-none', true)
                 break
+            case 'closeShareWindow':
+                stopShareScreen()
+                break;
+            case 'websocketOnClose':
+                console.log('websocket on close.')
+                errorCodeTips(gsRTC.CODE_TYPE.WEBSOCKET_CLOSED.codeType, data.lineId)
 
-       }
-    }else{
-        let param
-        let content = message.data
-        let lineId = content.localLineId
-        let shareType  = content.shareType
-        let isCreateNewSession = content.isCreateNewSession
-        let infoMsg = content.rspInfo
-        let session
-        currentLine = lineId
-        localShare = message.localShare || content.localShare
-        console.warn("lineId: " + lineId + ' isCreateNewSession: ' + isCreateNewSession)
-
-        if (isCreateNewSession) {
-            session = WebRTCSession.prototype.getSessionInstance(lineId)
-        } else {
-            session = WebRTCSession.prototype.getSession({ key: 'lineId', value: lineId })
-        }
-
-        if (!session) {
-            console.warn("handleBackgroundMessage:no session")
-            return
-        }
-        switch (message.cmd) {
-            case 'remoteScreenShare':
-                console.log('handle remote offer sdp')
-                param = {
-                    sdp: content.sdp.data,
-                    lineId: lineId,
-                    isUpdate: false,
-                    remoteLineId: content.remoteLineId,
-                    reqId: content.reqId,
-                    shareType: content.shareType,
-                    action: content.action,
-                    callback: function (event) {
-                        console.warn("sipAccept:", event)
-                        iconStyleToggle('remoteScreenShare')
-                    }
-                }
-                gsRTC.handleAccept(param)
-                break
-            case 'localScreenShare':
-                console.log('local screen share')
-                let browserDetails = gsRTC.getBrowserDetail()
-                remoteName = content.remoteName
-                if (shareType === 'shareScreen') {
-                    if (browserDetails.browser === 'firefox') {
-                        // TODO: Firefox 取流存在报错：Uncaught (in promise) DOMException: getDisplayMedia requires transient activation from a user gesture.
-                        alert(`请点击页面的【 ${currentLocale['L92'] } 】开启共享`)
-                    } else {
-                        startShareScreen(shareType)
-                    }
-                } else {
-                    startShareScreen(shareType)
-                }
-                break
-            case 'remoteAnswerSdp':
-                if (infoMsg && infoMsg.rspCode === 200) {
-                    console.warn("handle remoteAnswerSdp")
-                    let sdp = content.sdp.data
-                    session.remoteLineId = content.remoteLineId
-                    if (sdp) {
-                        session.handleServerResponseSdp(sdp)
-                    } else {
-                        console.log('answer sdp is not offer now.')
-                    }
-                } else {
-                    console.warn("cause: " + infoMsg && infoMsg.rspMsg)
-                    session.isHandleDestroy = true
-                    errorCodeTips(infoMsg && infoMsg.rspCode)
-                    gsRTC.jsepRollback(session)
-                    gsRTC.clearSession({lineId: currentLine})
-                }
-                break
-            case 'updateScreen':
-                console.warn("ready relay updateScreen")
-                content.updateMessage.isFromBackground = true
-                session.handleDataChannelMessage(content.updateMessage)
-                break
-            case 'updateScreenRet':
-                console.warn("ready relay updateScreenRet")
-                if (infoMsg && infoMsg.rspCode === 200) {
-                    content.updateMessage.isFromBackground = true
-                    session.handleDataChannelMessage(content.updateMessage)
-                } else {
-                    localShare = false
-                    log.info("updateMediaSessionRet: current get codeType : " + infoMsg.rspCode + " cause: " + infoMsg.rspMsg)
-                    // 提示内容
-                    errorCodeTips(infoMsg && infoMsg.rspCode)
-                    gsRTC.jsepRollback(session)
+                // 发送消息，清除对端的共享页面
+                let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
+                if(session){
+                    session.sendMessageByDataChannel({lineId: data.lineId, type: 'socketStatus', state: 'close'})
                 }
                 break
             default:
-                console.warn("current no data")
+                console.log("print current type: "+ message.type)
                 break
         }
+    }else{
+        handleScreenShareRequest(message)
     }
 }
 
-/** 关闭共享窗口的弹框倒计时
- * */
+/**
+ * 关闭共享窗口的弹框倒计时
+ * @param errorContent
+ * @param countDownNum
+ */
 function countDown(errorContent, countDownNum = 10){
-    console.warn("get error content: "  + JSON.stringify(errorContent, null, '    '))
+    console.log("get error content: "  + JSON.stringify(errorContent, null, '    '))
 
     closeWindowBtn.innerText = currentLocale['L75']
     tipContentText.innerHTML = errorContent.value
@@ -380,9 +507,9 @@ function countDown(errorContent, countDownNum = 10){
             countDownNum--
             countDownText.innerText = `${countDownNum}s`
             if(countDownNum < 0){
-                console.log("shareScreen end of countDown")
+                console.log("shareScreen end of count Down")
                 countDownCallback()
-                // popupSendMessage2Background({cmd: 'closeScreenTab', lineId: currentLine})
+                // popupSendMessage2Background({cmd: 'closeScreenTab', lineId: currentLocalLine})
             }
         }, 1000);
     }else{
@@ -390,8 +517,10 @@ function countDown(errorContent, countDownNum = 10){
     }
 }
 
-/** 是否接收文件的弹框倒计时
- * */
+/**
+ * 是否接收文件的弹框倒计时
+ * @param countDownNum
+ */
 function countDownFile(countDownNum = 20){
     countDownNumText = document.getElementsByClassName('countDown_num')[0]
     let countDownCallback = function(){
@@ -407,9 +536,13 @@ function countDownFile(countDownNum = 20){
             countDownNum--
             countDownNumText.innerHTML = `(${countDownNum}s)`
             if(countDownNum <= 0){
-                console.log(" end of countDown")
+                console.log(" end of count Down")
                 countDownCallback()
-                gsRTC.sendFile({lineId: currentLine, type: 'fileInfo', state: 'timeout'})
+
+                let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
+                if(session){
+                    session.sendMessageByDataChannel({lineId: currentLocalLine, type: 'fileInfo', state: 'timeout'})
+                }
             }
         }, 1000);
     }else{
@@ -417,17 +550,36 @@ function countDownFile(countDownNum = 20){
     }
 }
 
+/**
+ * 错误提示
+ * @param codeType
+ * @param lineId
+ */
 function errorCodeTips(codeType, lineId){
-    console.warn('get codeType is ' + codeType)
+    console.log('get codeType is ' + codeType)
     tipsRemoteReply.classList.toggle('tips-remote-reply-show', false)
     let errorContent
-    if(codeType === 486){
-        errorContent = currentLocale['L105']
-    }else if(codeType === 480){
-        errorContent = currentLocale['L106']
-    }else if(codeType === 300){
-        errorContent = currentLocale['L107']
+    switch (codeType) {
+        case gsRTC.CODE_TYPE.NO_RESPONSE.codeType:
+            errorContent = currentLocale['L105']
+            break
+        case gsRTC.CODE_TYPE.PEER_WEBSOCKET_CLOSED.codeType:
+            errorContent = currentLocale['L106']
+            break
+        case gsRTC.CODE_TYPE.WEBSOCKET_CLOSED.codeType:
+            errorContent = currentLocale['L145']
+            break
+        case gsRTC.CODE_TYPE.ICE_CONNECTION_FAILED.codeType:
+            errorContent = currentLocale['L146']
+            break
+        case gsRTC.CODE_TYPE.REFUSE_ACCEPT_SHARE.codeType:
+            errorContent = currentLocale['L107']
+            break
+        default:
+            break
     }
+    errorContent = errorContent + currentLocale['L147']
+
     /*************** 处理通知内容 *******************/
     mb.classList.add('mb');
     document.body.appendChild(mb);
@@ -551,7 +703,6 @@ function createPopupTable(data) {
 
         popupConterMember.appendChild(memberBox)
     }
-
 }
 
 /**
@@ -576,181 +727,356 @@ function showContent(){
     inviteInput.placeholder = currentLocale['L102']
     inviteInput1.placeholder = currentLocale['L102']
     kickOut.innerHTML = currentLocale['L103']
-    fileShareText.innerHTML = currentLocale['L117']
+    // fileShareText.innerHTML = currentLocale['L117']
     fileHead.innerHTML = currentLocale['L117']
-    fileTailButton.innerHTML = currentLocale['L120']
     fileContent.innerHTML = currentLocale['L125']
     schedule.className = 'schedule'
 }
 
 /**
  * 侧边栏图标/样式切换
- **/
-function iconStyleToggle(data){
-    let dom = document.querySelectorAll('grp-button')   // 获取页面上的grp-button 组件
-    if(data === 'pauseShareScreen'){
-        dom[3].setAttribute('type', 'resumeShareScreen')
-    }else {
-        dom[3].setAttribute('type', 'pauseShareScreen')
-    }
-    switch(data){
+ * @param actionType
+ */
+function iconStyleToggle(actionType){
+    let fileBtn = document.querySelector("grp-button[type='shareFile']")
+    let switchBtn = document.querySelector("grp-button[type='shareScreen']") || document.querySelector("grp-button[type='switchShareScreen']")
+    let stopBtn = document.querySelector("grp-button[type='stopShareScreen']")
+    let pauseBtn = document.querySelector("grp-button[type='pauseShareScreen']") || document.querySelector("grp-button[type='resumeShareScreen']")
+    switch(actionType){
         case 'startShareScreen':        // 开启演示
         case 'resumeShareScreen':       // 恢复共享
-            dom[2].setAttribute('disabled', 'false')
-            dom[2].setAttribute('type', 'switchShareScreen')
-            dom[3].setAttribute('disabled', 'false')
-            dom[4].setAttribute('disabled', 'true')
+            switchBtn.setAttribute('disabled', 'false')
+            switchBtn.setAttribute('type', 'switchShareScreen')
+            pauseBtn.setAttribute('disabled', 'false')
+            stopBtn.setAttribute('disabled', 'false')
+            fileBtn.setAttribute('disabled', 'false')
             break
         case 'shareScreen':
         case 'remoteScreenShare':       // 远端开启共享
-            dom[2].setAttribute('disabled', 'true')
-            dom[2].setAttribute('type', 'switchShareScreen')
-            dom[3].setAttribute('disabled', 'true')
-            dom[4].setAttribute('disabled', 'true')
+            switchBtn.setAttribute('disabled', 'true')
+            switchBtn.setAttribute('type', 'switchShareScreen')
+            pauseBtn.setAttribute('disabled', 'true')
+            stopBtn.setAttribute('disabled', 'false')
+            fileBtn.setAttribute('disabled', 'false')
             break
         case 'pauseShareScreen':        // 暂停共享
-            dom[2].setAttribute('disabled', 'true')
-            dom[3].setAttribute('disabled', 'false')
-            dom[4].setAttribute('disabled', 'true')
+            switchBtn.setAttribute('disabled', 'true')
+            pauseBtn.setAttribute('disabled', 'false')
+            stopBtn.setAttribute('disabled', 'true')
+            fileBtn.setAttribute('disabled', 'false')
             break
         case 'stopShareScreen':         // 停止共享
-            dom[2].setAttribute('disabled', 'false')
-            dom[2].setAttribute('type', 'shareScreen')
-            dom[3].setAttribute('disabled', 'true')
-            dom[4].setAttribute('disabled', 'true')
+            switchBtn.setAttribute('disabled', 'false')
+            pauseBtn.setAttribute('disabled', 'true')
+            stopBtn.setAttribute('disabled', 'true')
+            fileBtn.setAttribute('disabled', 'true')
             break
         default:
-            console.log('iconStyleToggle: ' + data)
+            console.log('iconStyleToggle: ' + actionType)
             break
     }
+
+    if(actionType === 'pauseShareScreen'){
+        pauseBtn.setAttribute('type', 'resumeShareScreen')
+    }else {
+        pauseBtn.setAttribute('type', 'pauseShareScreen')
+    }
 }
 
 /**
- * 计算文件大小
- **/
-function change(limit){
-    var size = "";
-    if(limit < 0.1 * 1024){                            //小于0.1KB，则转化成B
-        size = limit.toFixed(2) + "B"
-    }else if(limit < 0.1 * 1024 * 1024){            //小于0.1MB，则转化成KB
-        size = (limit/1024).toFixed(2) + "KB"
-    }else if(limit < 0.1 * 1024 * 1024 * 1024){        //小于0.1GB，则转化成MB
-        size = (limit/(1024 * 1024)).toFixed(2) + "MB"
-    }else{                                            //其他转化成GB
-        size = (limit/(1024 * 1024 * 1024)).toFixed(2) + "GB"
+ * 获取本地账号id 和 name
+ * @returns {{name: string, id: string}}
+ */
+function getLocalAccountContent(){
+    let act
+    let account = {
+        id: '',
+        name: '',
     }
-
-    var sizeStr = size + "";                        //转成字符串
-    var index = sizeStr.indexOf(".");                    //获取小数点处的索引
-    var dou = sizeStr.substr(index + 1 ,2)            //获取小数点后两位的值
-    if(dou == "00"){                                //判断后两位是否为00，如果是则删除00
-        return sizeStr.substring(0, index) + sizeStr.substr(index + 3, 2)
-    }
-    return size
-}
-
-/**
- * 选择文件
- **/
-function selectFile(){
-    if(sendStatus === 'start'){
-        console.log('Selecting files is not allowed during sending')
-    }else{
-        console.log('select file')
-        let fileBtn = document.createElement('input')
-        fileBtn.type = 'file'
-        fileBtn.onchange = function () {
-            sendText = this.files[0]
-            console.log(`File is ${[sendText.name, sendText.size, sendText.type, sendText.lastModified].join(' ')}`);
-            switchSendstatus('prepare')
-            progress.max = sendText.size
-            fileInfo = {lineId: currentLine, type: 'fileInfo', name: sendText.name, size: sendText.size}
+    if(lineData?.length){
+        for(let index of lineData){
+            if(index.state === 'connected'){
+                act = index.acct + 1
+                break
+            }
         }
-        fileBtn.click()
     }
-    
+
+    if(act){
+        for(let i of localAccountLists){
+            if(i.id === act){
+                account.id = i.sip_id
+                account.name = i.name
+            }
+        }
+    }
+
+    return account
 }
 
-// 发送/取消文件
-function sendFile(){
-    if(sendStatus === 'start'){
-        console.log('change the start status to cancel processing')
-        fileInfo = null
-        sendText = null
-        sendStatus = 'end'
-        fileUpload.classList.remove('GRP-icon-upload-ash')
-        fileUpload.classList.add('GRP-icon-upload')
-        gsRTC.sendFile({lineId: currentLine, type: 'fileInfo', state: 'cancel'})
-        closeFilePopup()
-        fileReader.abort()
-    }else if(sendText){
-        console.log('start send')
-        switchSendstatus('start')
-        gsRTC.sendFile(fileInfo)
-        sendStatus = 'start'
+/**
+ * 本地或远端流发生变化时的处理事件
+ * @param data
+ */
+function handleStreamChange(data){
+    console.log("streamChange:" + JSON.stringify(data, null, '   '))
+    if (data.isLocal) {
+        if (data.stream) {
+            if (data.stream.getVideoTracks().length) {
+                presentVideo.srcObject = data.stream
+                presentVideo.onloadedmetadata = function () {
+                    console.log("video play ...")
+                    isLoadingOfShareScreen = true
+                    presentVideo.play()
+
+                    if(currentLocalLine){
+                        let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
+                        if(session){
+                            session.sendMessageByDataChannel({
+                                type: 'streamChange',
+                                lineId: currentRemoteLine,
+                                size: {
+                                    videoWidth: presentVideo.videoWidth,
+                                    videoHeight: presentVideo.videoHeight
+                                }
+                            })
+                        }
+                    }
+                }
+                presentVideo.style.display = 'block'
+
+                console.log('local present stream id: ', data.stream.id)
+            } else {
+                console.log('local audio stream id: ', data.stream.id)
+            }
+        } else {
+            can.fullScreenModel.toggleFullScreen(true)
+            can.fullScreenModel.togglePictureInPicture(true)
+            presentVideo.srcObject = null
+            isLoadingOfShareScreen = false
+        }
+    } else {
+        if (data.stream) {
+            if (data.stream.getVideoTracks().length) {
+                presentVideo.srcObject = data.stream
+                presentVideo.onloadedmetadata = function () {
+                    console.log("video play ...")
+                    isLoadingOfShareScreen = true
+                    presentVideo.play()
+                }
+                presentVideo.style.display = 'block'
+                console.log('remote present stream id: ', data.stream.id)
+            } else {
+                console.log('remote audio stream id：', data.stream.id)
+            }
+        } else {
+            can.fullScreenModel.toggleFullScreen(true)
+            can.fullScreenModel.togglePictureInPicture(true)
+            presentVideo.srcObject = null
+            isLoadingOfShareScreen = false
+        }
     }
-    
+}
+
+/**
+ * 更新远端鼠标位置变化
+ * @param message
+ */
+function handleRemoteMousePositionChange(message){
+    console.log('handle remote mouse position change: ', message)
+    let canvas  = handleRemoteContent(message)
+    let getRatio = can.getPostionRatio(false)
+    let position = {}
+
+    if(message.rect){
+        can.remoteCanvas.width = message.rect.width
+        can.remoteCanvas.height = message.rect.height
+    }
+
+    if(message.width && message.height){
+        position.width = Number(message.width)
+        position.height = Number(message.height)
+    }
+
+    if(message.x && message.y){
+        position.x = Number(message.x) / getRatio.xRatio
+        position.y = Number(message.y) / getRatio.yRatio
+    }
+
+    switch(message.type){
+        case 'mouseDown':
+            if(message?.action === 'eraserFlag' || message?.action === 'textFlag' || message?.action === 'noteFlag') return
+            can.otherCanvasDown({startX: position.x, startY: position.y, target: canvas, action: message.action})
+            break;
+        case 'mouseMove':
+            canvas.eraserSize = message.eraserSize
+            if(message?.action === 'eraserFlag'){
+                can.eraser({canvas: canvas, eraserSize: message.eraserSize, x: position.x, y: position.y})
+            }else{
+                can.otherCanvasMove({ currentX: position.x, currentY: position.y, event: message.e, target: canvas, action: message.action, brushColor: message.brushColor})
+            }
+            break;
+        case 'mouseUp':
+            can.otherCanvasUp({account: message.account, target: canvas})
+            break;
+        case 'remotePosition':
+            can.remoteCanvas.width = position.width
+            can.remoteCanvas.height = position.height
+            break;
+        case 'areaDelete':
+            position.width = position.width / getRatio.xRatio
+            position.height = position.height / getRatio.yRatio
+            can.otherCanvasDelete({type: message.type, x: position.x, y: position.y, width: position.width, height: position.height, target: message.canvas})
+            break;
+        case 'allDelete':
+            can.otherCanvasDelete({type: message.type, target: message.canvas})
+            break;
+        case 'pausePainting':
+            can.pausePainting = message.value
+            if(can.pausePainting && message.account){
+                let tip = message.account.name + " " + currentLocale['L93']
+                notice({type: 'info',value: tip })
+            }
+            break;
+        case 'textFlag':
+            can.otherCanvasDrawText({
+                type: message.type,
+                x: position.x,
+                y: position.y,
+                textColor: message.textColor,
+                textFontSize: message.textFontSize,
+                text: message.text,
+                target: message.canvas,
+            })
+            break;
+        case 'noteFlag':
+            can.otherCanvasDrawNote({
+                type: message.type,
+                x: position.x,
+                y: position.y,
+                width: message.width,
+                height: message.height,
+                bgColor: message.bgColor,
+                fontSize: message.fontSize,
+                text: message.text,
+                target: message.canvas,
+            })
+            break
+        default:
+            console.log("handleRemoteMousePositionChange, get current type is ",message.type)
+            break
+
+    }
+}
+
+/**
+ * 处理本端中关于远端相关内容是否创建
+ ***/
+function handleRemoteContent(message){
+    let position = {}
+    let canvas
+    let getRatio = can.getPostionRatio(false)
+    if(message.x && message.y){
+        position.x = Number(message.x) / getRatio.xRatio
+        position.y = Number(message.y) / getRatio.yRatio
+    }
+    if(message.account){
+        // 首先判断canvas是否创建，如果没有，则创建；若有，则不创建；
+        if(can.canvasArray.length){
+            let isExist = can.canvasArray.find(item => item.getAttribute('nameId') === message.account.id)
+            if(!isExist && message.type === 'mouseDown'){
+                can.createCanvas({account: message.account, brushColor: message.brushColor})
+                can.createTools({account: message.account, brushColor: message.brushColor})
+                canvas = can.canvasArray[can.canvasArray.length - 1]
+            }else{
+                canvas = isExist
+                if(message.brushColor){
+                    canvas.brushColor = message.brushColor
+                    canvas.brushStrokeSize = message.brushStrokeSize
+                    can.changeToolColor({account: message.account, brushColor: message.brushColor})
+                }
+            }
+        }else if(message.type === 'mouseDown'){
+            can.createCanvas({account: message.account, brushColor: message.brushColor})
+            can.createTools({account: message.account, brushColor: message.brushColor})
+            canvas = can.canvasArray[can.canvasArray.length - 1]
+        }
+
+        // 首先判断显示位置的div是否创建，如果没有，则创建且处理样式；若有，则直接处理样式；
+        let otherShowPosition = document.getElementsByClassName('otherShowPosition')
+        if(otherShowPosition.length){
+            for(let ele of otherShowPosition){
+                if(ele.getAttribute('nameId') === message.account.id){
+                    if(!ele && message.type === 'mouseDown'){
+                        can.createMouseAccount({account: message.account, brushColor: message.brushColor})
+                    } else{
+                        if(message.brushColor){
+                            can.changeElementStyleForPosition({account: message.account, brushColor: message.brushColor,currentX: position.x, currentY: position.y})
+                        }
+                    }
+                    break
+                }
+            }
+        } else if(message.type === 'mouseDown'){
+            can.createMouseAccount({account: message.account, brushColor: message.brushColor})
+        }
+
+        //首先判断有没有创建div橡皮擦，如果没有，则创建且处理样式；若有，则直接处理样式。
+        // let otherMouseStyle = document.getElementsByClassName('otherMouseStyle')
+        // let constraints
+        // let getParameters = function(){
+        //     let param = {
+        //         account: message.account,
+        //         action: message.action,
+        //         x: position.x,
+        //         y: position.y,
+        //     }
+        //
+        //     if(message.action === 'eraserFlag'){
+        //         param.eraserSize  = message.eraserSize
+        //     }else if(message.action === 'pointerFlag'){
+        //         param.pointerColor = message.pointerColor
+        //     }
+        //     return param
+        // }
+        // if(otherMouseStyle.length){
+        //     for(let ele of otherMouseStyle){
+        //         if(ele.getAttribute('nameId') === message.account.id){
+        //             constraints = getParameters()
+        //             if(!ele && message.type === 'mouseDown'){
+        //                 can.createShapes(constraints)
+        //             } else{
+        //                 can.changeShapesStyle(constraints)
+        //             }
+        //             break
+        //         }
+        //     }
+        // } else if(message.type === 'mouseDown'){
+        //     constraints = getParameters()
+        //     can.createShapes(constraints)
+        // }
+    }
+
+    return canvas
 }
 
 window.onload = function () {
+    document.title = currentLocale['L135']
     if (webExtension) {
         webExtension.onMessage.addListener(handleBackgroundMessage)
         popupSendMessage2Background({ cmd: 'shareScreenOnOpen' })
     }
     let browserDetail = gsRTC.getBrowserDetail()
-    if (browserDetail.browser === 'firefox') {
+    if (browserDetail.browser === 'firefox' || browserDetail.browser === 'safari') {
         videoTips.innerHTML = ''
         picBtn.classList.add('firefoxPicBtn')
-        let domShare = document.querySelectorAll('grp-button')[2]
+        let domShare = document.querySelector("grp-button[type='switchShareScreen']")
         domShare.setAttribute('disabled', 'false')
         domShare.setAttribute('type', 'shareScreen')
     }
 
-    gsRTC.on('streamChange', function (data) {
-        console.warn("streamChange:" + JSON.stringify(data, null, '   '))
-        if (data.isLocal) {
-            if (data.stream) {
-                if (data.stream.getVideoTracks().length) {
-                    presentVideo.srcObject = data.stream
-                    presentVideo.onloadedmetadata = function () {
-                        console.log("video play ...")
-                        isLoadingOfShareScreen = true
-                        presentVideo.play()
-                    }
-                    presentVideo.style.display = 'block'
-
-                    console.log('显示本地演示流: ', data.stream.id)
-                } else {
-                    console.log('显示本地音频流: ', data.stream.id)
-                }
-            } else {
-                can.fullScreenModel.toggleFullScreen(true)
-                can.fullScreenModel.togglePictureInPicture(true)
-                presentVideo.srcObject = null
-                isLoadingOfShareScreen = false
-            }
-        } else {
-            if (data.stream) {
-                if (data.stream.getVideoTracks().length) {
-                    presentVideo.srcObject = data.stream
-                    presentVideo.onloadedmetadata = function () {
-                        console.log("video play ...")
-                        isLoadingOfShareScreen = true
-                        presentVideo.play()
-                    }
-                    presentVideo.style.display = 'block'
-                    console.log('显示远端演示流: ', data.stream.id)
-                } else {
-                    console.log('显示远端演示音频流：', data.stream.id)
-                }
-            } else {
-                can.fullScreenModel.toggleFullScreen(true)
-                can.fullScreenModel.togglePictureInPicture(true)
-                presentVideo.srcObject = null
-                isLoadingOfShareScreen = false
-            }
-        }
-    })
+    gsRTC.on('streamChange', handleStreamChange)
+    gsRTC.on('errorTip', errorCodeTips)
 
     gsRTC.on('localSDPCompleted', function (message, localShare) {
         console.log('on local sdp completed.')
@@ -765,19 +1091,19 @@ window.onload = function () {
 
     gsRTC.on('updateScreen', function (message, localShare) {
         if (!localShare) {
-            popupSendMessage2Background({ cmd: 'receiveOfferUpdateSdp', data: message })
+            popupSendMessage2Background({ cmd: 'updateLocalOfferSdp', data: message })
         } else {
-            popupSendMessage2Background({ cmd: 'receiveAnswerUpdateSdp', data: message })
+            popupSendMessage2Background({ cmd: 'updateLocalAnswerSdp', data: message })
         }
     })
 
     gsRTC.on("closeScreenTab", function(data){
-        console.warn("close screenTab")
+        console.log("close screenTab")
         popupSendMessage2Background({cmd: 'closeScreenTab', lineId: data.lineId})
     })
 
     gsRTC.on("shareScreen",function(isSuccess){
-        console.warn("trigger shareScreen",isSuccess)
+        console.log("trigger shareScreen",isSuccess)
         if(isSuccess){
             iconStyleToggle('shareScreen')
         }else{
@@ -786,7 +1112,7 @@ window.onload = function () {
     })
 
     gsRTC.on("stopShareScreen",function(){
-        console.warn("trigger stopShareScreen")
+        console.log("trigger stopShareScreen")
         iconStyleToggle('stopShareScreen')
     })
 
@@ -794,37 +1120,31 @@ window.onload = function () {
         notice({ type: 'warn', value: currentLocale['L113']})
     })
 
-    gsRTC.on('currentMousePosition',function(message){
-        console.warn("message:",message)
-        let position = message.position
-        let getRatio = can.getPostionRatio(false)
-        if(position && position.startX){
-            position.startX = position.startX / getRatio.xRatio
-            position.startY = position.startY / getRatio.yRatio
+    gsRTC.on('onRemoteMousePosition', handleRemoteMousePositionChange)
+
+    gsRTC.on('onRemoteStreamChange',function(message){
+        console.log("change local videoArea size")
+        if(message.size){
+            can.setSize(message.size)
         }
-        if(message.type === 'mousedown'){
-            console.warn("远端 mousedown")
-            can.canvasDown(position.startX, position.startY)
-        }else if(message.type === 'mousemove'){
-            console.warn("远端 mousemove")
-            can.canvasMove(position.startX, position.startY, position.e)
-        }else if(message.type === 'mouseup'){
-            console.warn("远端 mouseup")
-            can.canvasUp()
-        }else if(message.type === 'mouseleave'){
-            console.warn("远端 mouseleave")
-            // can.canvasLeave()
-        }else if(message.type === 'status'){
-            console.warn("远端 mouseStatus")
-            // initDraw(message.state, true)
-            if(message.state === 'clearFlag'){
-                can.clearCanvas()
+
+    })
+
+    gsRTC.on('shareScreenFileConfirmPopup', function (data) {
+        console.log('on quicall local sdp completed.')
+        refuseShareBtn.innerText = currentLocale['L83']
+        refuseShareBtn.classList.toggle('requestShare-bottom-cancel', false)
+        acceptShareBtn.innerText = currentLocale['L84']
+        let remoteName
+        for(let i in lineData){
+            if(lineData[i].state !== 'idle' && lineData[i].line == data.lineId){
+                remoteName = lineData[i].remotename || lineData[i].remotenumber
             }
-        }else if(message.type === 'remotePosition'){
-            console.warn("远端 remotePosition")
-           remoteWidth = position.width
-           remoteHeight = position.height
         }
+        let fileName = data.fileName + ' (' + formatFileSize(data.fileSize) + ')'
+        requestShareText.innerHTML = currentLocale['L123'].replace('{0}', remoteName).replace('{1}', fileName)
+        sharePopup.classList.toggle('requestShareBox-show',true)
+        countDownFile()
     })
 }
 
@@ -844,18 +1164,18 @@ closeWindow.onclick = closeShareScreenWindow
 /** 发送当前鼠标显示位置
  * */
 function setCurrentMousePosition(data){
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLine})
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
     if(!session){
         log.warn("setCurrentMousePosition: session is not found")
         return
     }
-    session.dataChannelSendMessage(data)
+    session.sendMessageByDataChannel(data)
 }
 
 /** 关闭窗口点击事件
  **/
 function closeShareScreenWindow(){
-    countDown(currentLine)
+    countDown(currentLocalLine)
 }
 
 function inviteClick() {
@@ -905,72 +1225,31 @@ function newCallClick() {
     dialButton.style.display = 'block'
 }
 
-// 接收/拒接文件
-function handleClickEvent(event){
+/**
+ * 收到对端共享文件请求 可选择接收或拒绝
+ * @param event
+ */
+function handleShareFileRequest(event){
     if (!event || !event.target) {
         return
     }
     let value = event.target.textContent
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
     switch(value){
         case currentLocale['L84']:                  // 接受共享文件
             console.log('Accept sharing file')
             countDownFile()
-            gsRTC.sendFile({lineId: currentLine, type: 'fileInfo', state: 'receive'})
+
+            if(session){
+                session.sendMessageByDataChannel({lineId: currentLocalLine, type: 'fileInfo', state: 'receive'})
+            }
             break
         case currentLocale['L83']:                 // 拒绝共享文件
             console.log('Deny sharing file')
             countDownFile()
-            gsRTC.sendFile({lineId: currentLine, type: 'fileInfo', state: 'reject'})
-            break
-        default:
-            break
-    }
-}
 
-// 切换发送状态
-function switchSendstatus(e){
-    console.log('switchSendstatus: ' + e)
-    switch(e){
-        case 'prepare':
-            // fileNameIcon.style.display = 'block'
-            fileNameIcon.classList.toggle('file-name-icon_show', false)
-            fileContent.classList.toggle('file-content_selected', true)
-            fileContent.textContent = sendText.name + ' ' + change(sendText.size)
-            fileTailButton.classList.toggle('file-tail-button-show', true)
-            fileBodyTips.textContent = ''
-            schedule.textContent = ''
-            progress.value = 0
-            break
-        case 'start':
-            fileBodyTips.textContent = ''
-            fileBodyTips.classList.remove('file-body-tips-failed')
-            fileBodyTips.classList.remove('file-body-tips-success')
-            fileBodyTips.appendChild(progress)
-            fileBodyTips.appendChild(schedule)
-            fileTailButton.innerHTML = currentLocale['L124']
-            fileUpload.classList.remove('GRP-icon-upload')
-            fileUpload.classList.add('GRP-icon-upload-ash')
-            fileBodyContent.classList.toggle('file-body-content_disable', true)
-            break
-        case 'success':
-        case 'fail':
-            fileBodyTips.innerHTML = ''
-            schedule.textContent = ''
-            progress.value = 0
-            fileTailButton.innerHTML = currentLocale['L120']
-            fileBodyContent.classList.toggle('file-body-content_disable', false)
-            fileUpload.classList.remove('GRP-icon-upload-ash')
-            fileUpload.classList.add('GRP-icon-upload')
-            sendStatus = 'end'
-
-            if(e === 'success'){
-                fileBodyTips.classList.remove('file-body-tips-failed')
-                fileBodyTips.classList.add('file-body-tips-success')
-                fileBodyTips.textContent = currentLocale['L130']
-            }else {
-                fileBodyTips.classList.remove('file-body-tips-success')
-                fileBodyTips.classList.add('file-body-tips-failed')
-                fileBodyTips.textContent = currentLocale['L131']
+            if(session){
+                session.sendMessageByDataChannel({lineId: currentLocalLine, type: 'fileInfo', state: 'reject'})
             }
             break
         default:
@@ -978,40 +1257,14 @@ function switchSendstatus(e){
     }
 }
 
-// 打开文件弹窗
-function openFilePopup(){
-    filePopup.classList.toggle('minimized', true)
-    if(!sendText){
-        fileNameIcon.classList.toggle('file-name-icon_show', true)
-        fileContent.classList.toggle('file-content_selected', false)
-    }
-}
-
-// 关闭文件弹窗
-function closeFilePopup(){
-    filePopup.classList.toggle('minimized', false)
-    if(sendStatus === 'end'){
-        fileNameIcon.classList.toggle('file-name-icon_show', true)
-        fileContent.classList.toggle('file-content_selected', false)
-        fileTailButton.classList.toggle('file-tail-button-show', false)
-        fileBodyContent.classList.toggle('file-body-content_disable', false)
-        fileContent.textContent = currentLocale['L125']
-        sendStatus = 'prepare'
-        fileBodyTips.innerHTML = ''
-        schedule.textContent = ''
-        progress.value = 0
-        fileTailButton.innerHTML = currentLocale['L120']
-    }
-}
-
 window.onbeforeunload = function () {
     for (let i = 0; i < gsRTC.webrtcSessions.length; i++) {
         let session = gsRTC.webrtcSessions[i]
-        console.warn("Users click to close the sharing page, Whether to use dataChannel to send destroyMediaSession:" + session.isHandleDestroy)
-        if (currentLine === session.lineId) {
+        console.log("Users click to close the sharing page, Whether to use dataChannel to send destroyMediaSession:" + session.isHandleDestroy)
+        if (currentLocalLine === session.lineId) {
             if(!session.isHandleDestroy){
-                popupSendMessage2Background({cmd: 'userClickCloseShare', data: {lineId:  currentLine}})
-                gsRTC.clearSession({lineId: currentLine})
+                popupSendMessage2Background({cmd: 'userClickCloseShare', data: {lineId:  currentLocalLine}})
+                gsRTC.clearSession({lineId: currentLocalLine})
             }else {
                 session.isHandleDestroy = false
             }

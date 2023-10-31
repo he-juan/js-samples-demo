@@ -109,6 +109,45 @@ WebRTCSession.prototype.getStream = function (type, isLocal) {
 }
 
 /**
+ * 通过 MediastreamTrack label 判断当前共享类型
+ */
+WebRTCSession.prototype.getShareTypeByTrackSetting = function (stream){
+    if(!stream){
+        return ''
+    }
+
+    let type = ''
+    let track = stream.getVideoTracks()[0]
+    let browserDetails = GsRTC.prototype.getBrowserDetail()
+
+    if(browserDetails.browser === 'firefox'){
+        /**
+         * Firefox track label:
+         * label: "WebRTC samples - Google Chrome"   // tab 页
+         * label: "GRP拨号插件问题列表.xlsx - WPS Office"   // 窗口
+         * label: ""   // 屏幕
+         */
+        type = track.label || 'screen'
+    }else {
+        let displaySurface = track.getSettings().displaySurface
+        switch (displaySurface){
+            case 'browser':  // tab页
+                type = 'tab'
+                break
+            case 'monitor':  // 屏幕
+                type = 'screen'
+                break
+            case 'window':   // 窗口
+                type = 'window'
+                break
+            default:
+                break
+        }
+    }
+    return type
+}
+
+/**
  * 获取取流错误的code
  * @param streamType: 取流类型 audio、video
  * @param errorName: 取流失败后返回的错误

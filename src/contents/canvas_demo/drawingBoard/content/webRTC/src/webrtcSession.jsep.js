@@ -70,10 +70,12 @@ let WebRTCSession = function (lineId) {
         main: null,
     }
 
+    this.sendBuffer = []                                            // dataChannel 连接成功前未发送成功的缓冲数据
     this.receiveBuffer = []                                         // 接收缓冲区
     this.receivedSize = 0                                           // 已收到的大小
     this.fileSize = 0                                               // 文件大小
     this.fileName = null                                            // 文件名字
+    this.fileReader = null
 }
 
 /**
@@ -111,7 +113,6 @@ WebRTCSession.prototype.createMediaLine = async function (shareType, isOffer){
             default:
                 break
         }
-        await This.setupDataChannel()
     }catch (error){
         log.warn('create media line error:', error)
         This.actionCallback && This.actionCallback({
@@ -186,12 +187,13 @@ WebRTCSession.prototype.subscribeStreamEvents = function (pc) {
 WebRTCSession.prototype.createRTCSession = async function (type = null, conf = {}) {
     log.info('create webRTC multiStream Peer connection')
     let This = this
-    if( !This.isSuccessUseWebsocket ){
+    if(!This.isSuccessUseWebsocket){
         This.pc = This.createPeerConnection(conf)
+        This.createSendDataChannel()
     }
 
     try {
-        if(!This.isSuccessUseWebsocket ){
+        if(!This.isSuccessUseWebsocket){
             await This.createMediaLine(This.shareType, true)
         }else{
             let mainStream = This.getStream(type, true)
@@ -264,84 +266,19 @@ WebRTCSession.prototype.createPeerConnection = function (conf = {}) {
     pc.onicegatheringstatechange = function () { This.onIceGatheringStateChange() }
     pc.oniceconnectionstatechange = function () { This.onIceConnectionStateChange() }
     pc.onconnectionstatechange = function () { This.onConnectionStateChange() }
-    pc.ondatachannel = function(e){  This.onDataChannelMessage(e) }
+    pc.ondatachannel = function(event){
+        log.info("receive Data channel is created!");
+        This.subscribeChannelEvents(event.channel)
+    }
 
     return pc
-}
-
-
-/**
- * 创建dataChannel
- *
- * **/
-WebRTCSession.prototype.setupDataChannel = function(){
-    log.info("start setup dataChannel")
-    try{
-        let This = this
-        let pc = This.pc
-        let optional = {reliable: true, ordered: true}
-        pc.dataChannel = pc.createDataChannel('sendDataChannel', optional)
-        pc.dataChannel.binaryType = 'arraybuffer';
-        log.info("created dataChannel")
-        pc.dataChannel.onopen = function(){
-            log.info("data channel connect")
-        }
-        pc.dataChannel.onmessage = function(e){
-            log.info(`Got message`)
-            // 处理DataChannel相关数据
-            if(e.data.byteLength){
-                This.handleDataChannelFile(e)
-            }else{
-                This.handleDataChannelMessage(e.data)
-            }
-        }
-    }catch(e){
-        log.warn('no data channel pc', e);
-    }
-}
-
-/**
- *  dataChannel 判断当前状态发送数据
- *  @param message
- */
-
-WebRTCSession.prototype.getCurrentDataChannelState = function(message) {
-    let This = this
-    let pc = This.pc
-    if(!pc){
-        log.warn("current pc no exists")
-        return
-    }
-
-    let dataChannel = pc.dataChannel
-    let sendQueue = []
-    switch(dataChannel.readyState) {
-        case "connecting":
-            log.info(`Connection not open, queueing: ${message}`);
-            sendQueue.push(message);
-            break;
-        case "open":
-            log.info(`The current connection is successful, and data can be sent`);
-            if(sendQueue.length){
-                sendQueue.forEach((msg) => dataChannel.send(JSON.stringify(msg)) );
-            }else{
-                dataChannel.send(JSON.stringify(message))
-            }
-            break;
-        case "closing":
-            log.warn(`Attempted to send message while closing`);
-            break;
-        case "closed":
-            log.warn("Error! Attempt to send while connection closed.");
-            break;
-    }
 }
 
 /**
  * create localDescription: create offer and setLocalDescription
  * @returns {Promise<void>}
  */
-WebRTCSession.prototype.doOffer = async function () {
+WebRTCSession.prototype.doOffer = async function (channelOnly) {
     let This = this
     let pc = This.pc
     // Added checks to ensure that connection object is defined first
@@ -350,16 +287,19 @@ WebRTCSession.prototype.doOffer = async function () {
         return
     }
     log.info('Creating offer sdp( type: ' + (This.shareType) + ' )')
-    pc.offerConstraints = {
-        offerToReceiveAudio: false,
-        offerToReceiveVideo: This.shareType.indexOf('shareScreen') >= 0,
-        iceRestart: pc.action === 'iceRestart'
-    }
 
-    if(pc.offerConstraints.iceRestart){
-        log.warn('clear trickleIceInfo msg before iceRestart, set ice info send false')
-        This.trickleIceInfo = ''
-        This.isIceInfoHasSent = false
+    if(!channelOnly){
+        pc.offerConstraints = {
+            offerToReceiveAudio: false,
+            offerToReceiveVideo: This.shareType.indexOf('shareScreen') >= 0,
+            iceRestart: pc.action === 'iceRestart'
+        }
+
+        if(pc.offerConstraints.iceRestart){
+            log.warn('clear trickleIceInfo msg before iceRestart, set ice info send false')
+            This.trickleIceInfo = ''
+            This.isIceInfoHasSent = false
+        }
     }
 
     async function onCreateOfferSuccess(desc) {
@@ -501,4 +441,27 @@ WebRTCSession.prototype.onSetRemoteDescriptionError = function (error) {
             message: error.message
         }
     })
+}
+
+/**
+ * 回滚JSEP状态
+ * @constructor
+ */
+WebRTCSession.prototype.JSEPStatusRollback = function(){
+    let This = this
+    This.pc.setLocalDescription({type: 'rollback'})
+        .then(function(){
+            log.warn("JSEP: Rollback status success")
+        })
+        .catch(function(error){
+            log.warn("JSEP: Rollback status failed: " + error)
+        })
+    let type = 'slides'
+    let stream = This.getStream(type,true)
+    if (stream) {
+        log.warn('clear slides stream.')
+        This.closeStream(stream)
+        This.setStream(null, type, true)
+    }
+    This.localShare = false
 }

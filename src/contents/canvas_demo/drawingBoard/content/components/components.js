@@ -11,6 +11,9 @@ function GRPButtonUpdateClass (elem, type){
         case "member":
             icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-member-ash' : 'GRP-icon-member-black'}`
             break
+        case 'shareFile':
+            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-file-ash' : 'GRP-icon-file-black'}`
+            break
         case "shareScreen":
         case "switchShareScreen":
             icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-newShare-ash' : 'GRP-icon-newSharing-black'}`
@@ -59,6 +62,16 @@ class GRPButton extends HTMLElement {
                     memberClick()
                 }
                 break
+            case 'shareFile':
+                this.icon = !this.disabled ? 'GRP-icon-file-black' : 'GRP-icon-file-ash'
+                this.text = currentLocale['L117']
+                this.onclick = e => {
+                    if(this.disabled === 'true'){
+                        return
+                    }
+                    fileUploadOnClick()
+                }
+                break
             case "shareScreen":
             case "switchShareScreen":
                 this.icon = !this.disabled ? 'GRP-icon-newSharing-black' : 'GRP-icon-newShare-ash'
@@ -71,7 +84,7 @@ class GRPButton extends HTMLElement {
                         startShareScreen()
                     }else{
                         switchScreenScreen()
-                    } 
+                    }
                 }
                 break
             case "pauseShareScreen":
@@ -165,7 +178,7 @@ customElements.define("grp-call-button", GRPCallButton)
 // 拨号页面共享，文件，联系人，按钮
 class GRPFunButton extends HTMLElement {
     static get observedAttributes() {
-        return ['issharing'];
+        return ['issharing', 'disabled'];
     }
     constructor() {
         super();
@@ -190,30 +203,62 @@ class GRPFunButton extends HTMLElement {
         }
         this.innerHTML = `<div class="operation-button icon ${this.icon}" style="cursor: ${this.disabled ? 'not-allowed' : 'pointer'}"></div>`
         this.onclick = e => {
+            if(this.disabled === 'true'){   // 针对禁止点击不做任何处理
+                return
+            }
+
+            if(this.type === 'contacts'){
+                setPopupTips("L138", true)
+                return
+            }
             clickContent.lineId = this.line
             clickContent.shareType = this.shareType
+            clickContent.localLineId = this.line
+            clickContent.localShare = true
+
             if(this.isSharing){
-                showPopupTip("L72", true)
+                setPopupTips("L72", true)
             }else{
-                if(currentShareContent){
-                    if(currentShareContent.lineId !== this.line){
-                        // 弹框提示： 当前存在在桌面共享，发起新共享后结束目前共享，确定发起?
-                        console.warn(" 当前存在在桌面共享，发起新共享后结束目前共享，确定发起?")
+                if(this.type === 'share'){
+                    // 共享桌面
+                    if(currentShareContent){
+                        // 弹框提示： 当前存在桌面共享，发起新共享后结束目前共享，确定发起?
+                        console.log("Share exists. Upon accepting the new share, the original share will close automatically")
                         mb.classList.add('mb');
                         document.body.appendChild(mb);
+
                         refuseShareBtn.innerText = currentLocale['L60']
                         refuseShareBtn.classList.toggle('requestShare-bottom-cancel', true)
                         acceptShareBtn.innerText = currentLocale['L59']
                         requestShareText.innerHTML = currentLocale['L115']
+
+                        //为区分是来电还是共享，在div中添加属性进行辨别 type: call(来电)、 shareScreen（共享）
+                        refuseShareBtn.setAttribute("type", "shareScreen")
+                        acceptShareBtn.setAttribute("type", "shareScreen")
+
                         requestShareTipsWrapper.classList.toggle('requestShare-tips-wrapper-show', false)
                         sharePopup.classList.toggle('requestShareBox-show',true)
-                        return
+                    }else {
+                        popupSendMessage2Background({ cmd: 'localShareScreenRequest', data: { localLineId: this.line, localShare: true, shareType: this.shareType } })
+                    }
+                }else if(this.type === 'file'){
+                    // 共享文件
+                    if(isShareScreen){
+                        // 如果存在桌面共享，就通知共享窗口发送文件
+                        popupSendMessage2Background({ cmd: 'quicallSendFile' })
+                    }else {
+                        let param =  {
+                            lineId: this.line,
+                            localShare: true,
+                            shareType:  'shareFile'
+                        }
+                        fileUploadOnClick(param)
                     }
                 }
-                popupSendMessage2Background({ cmd: 'localShareScreenRequest', data: { localLineId: this.line, localShare: true, shareType: this.shareType } })
             }
         }
     }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if(name === 'issharing' && this.type ==='share'){
             if(newValue === 'true'){
@@ -221,8 +266,11 @@ class GRPFunButton extends HTMLElement {
             }else if(newValue === 'false'){
                 this.isSharing = false
             }
+        }else if(name === 'disabled'){
+            this.disabled = newValue
         }
     }
 }
+
 customElements.define("grp-fun-button", GRPFunButton);
 

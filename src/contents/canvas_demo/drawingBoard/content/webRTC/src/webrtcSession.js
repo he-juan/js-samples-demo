@@ -126,7 +126,7 @@ WebRTCSession.prototype.getSessionInstance = function (lineId ) {
  */
 WebRTCSession.prototype.getSession = function(data){
     log.info('get Session: ' + JSON.stringify(data, null, '    '))
-    if(!gsRTC || !gsRTC.webrtcSessions || !gsRTC.webrtcSessions.length){
+    if(!window.gsRTC || !gsRTC.webrtcSessions || !gsRTC.webrtcSessions.length){
         return
     }
     if(!data || !data.key || !data.value){
@@ -153,6 +153,9 @@ WebRTCSession.prototype.localSendMessage = function (sdp) {
     // if(data.type === gsRTC.SIGNAL_EVENT_TYPE.INVITE_RET){
     //     data.reqId = This.reqId
     // }
+    if(!This.reqId && pageName === 'quicall'){
+        This.reqId = reqId
+    }
     if (This.isRecvRequest) {                                     // 表示接收端
         if (!This.isSendReInvite) {
             log.info('recv: Accept shareScreen of (' + This.lineId + ')')
@@ -226,6 +229,12 @@ WebRTCSession.prototype.handleSendMessage = function (data) {
         shareType: data.shareType,
         reqId: data.reqId
     }
+    if(sendText){
+        info.fileInfo = {
+            name: sendText.name,
+            size: sendText.size
+        }
+    }
     let rspInfo = data.rspInfo
     if(data.mediaSession){
         info.sdp = {
@@ -235,24 +244,13 @@ WebRTCSession.prototype.handleSendMessage = function (data) {
     }
 
     if(data.type.name === 'createMediaSession' || data.type.name === 'updateMediaSession'  || data.type.name === 'destroyMediaSession'){
-        if(!data.isLocalDestroy){
-            log.info('send present control message: \n' + JSON.stringify(info))
-        }else{
-
-            if(data.isLocalDestroy){
-                info.isLocalDestroy = data.isLocalDestroy
-            }
-            log.info('send hangup control message: \n' + JSON.stringify(info))
+        if(data.isLocalDestroy){
+            info.isLocalDestroy = data.isLocalDestroy
         }
-
     }else if(data.type.name === 'createMediaSessionRet' || data.type.name === 'updateMediaSessionRet' || data.type.name === 'destroyMediaSessionRet'){
-        if(!rspInfo){
-            info.rspInfo = {
-                rspCode: gsRTC.CODE_TYPE.ACTION_SUCCESS.codeType,
-                rspMsg: gsRTC.CODE_TYPE.ACTION_SUCCESS.message
-            }
-        }else{
-            info.rspInfo = rspInfo
+        info.rspInfo = rspInfo || {
+            rspCode: gsRTC.CODE_TYPE.ACTION_SUCCESS.codeType,
+            rspMsg: gsRTC.CODE_TYPE.ACTION_SUCCESS.message
         }
         info.localLineId = This.lineId
         info.remoteLineId = This.remoteLineId
@@ -269,7 +267,14 @@ WebRTCSession.prototype.handleSendMessage = function (data) {
     if(!This.isSuccessUseWebsocket || This.isHandleDestroy){
         if(data.type.name === 'createMediaSession' || data.type.name === 'createMediaSessionRet'){
             log.warn("use websocket send message, createMediaSession/createMediaSessionRet:", This.localShare)
-            gsRTC.trigger('localSDPCompleted', message, This.localShare)
+            if(pageName === 'shareScreen'){
+                gsRTC.trigger('localSDPCompleted', message, This.localShare)
+            }else if(pageName === 'quicall'){
+                if(message.createMediaSessionRet){
+                    message.createMediaSessionRet.shareType = 'shareFile'
+                }
+                gsRTC.trigger('quicallLocalSDPCompleted', message, This.localShare)
+            }
             if(!This.localShare){
                 if(This.action && This.actionCallback){
                     This.actionCallback({message: gsRTC.CODE_TYPE.ACTION_SUCCESS})
@@ -285,7 +290,7 @@ WebRTCSession.prototype.handleSendMessage = function (data) {
     }else {
         if(data.type.name === 'destroyMediaSession' || data.type.name === 'destroyMediaSessionRet'){
             log.warn("use dataChannel send message, destroyMediaSession/destroyMediaSessionRet: isLocalDestroy " + data.isLocalDestroy)
-            This.getCurrentDataChannelState(message)
+            This.sendMessageByDataChannel(message)
 
             if(!data.isLocalDestroy){
                 gsRTC.clearSession({lineId: This.lineId})
@@ -295,7 +300,7 @@ WebRTCSession.prototype.handleSendMessage = function (data) {
             gsRTC.trigger('closeScreenTab',{lineId: This.lineId})
         }else if(data.type.name === 'updateMediaSession' || data.type.name === 'updateMediaSessionRet'){
             log.warn("use dataChannel send message, localShare:" + This.localShare + ", session.action: " + This.action)
-            This.getCurrentDataChannelState(message)
+            This.sendMessageByDataChannel(message)
             if(!This.localShare){
                 if(This.action && This.actionCallback){
                     if(rspInfo){
@@ -309,22 +314,176 @@ WebRTCSession.prototype.handleSendMessage = function (data) {
     }
 }
 
-/** 处理 dataChannel发送数据内容
- * **/
+/**
+ * 处理共享请求
+ * @param message
+ */
+WebRTCSession.prototype.handleShareRequestMessage = function (message){
+    log.info('handle  receive dataChannel sdp')
+    if(typeof message === 'string'){
+        message = JSON.parse(message)
+    }
 
-WebRTCSession.prototype.dataChannelSendMessage = function (data) {
-    log.info('dataChannelSendMessage data: ' + JSON.stringify(data, null, '    '))
-    if (!data || !data.lineId || !data.type) {
-        log.info('invalid parameters!')
-        data && data.callback && data.callback({message: "dataChannelSendMessage failed"})
+    let This = this
+    let data = This.parseMessageBody(message)
+    if(Object.keys(data).length === 0){
+        log.warn("get current data is null")
         return
     }
 
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
-    if (!session || !session.pc || !session.pc.dataChannel) {
-        notice({type: 'warn', value: currentLocale['L76']})
-        log.warn("dataChannelSendMessage: session is not found")
+    let content = data.message
+    let type  = data.type
+    let code = content.rspInfo && content.rspInfo.rspCode
+    let sdp = content.sdp?.data   // 类型 createMediaSession、createMediaSessionRet、updateMediaSession、updateMediaSessionRet
+    let contentLineId = content.line
+    if(!contentLineId){
+        log.warn("handle DataChannel Message: no lineId is currently ")
         return
     }
-    session.getCurrentDataChannelState(data)
+
+    let lineId = This.getMatchLocalLineId({lineId: contentLineId})
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: lineId })
+    if(!session){
+        log.warn("current DataChannelMessage: no session")
+        return
+    }
+
+    log.info("receive " + type +" message:" + JSON.stringify(message, null, '  '))
+    if(content.action === 'shareScreen' &&(type === 'updateMediaSession' || type === 'updateMediaSessionRet')){
+        if(!message.isFromBackground){
+            gsRTC.trigger("updateScreen", message, This.localShare)
+            return
+        }
+    }
+
+    switch(type) {
+        case gsRTC.SIGNAL_EVENT_TYPE.INVITE.name:
+            log.info("start handle createMediaSession content")
+            session.action = content.action
+            session.isRecvRequest = true
+            session.shareType = content.shareType
+            session.reqId = content.reqId
+            session.handleServerRequestSdp(sdp)
+            break;
+        case gsRTC.SIGNAL_EVENT_TYPE.INVITE_RET.name:
+            log.info("start handle createMediaSessionRet content")
+            if (gsRTC.isNxx(2, code)) {
+                log.info(session.action + ' success')
+                session.handleServerResponseSdp(sdp)
+            } else {
+                log.warn(" createMediaSessionRet error ")
+            }
+            break;
+        case gsRTC.SIGNAL_EVENT_TYPE.RE_INVITE.name:
+            log.info("start handle updateMediaSession content")
+            session.action = content.action
+            session.shareType = content.shareType
+            session.reqId = content.reqId
+
+            session.actionCallback = function (event) {
+                event.lineId = session.lineId
+                log.warn('accept ' + session.action + ' callback data: ' + JSON.stringify(event, null, '    '))
+                if (event.message.codeType === gsRTC.CODE_TYPE.ACTION_SUCCESS.codeType) {
+                    log.info(session.action + " success")
+                    gsRTC.trigger(session.action, true)
+                } else {
+                    log.info(session.action + " Failed")
+                    gsRTC.trigger(session.action, false)
+                }
+                session.actionCallback = null
+                session.action = null
+            }
+
+            if (!code) {
+                log.info("current handle reply ")
+                session.isRecvRequest = true
+                if (session.action === 'stopShareScreen') {
+                    session.remoteShare = false
+                } else if (session.action === 'shareScreen') {
+                    session.remoteShare = true
+                }
+                session.handleServerRequestSdp(sdp)
+            } else {
+                log.info("updateMediaSession: current get codeType : " + code + " cause: " + content.rspInfo.rspMsg)
+                This.handleSendMessage({
+                    type: gsRTC.SIGNAL_EVENT_TYPE.RE_INVITE_RET,
+                    mediaSession: content.sdp.data,
+                    action: content.action,
+                    shareType: content.shareType,
+                    line: content.line,
+                    reqId: content.reqId,
+                    rspInfo: {
+                        rspCode: code,
+                        rspMsg: content.rspInfo.rspMsg
+                    }
+                })
+                log.info("current codeType:" + code)
+            }
+            break
+        case gsRTC.SIGNAL_EVENT_TYPE.RE_INVITE_RET.name:
+            log.info("start handle updateMediaSessionRet content")
+            if (gsRTC.isNxx(2, code)) {
+                if (session.action === 'stopShareScreen') {
+                    session.localShare = false
+                } else if (session.action === 'shareScreen') {
+                    session.localShare = true
+                }
+                log.info(session.action + ' success')
+                session.handleServerResponseSdp(sdp)
+            } else {
+                log.warn("updateMediaSessionRet error ")
+            }
+            break
+        case gsRTC.SIGNAL_EVENT_TYPE.BYE.name:
+            log.info("start handle destroyMediaSession content, Share the line to end the call")
+            session.action = content.action
+            session.isRecvRequest = true
+            session.shareType = content.shareType
+            session.reqId = content.reqId
+            let param = {
+                type: gsRTC.SIGNAL_EVENT_TYPE.BYE_RET,
+                action: session.action,
+                line: session.lineId,
+                shareType: session.shareType,
+                reqId: session.reqId
+            }
+            session.handleSendMessage(param)
+            break
+        case gsRTC.SIGNAL_EVENT_TYPE.BYE_RET.name:
+            if (gsRTC.isNxx(2, code)) {
+                log.info("start handle destroyMediaSessionRet content,Share the line to end the call")
+                session.action = content.action
+                session.shareType = content.shareType
+                session.reqId = content.reqId
+                session.isHandleDestroy = true
+                gsRTC.clearSession({lineId: session.lineId})
+                gsRTC.trigger('closeScreenTab', {lineId: session.lineId})
+            }
+            break
+        default:
+            log.warn("current exist problem: " + type)
+            break
+    }
+}
+
+/**
+ * 获取本地匹配的lineId
+ * ***/
+WebRTCSession.prototype.getMatchLocalLineId = function (data) {
+    log.info("handle getMatchLineId:", data?.lineId)
+    if(!data || !data.lineId){
+        log.info('getMatchLineId: invalid parameters!')
+        return
+    }
+
+    let lineId
+
+    if( currentLocalLine && currentRemoteLine && data.lineId === currentRemoteLine){
+        lineId = currentLocalLine
+    }else{
+        lineId = data.lineId
+    }
+    log.info("get match LineId:", lineId)
+
+    return lineId
 }

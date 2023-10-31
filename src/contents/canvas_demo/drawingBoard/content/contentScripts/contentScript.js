@@ -2,48 +2,16 @@
 let gsContentScript = {
     language: '',
     extensionNamespace: '',
-
-    // 忽略的HTML DOM对象列表
-    ignoreHTMLDomList: [
-        'AUDIO',
-        'VIDEO',
-        'CANVAS',
-        'SCRIPT',
-        'STYLE',
-        'A',
-        'SCRIPT',
-        'IMG',
-        'TEXTAREA',
-        'INPUT',
-        'SELECT',
-        'PRE',
-        'CODE',
-        'STYLE',
-        'CANVAS',
-        'SVG',
-        'rect',
-        'clipPath',
-        'GRPSPAN'
-    ],
-    phoneCallProtocolList: ['tel:', 'mailto:', 'sms:'],
-    regexIP: new RegExp('((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])($|\\s|[;,])', 'g'),
-    regexURL: new RegExp('http[s]?:\\/\\/\\S*(\\s|$)', 'g'),
-    regexDate: [
-        new RegExp('([1-9][0-9])([0-9]{2})-(1[0-2]|0[1-9])(-)?(3[0-1]|[1-2][0-9]|0[0-9])?($|\\)|\\s)', 'g'),
-        new RegExp('(3[0-1]|[0-2][0-9]|[1-9])[\\/.-](1[0-2]|0[1-9]|[1-9])[\\/.-](([1-9][0-9])?[0-9]{2})($|\\)|\\s)', 'g'),
-        new RegExp('(1[0-2]|0[1-9]|[1-9])[\\/.-](3[0-1]|[0-2][0-9]|[1-9])[\\/.-](([1-9][0-9])?[0-9]{2})($|\\)|\\s)', 'g'),
-    ],
-
-    poneMatchRegex: /[1][3,4,5,7,8][0-9]{9}/g,   // 手机号
-    telMatchRegex: /(([0\+]\d{2,3}-)?(0\d{2,3})-)(\d{7,8})(-(\d{3,}))?/g,   // 电话号码
-    emailMatchRegex: /([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})/g,    // 邮箱   /\w+([\.\-]\w+)*\@\w+([\.\-]\w+)*\.\w+/g
     dialplanregulars: [],
-
     tipCount: 0,
     panel: document.createElement('div'),
     addGRPElement: '',         //  获取panel 元素
     isHiddenElement: false,
-
+    contactSearchFrom: { // 通讯录搜索来源
+        ldap: true,
+        localAddressBook: true
+    },
+    wordDialingEnabled: true,   // 划词拨号
 
     /**
      * 设置当前命名空间
@@ -126,89 +94,6 @@ let gsContentScript = {
     },
 
     /**
-     * 创建并返回一个新的观察器，它会在触发指定 DOM 事件时，调用指定的回调函数。
-     * MutationObserver 对 DOM 的观察不会立即启动；而必须先调用 observe() 方法来确定，要监听哪一部分的 DOM 以及要响应哪些更改.
-     *
-     * 回调函数，每当被指定的节点或子树以及配置项有Dom变动时会被调用。
-     * 回调函数拥有两个参数：一个是描述所有被触发改动的 MutationRecord 对象数组，另一个是调用该函数的MutationObserver 对象
-     */
-    nodeObserver: new MutationObserver((mutationList) => {
-        // 当观察到变动时执行的回调函数
-        mutationList.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                const { tagName } = node
-                if ('A' === tagName) {
-                    // console.log('Dynamic element "A" will be processed')
-                    gsContentScript.tryReWriteAnchorTag(node)
-                } else if (gsContentScript.ignoreHTMLDomList.indexOf(tagName) >= 0) {
-                    // console.log('Dynamic element ignored: ' + tagName)
-                } else {
-                    // console.log('Dynamic element parsed: ' + tagName)
-                    gsContentScript.urlToIgnored()
-                    setTimeout(() => {
-                        gsContentScript.pageScan(node)
-                    }, 1000)
-                }
-            })
-        })
-    }),
-
-    /**
-     * 启动节点变化观察器
-     */
-    attachObserver: function (targetNode) {
-        const observerOptions = {
-            attributes: !0, // 观察属性变动
-            childList: !0, // 观察目标子节点的变化，是否有添加或者删除
-            characterData: !0, // 观察节点或节点中包含的字符数据的更改
-            subtree: !0, // 观察后代节点，默认为 false
-        }
-        this.nodeObserver.observe(targetNode, observerOptions)
-    },
-
-    /**
-     * 停止节点变化观察器
-     */
-    detachObserver: function () {
-        // 停止观察
-        this.nodeObserver.disconnect()
-    },
-
-    /**
-     * 判断是否符合手机号或号码格式
-     * @param str
-     * @returns {boolean}
-     */
-    complyPhoneOrTelFromat: function (str) {
-        let result = this.poneMatchRegex.test(str)
-        if (!result) {
-            result = this.telMatchRegex.test(str)
-        }
-        return result
-    },
-
-    /**
-     * 匹配手机号，处理规则：
-     * 1--以1为开头；
-     * 2--第二位可为3,4,5,7,8,中的任意一位；
-     * 3--最后以0-9的9个整数结尾。
-     * @param str
-     * @returns {boolean}
-     */
-    poneMatch: function (str) {
-        return str.match(this.poneMatchRegex)
-    },
-
-    /**
-     * 匹配电话号码
-     * @param str
-     * @returns {boolean}
-     */
-    telMatch: function (str) {
-        return str.match(this.telMatchRegex)
-    },
-
-    /**
      * GRP dial plan 规则
      */
     grpDialPlan: function (str) {
@@ -222,426 +107,11 @@ let gsContentScript = {
         return result
     },
 
-    /**
-     * 匹配邮箱
-     * 规则：
-     * 以数字字母开头、中间可以是多个数字字母下划线或"-"，
-     * 然后是"@"符号，后面是数字字母
-     * 然后是"."符号加2-4个字母结尾
-     * @param str
-     * @returns {boolean}
-     */
-    emailMatch: function (str) {
-        return str.match(this.emailMatchRegex)
-    },
-
-    /**
-     * 需要忽略的页面
-     * 忽略不处理的页面
-     * @constructor
-     */
-    urlToIgnored: function () {
-        let ignoredURLArr = [
-            // 'https://bugzilla.grandstream.com',
-            // 'https://192.168.120.245',
-            // 'https://192.168.120.246'
-        ]
-        const locationStr = window.location.toString().toLowerCase()
-        let host = window.location.host.toLowerCase()
-
-        for (const item of ignoredURLArr) {
-            let url = item.trim().toLowerCase()
-            if (url) {
-                if (locationStr.indexOf(url) >= 0) {
-                    console.log(`URL ignored ${locationStr} because it matches ${item}`)
-                    return true
-                }
-            }
-        }
-        return false
-    },
-
-    /**
-     * 转义 HTML 标签字符
-     */
-    escapeHtmlTagChars: function (nodeValue) {
-        return nodeValue.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    },
-
-    /**
-     * 替换no breaking space字符
-     * @param text
-     * @returns {*}
-     */
-    replaceNBSPChar: function (text) {
-        return text.replace(new RegExp(' ', 'g'), ' ')
-    },
-
-    /**
-     * 格式化号码，保存数字部分
-     * @param e
-     * @returns {*}
-     */
-    formatNumber: function (e) {
-        return e.replace(/[^0-9+]/gi, '')
-    },
-
-    /**
-     * 鼠标hover时显示的调试内容
-     * @param e
-     * @returns {string}
-     */
-    phoneCallTitle: function (e) {
-        return `Call ${e} via GRP Click2Dial`
-    },
-
-    /**
-     * 自定义dom节点内容
-     * @param t
-     * @returns {``}
-     */
-    phoneCallItem: function (t) {
-        return `<grpSpan grpcallnumber="${this.formatNumber(t)}" title="${this.phoneCallTitle(t)}">${t}</grpSpan>`
-    },
-
-    /**
-     * 根据邮箱查找到的电话号码
-     * @param email 邮箱
-     * @param number 号码
-     * @returns {``}
-     */
-    phoneCallItemWithEmail: function (email, number) {
-        // return `<grpSpan grpcallnumber="${this.formatNumber(number)}" title="${this.phoneCallTitle(number)}">${email}</grpSpan>`
-        return `<grpSpan grpcallnumber="${number}" email="${email}" title="${this.phoneCallTitle(number)}">${email}</grpSpan>`
-    },
-
-    /**
-     * 替换目标文本为自定义dom节点
-     * @param searchedElement
-     */
-    replaceNodeText: function (searchedElement) {
-        let This = this
-        let domNode = searchedElement.element
-        let textParentNode = domNode.parentNode
-        if (domNode.data) {  // 文本存在数据
-            let newhtml = searchedElement.newhtml
-            // 1.把所有<grpphone></grpphone>包含的内容进行解密
-            // 查找到的号码替换为自定义span标签
-            newhtml = newhtml.replace(new RegExp('(?:<grpphone>)(.*?)(?:</grpphone>)', 'gm'), function () {
-                /**
-                 * arguments[0]是匹配到的子字符串
-                 * arguments[1]是匹配到的分组项
-                 * arguments[2]是匹配到的字符串的索引位置
-                 * arguments[3]是源字符串本身
-                 */
-                const decryptedStr = decodeURIComponent(escape(atob(arguments[1])))
-                return This.phoneCallItem(decryptedStr)
-            })
-
-            // 查找到的邮箱查询到号码后，替换为自定义标签
-            let email
-            newhtml = newhtml.replace(new RegExp('(?:<grpemail>)(.*?)(?:</grpemail>)', 'gm'), function () {
-                email = decodeURIComponent(escape(atob(arguments[1])))
-                return ''
-            })
-            if (email) {
-                newhtml = newhtml.replace(new RegExp('(?:<grpCallNumber>)(.*?)(?:</grpCallNumber>)', 'gm'), function () {
-                    let callNumber = decodeURIComponent(escape(atob(arguments[1])))
-                    return This.phoneCallItemWithEmail(email, callNumber)
-                })
-            }
-
-            // 2.获取除目标字符串之外的其他文本信息：
-            let outerHTMLWithReplace = textParentNode.innerHTML
-            textParentNode.childNodes.forEach((childNode) => {
-                if (childNode.nodeType !== 3 && childNode.outerHTML) {  // nodeType: 3 为text文本节点
-                    // outerHTML全部替换为*，outerHTML能够获取到带标签和属性等所有内容
-                    outerHTMLWithReplace = outerHTMLWithReplace.replace(childNode.outerHTML, '*'.repeat(childNode.outerHTML.length))
-                }
-            })
-
-            const escapeData = This.escapeHtmlTagChars(domNode.data).replace(/\xa0/g, '&nbsp;')
-            let newhtmlStartIndex = outerHTMLWithReplace.indexOf(escapeData)
-
-            // 3.更新Dom节点innerHTML值
-            if (newhtmlStartIndex >= 0) {
-                let originalPreContent = textParentNode.innerHTML.substring(0, newhtmlStartIndex)  // 被替换字符串前面的内容
-                // newhtml: 被添加了grpSpan标签的内容
-                let originalEndContent = textParentNode.innerHTML.substring(newhtmlStartIndex + escapeData.length) // 被替换字符串后面的内容
-
-                if (newhtml && newhtml.indexOf('grpSpan') >= 0) {
-                    let htmlStr = originalPreContent + newhtml + originalEndContent
-                    const parser = new DOMParser();
-                    const parsed = parser.parseFromString(htmlStr, `text/html`);
-                    const tags = parsed.getElementsByTagName(`body`);
-
-                    textParentNode.innerHTML = ``;
-                    for (const tag of tags) {
-                        tag.style.clear = 'both'
-                        tag.style.margin = 0
-                        tag.style.padding = 0
-                        if (tag.childNodes && tag.childNodes.length) {
-                            for (const child of tag.childNodes) {
-                                // issuse: appendChild一个的注意点之会删除原dom树节点
-                                let cloneChild = child.cloneNode(true)
-                                textParentNode.appendChild(cloneChild)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-
-    /**
-     * 处理文本
-     * @param targetNode
-     */
-    parseNodeText: function (targetNode, observe) {
-        let searchedElement
-        let tagChars = this.escapeHtmlTagChars(targetNode.nodeValue)
-        tagChars = tagChars.replace(/\s*/g, "")
-        // console.log('targetNode.nodeValue:', tagChars)
-        if (tagChars) {
-            if (observe) {
-                this.detachObserver()
-            }
-            // if (this.regexURL.test(tagChars)) { 	// 忽略URL
-            // 	// console.log(tagChars + ' skipped: matches URL regex')
-            // 	return;
-            // }
-            // if (this.regexIP.test(tagChars)) { 	// 忽略IP
-            // 	// console.log(tagChars + ' skipped: matches IP address regex')
-            // 	return;
-            // }
-            // for (const item of this.regexDate) {  // 忽略日期
-            // 	if (item.test(tagChars)) {
-            // 		// console.log(tagChars + ' skipped: matches date regex')
-            // 		return;
-            // 	}
-            // }
-
-            let matchList = this.emailMatch(tagChars)
-            if (matchList) {
-                // console.log('match email:', matchList)
-                let numberFind = false
-                for (let i = 0; i < matchList.length; i++) {
-                    let matchStr = matchList[i]
-                    let phoneNumber = this.getNumberFromPhoneBook({ email: matchStr })
-                    if (phoneNumber) {
-                        numberFind = true
-                        tagChars = tagChars.replace(
-                            matchStr,
-                            '<grpemail>' + btoa(unescape(encodeURIComponent(matchStr))) + '</grpemail><grpCallNumber>' + btoa(unescape(encodeURIComponent(phoneNumber))) + '</grpCallNumber>'
-                        )
-                    }
-                }
-                if (numberFind) {
-                    searchedElement = { element: targetNode, newhtml: tagChars }
-                }
-            } else {
-                // matchList = this.poneMatch(tagChars) || this.telMatch(tagChars)
-                matchList = this.grpDialPlan(tagChars)
-                if (matchList) {
-                    // console.log('match number:', matchList)
-                    for (let i = 0; i < matchList.length; i++) {
-                        let matchStr = matchList[i]
-                        if (!this.complyPhoneOrTelFromat(matchStr)) {
-                            // console.log(matchStr, ', Inappropriate number format! !')
-                            continue
-                        }
-
-                        // 文本加密
-                        let target = '</grpphone>'
-                        let index = tagChars.lastIndexOf(target)
-                        if (index >= 0) {
-                            // TODO: solve 被加密后的字符串转换后还存在数字时，会被再次加密问题
-                            let preStr = tagChars.substring(0, index + target.length)
-                            let endStr = tagChars.substring(index + target.length)
-                            tagChars = preStr + endStr.replace(matchStr, '<grpphone>' + btoa(unescape(encodeURIComponent(matchStr))) + '</grpphone>')
-                        } else {
-                            tagChars = tagChars.replace(matchStr, '<grpphone>' + btoa(unescape(encodeURIComponent(matchStr))) + '</grpphone>')
-                        }
-                    }
-                    searchedElement = { element: targetNode, newhtml: tagChars }
-                }
-            }
-
-            if (searchedElement) {
-                this.replaceNodeText(searchedElement)
-            }
-            if (observe) {
-                this.attachObserver(document.body)
-            }
-        }
-    },
-
-    /**
-     * 查找目标dom.nodeType = 3 的文本节点
-     * Node.ELEMENT_NODE	1	一个 元素 节点，例如 <p> 和 <div>。
-     * Node.ATTRIBUTE_NODE	2	元素 的耦合 属性。
-     * Node.TEXT_NODE	    3	Element 或者 Attr 中实际的 文字
-     * Node.COMMENT_NODE	8	一个 Comment 节点。
-     * @param targetNode
-     * @returns {*[]}
-     */
-    searchTextNode: function (targetNode, observe) {
-        targetNode.childNodes.forEach((node) => {
-            // nodeType 属性可用来区分不同类型的节点，比如元素,文本和注释。
-            const { nodeType } = node
-
-            // 3: Node.TEXT_NODE,Element或者Attr中实际的文字
-            // 8: Node.COMMENT_NODE,一个 Comment 节点。
-            if (nodeType !== 3 && nodeType !== 8 && this.ignoreHTMLDomList.indexOf(node?.tagName) === -1) {
-                // console.log(`search TextNode node: ${node}, nodeType: ${nodeType} nodeValue: ${node.nodeValue}, node tagName ${node?.tagName}`)
-                this.searchTextNode(node, observe)
-            }
-            if (nodeType === 3 && node.nodeValue) {
-                // console.log(`parseNodeText node: ${node}, nodeType: ${nodeType} nodeValue: ${node.nodeValue}, node tagName ${node?.tagName}`)
-
-                // console.log('node.nodeValue：', node.nodeValue)
-                this.parseNodeText(node, observe)
-            }
-        })
-    },
-
-    /**
-     * 获取 nodeType === 1 的节点
-     * @param targetNode
-     */
-    pageScan: function (targetNode) {
-        if (!targetNode || this.urlToIgnored()) {
-            return
-        }
-
-        let iframes = document.getElementsByTagName("iframe");
-        for (let i = 0; i < iframes.length; i++) {
-            if (iframes[i] && iframes[i].contentDocument && iframes[i].contentDocument.body) {
-                let iframeBody = iframes[i].contentDocument.body
-                this.searchTextNode(iframeBody, false)
-
-                if (iframeBody.getElementsByTagName) {
-                    const anchorTagList = iframeBody.getElementsByTagName('A')
-                    if (anchorTagList && anchorTagList.length) {
-                        for (let i = 0; i < anchorTagList.length; i++) {
-                            try {
-                                const anchorTag = anchorTagList[i]
-                                this.tryReWriteAnchorTag(anchorTag)
-                            } catch (e) {
-                                // console.log(`tryReWriteAnchorTag: ${e}`)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-        // 1.查找目标dom.nodeType = 3 的文本节点
-        this.searchTextNode(targetNode, true)
-
-        // 2.处理超连接
-        if (targetNode.getElementsByTagName) {
-            const anchorTagList = targetNode.getElementsByTagName('A')
-            if (anchorTagList && anchorTagList.length) {
-                for (let i = 0; i < anchorTagList.length; i++) {
-                    try {
-                        const anchorTag = anchorTagList[i]
-                        this.tryReWriteAnchorTag(anchorTag)
-                    } catch (e) {
-                        // console.log(`tryReWriteAnchorTag: ${e}`)
-                    }
-                }
-            }
-        }
-    },
-
-    /**
-     * TBD: 超链接处理的意义好像不大~~~
-     * 处理带有tel等呼叫表示的超链接标签
-     * @param targetNode
-     * @returns {*}
-     */
-    tryReWriteAnchorTag: function (targetNode) {
-        let This = this
-        const url = decodeURI(targetNode.getAttribute('href'))
-        if (url) {
-            for (const item of this.phoneCallProtocolList) {
-                if (url.substr(0, item.length) === item) {
-                    This.detachObserver()
-                    let phoneCallProtocol = url.substr(item.length)
-                    let number
-                    let email
-                    if (item === 'tel:') {   // 点击后直接拨打电话
-                        number = phoneCallProtocol
-                    } else if (item === 'mailto:') { // 点击后发送邮件
-                        email = phoneCallProtocol
-                        if (phoneCallProtocol.split) {
-                            email = phoneCallProtocol.split('?')[0]   // 包含抄送地址、密件抄送地址、邮件主题或内容等
-                            email = email.split(';')[0]   // 包含多个收件人、抄送、密件抄送人
-                        }
-
-                        let phoneNumber = This.getNumberFromPhoneBook({ email: email })
-                        if (phoneNumber) {
-                            number = phoneNumber
-                        }
-                    } else if (item === 'sms:') {   // 点击后发送短信
-                        number = phoneCallProtocol.split ? phoneCallProtocol.split('?')[0].split(';')[0] : phoneCallProtocol  // 去除可能包含的内容等
-                    }
-
-                    if (number) {
-                        // 修改超链接内容
-                        targetNode.setAttribute('title', this.phoneCallTitle(number))
-                        targetNode.setAttribute('grpcallnumber', this.formatNumber(number))
-                        if (email) {
-                            targetNode.setAttribute('email', email)
-                        }
-                    }
-                    This.attachObserver(document.body)  // 重写完成后再重新设置观察器
-                    break
-                }
-            }
-        }
-
-        return targetNode
-    },
-
-    /**
-     * 处理页面点击事件
-     * @param e
-     */
-    handleClick: function (e) {
-        if (e && e.target && e.target.getAttribute) {
-            let callNumber = e.target.getAttribute('grpcallnumber')
-            console.log('get target call number: ', callNumber)
-            if (callNumber) {
-                let email = e.target.getAttribute('email')
-                this.handleClick2DialNumber(callNumber, email)
-                e.preventDefault()
-            }
-        }
-    },
-
-    /**
-     * 处理点击呼叫的号码
-     * @param number
-     */
-    handleClick2DialNumber: function (number, email) {
-        // console.log('handleClick2DialNumber:', number)
-        this.sendMessageToBackgroundJS({
-            cmd: 'contentScriptClick2Dial',
-            data: {
-                number: number,
-                email: email
-            }
-        })
-    },
-
     /**************************************************************************************************************/
     /**********************************************和背景页间的消息通信**********************************************/
     /**************************************************************************************************************/
     /**
-     * send message to backgroud
+     * send message to background
      * @param message
      * @param callback
      */
@@ -679,70 +149,6 @@ let gsContentScript = {
             }
         }
         sendResponse('request success');
-    },
-
-    /*******************************************************************************************************************/
-    /******************************************* 查找通讯录联系人 *********************************************************/
-    /*******************************************************************************************************************/
-    /**
-     * 使用邮箱根据本地通讯录查找号码
-     * @param data: {
-     *     email: '被叫邮箱',
-     * }
-     */
-    getNumberFromPhoneBook: function (data) {
-        if (!data || !data.email) {
-            console.log('[EXT] email parameter MUST offer!')
-            return ''
-        }
-
-        let phoneNumber = ''
-        let phoneBooks = this.phoneBooks
-        if (phoneBooks) {
-            if (data.email) {
-                // 优先查询ldap
-                if (phoneBooks.ldap) {
-                    for (let i = 0; i < phoneBooks.ldap.length; i++) {
-                        if (phoneBooks.ldap[i].email === data.email) {
-                            phoneNumber = phoneBooks.ldap[i].AccountNumber
-                            // console.log('get phoneNumber form ldap:', phoneNumber)
-                            break
-                        }
-                    }
-                }
-
-                // 然后再查询本地通讯录、通讯录组
-                if (!phoneNumber) {
-                    for (const key in phoneBooks) {
-                        if (key !== 'ldap' && !phoneNumber) {
-                            let localAddressBook = phoneBooks[key]
-                            if (key === 'localAddressBook') {
-                                for (let j = 0; j < localAddressBook.length; j++) {
-                                    if (localAddressBook[j].email === data.email || localAddressBook[j].Mail === data.email) {
-                                        phoneNumber = localAddressBook[j].Phone?.phonenumber
-                                        // console.log(`get phoneNumber form ${key}:`, phoneNumber)
-                                        break
-                                    }
-                                }
-                            } else {
-                                if (localAddressBook.memberList && localAddressBook.memberList.length) {
-                                    let memberList = localAddressBook.memberList
-                                    for (let j = 0; j < memberList.length; j++) {
-                                        if (memberList.email === data.email || memberList.Mail === data.email) {
-                                            phoneNumber = memberList[j].Phone?.phonenumber
-                                            // console.log(`get phoneNumber form ${key}:`, phoneNumber)
-                                            break
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return phoneNumber
     },
 
     /*********************************** 网页拨号*************************************************/
@@ -804,34 +210,35 @@ let gsContentScript = {
 
     /*** 通过模糊匹配获取内容
      **/
-    getContentForfuzzyMatch: function(data){
-        if (!data) {
-            console.log('[EXT] data parameter MUST offer!')
+    getContentForFuzzyMatch: function(searchContent){
+        if (!searchContent) {
+            console.log('[EXT] searchContent parameter MUST offer!')
             return ''
         }
         let getContentArray = []
         let index = 0
         let phoneIndex = 0
-        let phoneNumber, email;
         let phoneBooks = this.phoneBooks
         if(phoneBooks){
-            if(phoneBooks.ldap){
+            if(gsContentScript.contactSearchFrom.ldap && phoneBooks.ldap){
                 for (let i = 0; i < phoneBooks.ldap.length; i++) {
                     let user = phoneBooks.ldap[i]
-                    let firstKeys = Object.keys(user)[0]
                     let callerIDName = user?.CallerIDName
                     let isExistChinese = this.isChinese(callerIDName)
                     if(isExistChinese){
+                        // TODO: CallerIDName 存在 “王无名” 和 “无名 王” 两种格式
                         callerIDName = callerIDName?.split(' ').reverse().join("").replace(/[ ]/g,"")
                     }
                     let emailPrefix = user?.email?.split('@')[0]
-                    if (user?.AccountNumber?.includes(data) || callerIDName?.includes(data) ||
-                        emailPrefix === data || user?.email === data
+                    if (user?.AccountNumber?.includes(searchContent) || callerIDName?.includes(searchContent) ||
+                        emailPrefix === searchContent || user?.email === searchContent
                     ){
                         let phoneNumber = []
-                        if(firstKeys){
+                        if(!phoneNumber[phoneIndex]){
                             phoneNumber[phoneIndex] = {}
-                            phoneNumber[phoneIndex].accountNumber = user[firstKeys]
+                        }
+                        if(user?.AccountNumber){
+                            phoneNumber[phoneIndex].accountNumber = user?.AccountNumber
                         }
                         if(user?.HomeNumber ){
                             phoneNumber[phoneIndex].homeNumber = user?.HomeNumber
@@ -840,93 +247,68 @@ let gsContentScript = {
                             phoneNumber[phoneIndex].mobileNumber = user?.MobileNumber
                         }
 
-                        index = index + 1
-                        getContentArray[index - 1] = {}
-                        getContentArray[index - 1].from = 'ldap'
-                        getContentArray[index - 1].phoneNumber = phoneNumber
+                        getContentArray[index] = {}
+                        getContentArray[index].from = 'ldap'
+                        getContentArray[index].phoneNumber = phoneNumber
 
                         if(user?.CallerIDName){
-                            getContentArray[index - 1].name = user?.CallerIDName
+                            getContentArray[index].name = user?.CallerIDName
                         }
 
                         if(user?.email){
-                            getContentArray[index - 1].email = user?.email
+                            getContentArray[index].email = user?.email
                         }
+                        index++
                     }
                 }
-
             }
 
             // 然后再查询本地通讯录、通讯录组
-            if (!getContentArray.length) {
-                for (const key in phoneBooks) {
-                    if (key !== 'ldap' && !phoneNumber) {
-                        let localAddressBook = phoneBooks[key]
-                        if (key === 'localAddressBook') {
-                            for (let j = 0; j < localAddressBook.length; j++) {
-                                let accountInfo = localAddressBook[j]
-                                let phone = accountInfo?.Phone
-                                let firstName, lastName,firstLastName,lastFirstName ;
-                                let callerIdname = accountInfo?.calleridname
-                                let emailPrefix = accountInfo?.email?.split('@')[0]
-                                if(accountInfo?.FirstName){
-                                    firstName = accountInfo?.FirstName
-                                }
+            if(gsContentScript.contactSearchFrom.localAddressBook && phoneBooks.localAddressBook) {
+                let localAddressBook = phoneBooks.localAddressBook
+                for (let j = 0; j < localAddressBook.length; j++) {
+                    let accountInfo = localAddressBook[j]
+                    let phone = accountInfo?.Phone
+                    let emailPrefix = accountInfo?.email?.split('@')[0]
+                    let firstLastName, lastFirstName;
+                    if(accountInfo.FirstName && accountInfo.LastName){
+                        firstLastName = accountInfo.FirstName + accountInfo.LastName
+                        lastFirstName = accountInfo.LastName + accountInfo.FirstName
+                    }else if(accountInfo.FirstName){
+                        firstLastName = accountInfo.FirstName
+                    }else if(accountInfo.LastName){
+                        lastFirstName = accountInfo.LastName
+                    }
 
-                                if(accountInfo?.LastName){
-                                    lastName = accountInfo?.LastName
-                                }
-                                if(firstName && lastName){
-                                    firstLastName = firstName + lastName
-                                    lastFirstName = lastName + firstName
-                                }
-
-                                if( firstLastName?.includes(data) || lastFirstName?.includes(data) ||callerIdname === data ||
-                                    emailPrefix === data || accountInfo?.email === data
-                                ){
-                                    let phoneNumber = []
-                                    index = index + 1
-
-                                    getContentArray[index -1] = {}
-
-                                    if(phone){
-                                        phoneNumber.push(phone)
-                                    }
-
-                                    getContentArray[index -1].from = 'localAddressBook'
-                                    getContentArray[index -1].phoneNumber = phoneNumber
-                                    getContentArray[index -1].name = callerIdname || firstLastName || lastName
-                                    getContentArray[index -1].email = accountInfo?.email
-                                    getContentArray[index -1].jobTitle = accountInfo?.JobTitle
-                                    getContentArray[index -1].company = accountInfo?.Company
-                                }
-                            }
-                        } else {
-                            if (localAddressBook.memberList && localAddressBook.memberList.length) {
-                                let memberList = localAddressBook.memberList
-                                for (let j = 0; j < memberList.length; j++) {
-                                    if (memberList.email === data || memberList.Mail === data) {
-                                        phoneNumber = memberList[j].Phone?.phonenumber
-                                        console.log(`get phoneNumber form ${key}:`, phoneNumber)
-                                        break
-                                    }
-                                }
+                    if (firstLastName?.includes(searchContent) || lastFirstName?.includes(searchContent) ||
+                        emailPrefix === searchContent || accountInfo?.email === searchContent) {
+                        let phoneNumber = []
+                        getContentArray[index] = {}
+                        if (phone) {
+                            if(Object.prototype.toString.call(phone) === '[object Array]'){
+                                phoneNumber = phone
+                            }else {
+                                phoneNumber.push(phone)
                             }
                         }
+
+                        getContentArray[index].from = 'localAddressBook'
+                        getContentArray[index].phoneNumber = phoneNumber
+                        getContentArray[index].name = firstLastName || lastFirstName
+                        getContentArray[index].email = accountInfo?.email
+                        getContentArray[index].jobTitle = accountInfo?.JobTitle
+                        getContentArray[index].company = accountInfo?.Company
+                        index++
                     }
                 }
             }
 
             // 然后匹配是否是number类型且是telephone
             if(!getContentArray.length){
-                if(!isNaN(Number(data)) && gsContentScript.dialplanregulars.length){
-                    let matchList = this.grpDialPlan(data)
+                if(!isNaN(Number(searchContent)) && gsContentScript.dialplanregulars.length){
+                    let matchList = this.grpDialPlan(searchContent)
                     let obj = {
-                        phoneNumber:[
-                            {
-                                phoneNumber: matchList
-                            }
-                        ]
+                        phoneNumber:[{phoneNumber: matchList}]
                     }
                     getContentArray.push(obj)
                 }
@@ -935,15 +317,28 @@ let gsContentScript = {
         return getContentArray
     },
 
-    /** 注入内容
-     * **/
-    initCustomPannel: function( data= {}){
+    /**
+     * 加载content script 脚本
+     */
+    loadContentScript: async function (){
+        console.log('load content script')
+        await gsContentScript.init()
+        await gsContentScript.initCustomPanel()
+        await gsContentScript.initCustomEventListens()
+    },
+
+    /**
+     * 初始化自定义面板
+     * 注入内容
+     * @param data
+     */
+    initCustomPanel: function( data= {}){
         this.panel.className = 'addGrpSpan addGrpSpan_hidden'
         this.panel.innerHTML = `
             <div class="addContentWrapper">
                 <div class="addGrpTop">
-                    <div class="addGrpLeft" href="javascript:sendMessageToContentScriptByClick('你好啊！我是通过DOM事件发送的消息！')">
-                        <span class="addGrpIcon GRP-icon-icon_left"  href="javascript:sendMessageToContentScriptByClick('你好啊！我是通过DOM事件发送的消息！')"></span>
+                    <div class="addGrpLeft">
+                        <span class="addGrpIcon GRP-icon-icon_left"></span>
                     </div>
                     <div class="addGrpCenter">
                         <div class="addGrpCenter_icon">
@@ -1011,25 +406,10 @@ let gsContentScript = {
         document.body.append(this.panel)
     },
 
-    /** 向页面注入js
-     * **/
-    injectCustomJs: function(jsPath) {
-        jsPath = jsPath || 'contentScripts/injectScript.js';
-        var temp = document.createElement('script');
-        temp.setAttribute('type', 'text/javascript');
-        // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
-        temp.src = this.extensionNamespace.runtime.getURL(jsPath) || this.extensionNamespace.extension.getURL(jsPath);;
-        temp.onload = async function() {
-            // 放在页面不好看，执行完后移除掉
-            this.parentNode.removeChild(this);
-        }
-        document.body.appendChild(temp);
-    },
-
-    /*** 监听事件
-     * **/
+    /**
+     * 初始化自定义事件
+     */
     initCustomEventListens: function() {
-
         this.clickEvent()
         this.hoverEvent()
         this.leaveEvent()
@@ -1037,7 +417,6 @@ let gsContentScript = {
 
     /*** 鼠标点击事件 ***/
     clickEvent:function(){
-
         /*** 点击呼叫 ***/
         let callBtn = document.getElementsByClassName("addGrp_btn")[0]
         if (callBtn) {
@@ -1063,7 +442,7 @@ let gsContentScript = {
         if(addGrpIconLeft){
             addGrpIconLeft.addEventListener("click",function(e){
                 e.stopPropagation();
-                gsContentScript.handlePreElementClickEvent()
+                gsContentScript.switchContacts('pre')
             },false)
         }
 
@@ -1072,7 +451,7 @@ let gsContentScript = {
         if(addGrpIconRight){
             addGrpIconRight.addEventListener("click",function(e){
                 e.stopPropagation();
-                gsContentScript.handleNextElementClickEvent()
+                gsContentScript.switchContacts('next')
             },false)
         }
 
@@ -1128,7 +507,6 @@ let gsContentScript = {
     },
 
     hoverEvent: function(){
-
         /****email 鼠标移入*****/
         let addGrpShow = document.getElementsByClassName("addGrpShow")[0]
         if(addGrpShow){
@@ -1174,7 +552,6 @@ let gsContentScript = {
     },
 
     leaveEvent:function(){
-
         /****email 鼠标移出*****/
         let addGrpShow = document.getElementsByClassName("addGrpShow")[0]
         if(addGrpShow){
@@ -1187,111 +564,58 @@ let gsContentScript = {
 
     /***鼠标移入email显示tips内容***/
     handleTipsContent: function(){
-        let This = this
         let tipContents = {}
-
-        /**** 获取当前活跃的number *****/
-        let getCurrentActiveSpan = function(){
-            let element
-            let addGrpCenterContent = document.getElementsByClassName("addGrpCenter_content")[0]
-            for(let i = 0; i < addGrpCenterContent.children.length; i++ ){
-                let children = addGrpCenterContent.children[i]
-                if(children.classList.contains('addGrp_active')){
-                    element = children
-                    break
-                }
-            }
-            return element
-        }
 
         /**** 处理划过或者移入的显示内容问题 ****/
         let mousemoveContent = function(tipContents){
             /** 首先判断长度 来定位tips的显示的位置 ***/
+            const addGrpTips = document.querySelector(".addGrpTips")
             let len = Object.keys(tipContents).length
-            if(len === 0){
-                document.getElementsByClassName("addGrpTips")[0].style.display = "none"
-                return
-            }else {
-                if(len === 1){
-                    document.getElementsByClassName("addGrpTips")[0].style.top = " -40px"
-                }else if(len == 2){
-                    document.getElementsByClassName("addGrpTips")[0].style.top = " -60px"
-                }if(len === 3){
-                    document.getElementsByClassName("addGrpTips")[0].style.top = " -80px"
-                }else if(len === 4){
-                    document.getElementsByClassName("addGrpTips")[0].style.top = " -100px"
-                }else if(len === 5){
-                    document.getElementsByClassName("addGrpTips")[0].style.top = " -120px"
-                }
-                document.getElementsByClassName("addGrpTips")[0].style.display = "block"
+            if (len === 0) {
+                addGrpTips.style.display = "none";
+                return;
+            } else {
+                const topValue = -40 - (len - 1) * 20;
+                addGrpTips.style.top = topValue + "px";
+                addGrpTips.style.display = "block";
             }
 
             /*** 通过获取的内容来处理显示和隐藏的内容 ****/
-            let tipsNumber = document.getElementsByClassName("addGrp_tips_number")[0]
-            let tipsName = document.getElementsByClassName("addGrp_tips_name")[0]
-            let tipsEmail = document.getElementsByClassName("addGrp_tips_email")[0]
-            let tipsCompany = document.getElementsByClassName("addGrp_tips_company")[0]
-            let tipsDepartment = document.getElementsByClassName("addGrp_tips_department")[0]
+            const fields = ["number", "name", "email", "company", "department"];
 
-            if(tipContents.number){
-                document.getElementsByClassName("addGrp_tip_number")[0].textContent = tipContents.number
-                tipsNumber.style.display = "flex"
-            }else{
-                tipsNumber.style.display = "none"
-            }
-            if(tipContents.name){
-                document.getElementsByClassName("addGrp_tip_name")[0].textContent = tipContents.name
-                tipsName.style.display = "flex"
-            }else{
-                tipsName.style.display = "none"
-            }
-            if(tipContents.email){
-                document.getElementsByClassName("addGrp_tip_email")[0].textContent = tipContents.email
-                tipsEmail.style.display = "flex"
-            }else{
-                tipsEmail.style.display = "none"
-            }
-            if(tipContents.company){
-                document.getElementsByClassName("addGrp_tip_company")[0].textContent = tipContents.company
-                tipsCompany.style.display = "flex"
-            }else{
-                tipsCompany.style.display = "none"
-            }
-            if(tipContents.department){
-                document.getElementsByClassName("addGrp_tip_department").textContent = tipContents.department
-                tipsDepartment.style.display = "flex"
-            }else{
-                tipsDepartment.style.display = "none"
-            }
+            // 循环处理每个字段
+            fields.forEach(field => {
+                // 获取相应的元素和提示元素
+                const fieldElement = document.querySelector(`.addGrp_tips_${field}`)
+                const tipElement = document.querySelector(`.addGrp_tip_${field}`)
+
+                // 检查字段是否存在
+                if (tipContents[field]) {
+                    tipElement.textContent = tipContents[field];
+                    fieldElement.style.display = "flex";
+                } else {
+                    fieldElement.style.display = "none";
+                }
+            });
         }
 
-        let element= getCurrentActiveSpan()
+        /**** 获取当前活跃的number *****/
+        let element = gsContentScript.getCurrent().currentElement
         if(element){
-            let email = element.getAttribute('email')
-            let name = element.getAttribute('name')
-            let jobTitle = element.getAttribute('jobTitle')
-            let company = element.getAttribute('company')
-            let department = element.getAttribute('department')
-            let number = element.getAttribute('phone')
-            if(email){
-                tipContents.email = email
-            }
-            if(name){
-                tipContents.name = name
-            }
-            if(jobTitle){
-                tipContents.jobTitle = jobTitle
-            }
-            if(company){
-                tipContents.company = company
-            }
-            if(department){
-                tipContents.department = department
-            }
-            if(number){
-                tipContents.number = number
-            }
+            if (element) {
+                const attributes = ["email", "name", "jobTitle", "company", "department", "phone"];
 
+                attributes.forEach(attribute => {
+                    const value = element.getAttribute(attribute);
+                    if (value) {
+                        if(attribute === 'phone'){
+                            tipContents['number'] = value;
+                        }else {
+                            tipContents[attribute] = value;
+                        }
+                    }
+                });
+            }
         }
 
         if(Object.prototype.toString.call(tipContents) === '[object Object]'){
@@ -1305,15 +629,12 @@ let gsContentScript = {
         let currentIndex
         let currentElement
         let addGrpCenterContent = document.getElementsByClassName("addGrpCenter_content")[0]
-        let len = addGrpCenterContent.children.length  // 子元素的个数
-        if(len > 0){
-            for(let i=0; i < addGrpCenterContent.children.length; i++){
-                let children = addGrpCenterContent.children[i]
-                if(children.classList.contains('addGrp_active')){
-                    currentElement = children
-                    currentIndex = i
-                    break
-                }
+        for (let i = 0; i < addGrpCenterContent.children.length; i++) {
+            let children = addGrpCenterContent.children[i]
+            if (children.classList.contains('addGrp_active')) {
+                currentElement = children
+                currentIndex = i
+                break
             }
         }
         return { currentIndex, currentElement}
@@ -1327,17 +648,8 @@ let gsContentScript = {
         let email = element.getAttribute('email')
         let name = element.getAttribute('name')
 
-
-        if(addGrp_email){
-            if(email && name ){
-                addGrp_email.textContent = `${email}(${name})`
-            }else if(email){
-                addGrp_email.textContent = email
-            }else if(name){
-                addGrp_email.textContent = name
-            }else{
-                addGrp_email.textContent = ''
-            }
+        if (addGrp_email) {
+            addGrp_email.textContent = email && name ? `${email}(${name})` : (email || name || '')
         }
     },
 
@@ -1345,59 +657,30 @@ let gsContentScript = {
      * 更换email 中关于tips内容
      ***/
     changeTips: function(element){
-        let email = element.getAttribute('email')
-        let name = element.getAttribute('name')
-        let jobTitle = element.getAttribute('jobTitle')
-        let company = element.getAttribute('company')
-        let department = element.getAttribute('department')
-        let number = element.getAttribute('phone')
+        const attributes = {
+            email: "addGrp_tip_email",
+            name: "addGrp_tip_name",
+            jobTitle: "addGrp_tip_jobTitle",
+            company: "addGrp_tip_company",
+            department: "addGrp_tip_department",
+            phone: "addGrp_tip_number"
+        };
 
-        let tip_number = document.getElementsByClassName("addGrp_tip_number")[0]
-        let tip_name = document.getElementsByClassName("addGrp_tip_name")[0]
-        let tip_email = document.getElementsByClassName("addGrp_tip_email")[0]
-        let tip_company = document.getElementsByClassName("addGrp_tip_company")[0]
-        let tip_department = document.getElementsByClassName("addGrp_tip_department")[0]
+        for (const attr in attributes) {
+            const value = element.getAttribute(attr);
+            const tipElement = document.getElementsByClassName(attributes[attr])[0];
 
-        if(tip_number){
-            if(number){
-                tip_number.textContent = number
-            }else{
-                tip_number.textContent = ''
-            }
-        }
-        if(tip_name){
-            if(name){
-                tip_name.textContent = name
-            }else{
-                tip_name.textContent = ''
-            }
-        }
-        if(tip_email){
-            if(email){
-                tip_email.textContent = email
-            }else{
-                tip_email.textContent = ''
-            }
-        }
-        if(tip_company){
-            if(company){
-                tip_company.textContent = company
-            }else{
-                tip_company.textContent = ''
-            }
-        }
-        if(tip_department){
-            if(department){
-                tip_department.textContent = department
-            }else{
-                tip_department.textContent = ''
+            if (tipElement) {
+                tipElement.textContent = value || '';
             }
         }
     },
 
-    /** 左边按钮点击显示内容
-     * ***/
-    handlePreElementClickEvent: function(){
+    /**
+     * 点击左右两边按钮 切换显示的联系人内容
+     * direction: pre 左； next 右
+     */
+    switchContacts: function(direction){
         let addGrpCenterContent = document.getElementsByClassName("addGrpCenter_content")[0]
         let len = addGrpCenterContent.children.length  // 子元素的个数
         let { currentIndex } = gsContentScript.getCurrent()
@@ -1414,46 +697,18 @@ let gsContentScript = {
 
             for(let i=0; i < addGrpCenterContent.children.length; i++){
                 let children = addGrpCenterContent.children[i]
-                index  = currentIndex - 1
-                if(index < 0){
-                    index = addGrpCenterContent.children.length -1
+                if(direction === 'pre'){
+                    index  = currentIndex - 1
+                    if(index < 0){
+                        index = addGrpCenterContent.children.length -1
+                    }
+                }else {
+                    index  = currentIndex + 1
+                    if(index > addGrpCenterContent.children.length - 1){
+                        index = 0
+                    }
                 }
                 if(i === index) {
-                    children.style.display = "block"
-                    children.classList.add('addGrp_active')
-                    gsContentScript.handleIcon(children)
-                    gsContentScript.changeEmail(children)
-                    gsContentScript.changeTips(children)
-                }
-            }
-        }
-    },
-
-    /*** 右边按钮点击显示内容
-     * ***/
-    handleNextElementClickEvent: function (){
-        let addGrpCenterContent = document.getElementsByClassName("addGrpCenter_content")[0]
-        let len = addGrpCenterContent.children.length  // 子元素的个数
-        let { currentIndex } = gsContentScript.getCurrent()
-        let index
-        if(len > 0 ){
-            for(let i=0; i < addGrpCenterContent.children.length; i++){
-                let children = addGrpCenterContent.children[i]
-                if(currentIndex === i){
-                    children.style.display = "none"
-                    children.classList.remove('addGrp_active')
-                    break
-                }
-            }
-
-            for(let i=0; i < addGrpCenterContent.children.length; i++){
-                let children = addGrpCenterContent.children[i]
-
-                index  = currentIndex + 1
-                if(index > addGrpCenterContent.children.length - 1){
-                    index = 0
-                }
-                if(i === index){
                     children.style.display = "block"
                     children.classList.add('addGrp_active')
                     gsContentScript.handleIcon(children)
@@ -1640,49 +895,45 @@ let gsContentScript = {
         handleCenterContent(data)
     },
 
-    /** 基于当前语言显示内容
-     * **/
-    displayContentBasedOnlanguage: function(){
+    /**
+     * 基于当前语言显示内容
+     */
+    displayContentBasedOnLanguage: function(){
         /** 根据语言修改 显示内容**/
-        let addGrpCall = document.getElementsByClassName("addGrp_call")[0]  || gsContentScript.target?.document.getElementsByClassName("addGrp_call")[0]
-        let addGrpTipNumberTxt = document.getElementsByClassName("addGrp_tip_number_txt")[0] || gsContentScript.target?.document.getElementsByClassName("addGrp_tip_number_txt")[0]
-        let addGrpTipNameTxt = document.getElementsByClassName("addGrp_tip_name_txt")[0]   || gsContentScript.target?.document.getElementsByClassName("addGrp_tip_name_txt")[0]
-        let addGrpTipEmailTxt = document.getElementsByClassName("addGrp_tip_email_txt")[0]  ||gsContentScript.target?.document.getElementsByClassName("addGrp_tip_email_txt")[0]
-        let addGrpTipCompanyTxt = document.getElementsByClassName("addGrp_tip_company_txt")[0]  || gsContentScript.target?.document.getElementsByClassName("addGrp_tip_company_txt")[0]
-        let addGrpTipDepartmentTxt = document.getElementsByClassName("addGrp_tip_department_txt")[0] || gsContentScript.target?.document.getElementsByClassName("addGrp_tip_department_txt")[0]
+        const elementsToTextContent = {
+            addGrp_call: "call",
+            addGrp_tip_number_txt: "number",
+            addGrp_tip_name_txt: "name",
+            addGrp_tip_email_txt: "email",
+            addGrp_tip_company_txt: "company",
+            addGrp_tip_department_txt: "department"
+        };
 
-        if(gsContentScript.language){
-            if(addGrpCall){
-                addGrpCall.textContent = `${ gsContentScript.language['call'] }`
-            }
-            if(addGrpTipNumberTxt){
-                addGrpTipNumberTxt.textContent = `${ gsContentScript.language['number'] }:`
-            }
-            if(addGrpTipNameTxt){
-                addGrpTipNameTxt.textContent = `${ gsContentScript.language['name'] }:`
-            }
+        if (gsContentScript.language) {
+            for (const elementClass in elementsToTextContent) {
+                const element = document.querySelector(`.${elementClass}`) || gsContentScript.target?.document.querySelector(`.${elementClass}`);
+                const labelText = gsContentScript.language[elementsToTextContent[elementClass]];
 
-            if(addGrpTipEmailTxt){
-                addGrpTipEmailTxt.textContent = `${ gsContentScript.language['email'] }:`
-            }
-
-            if(addGrpTipCompanyTxt){
-                addGrpTipCompanyTxt.textContent = `${ gsContentScript.language['company'] }:`
-            }
-
-            if(addGrpTipDepartmentTxt){
-                addGrpTipDepartmentTxt.textContent = `${ gsContentScript.language['department'] }:`
+                if (element && labelText) {
+                    if(elementClass === 'addGrp_call'){
+                        element.textContent = `${labelText}`;
+                    }else {
+                        element.textContent = `${labelText}:`;
+                    }
+                }
             }
         }
     },
 
-    /*** 处理位置显示问题
-     *****/
-    showContentPosition: function(getPhoneContents,e){
-        let addGRPElement = document.getElementsByClassName("addGrpSpan")[0] || gsContentScript.target?.document.getElementsByClassName("addGrpSpan")[0]
+    /***
+     * 处理位置显示问题
+     * @param getPhoneContents
+     * @param e
+     */
+    setContentPosition: function(getPhoneContents, e){
+        let addGRPElement= document.querySelector(".addGrpSpan") || document.querySelector(".addGrpSpan")
 
         if(getPhoneContents.length && addGRPElement){
-
             /***** 针对整体内容显示位置 *****/
             if (addGRPElement && e.currentTarget !== top){     // 当前元素在iframe中
                 addGRPElement.classList.add('addGrpSpan_center')
@@ -1703,41 +954,29 @@ let gsContentScript = {
             }
 
             /**** 针对top图标显示问题 *****/
-            let addGrpLeft = document.getElementsByClassName("addGrpLeft")[0]  ||  gsContentScript.target?.document.getElementsByClassName("addGrpLeft")[0]
-            let addGrpRight = document.getElementsByClassName("addGrpRight")[0]  ||  gsContentScript.target?.document.getElementsByClassName("addGrpRight")[0]
-            let addGrpTop = document.getElementsByClassName("addGrpTop")[0] || gsContentScript.target?.document.getElementsByClassName("addGrpTop")[0]
-
-            if(getPhoneContents.length === 1){
-                /**** 隐藏内容 ***/
-
-                if(addGrpLeft){
-                    addGrpLeft.style.display = "none"
-                }
-
-                if(addGrpRight){
-                    addGrpRight.style.display = "none"
-                }
-
-                if(addGrpTop){
-                    addGrpTop.style.paddingLeft = '30px'
-                }
-
-            }else{
-                /**** 显示内容 ***/
-
-                if(addGrpLeft){
-                    addGrpLeft.style.display = "flex"
-                }
-
-                if(addGrpRight){
-                    addGrpRight.style.display = "flex"
-                }
-
-                if(addGrpTop){
-                    addGrpTop.style.paddingLeft = '10px'
+            let setElementStyle = function(element, displayValue, paddingLeftValue) {
+                if (element) {
+                    if(displayValue){
+                        element.style.display = displayValue
+                    }else if (paddingLeftValue) {
+                        element.style.paddingLeft = paddingLeftValue
+                    }
                 }
             }
 
+            let addGrpLeft = document.querySelector(".addGrpLeft") || gsContentScript.target?.document.querySelector(".addGrpLeft");
+            let addGrpRight = document.querySelector(".addGrpRight") || gsContentScript.target?.document.querySelector(".addGrpRight");
+            let addGrpTop = document.querySelector(".addGrpTop") || gsContentScript.target?.document.querySelector(".addGrpTop");
+
+            if (getPhoneContents.length === 1) {
+                setElementStyle(addGrpLeft, "none")
+                setElementStyle(addGrpRight, "none")
+                setElementStyle(addGrpTop, "", "30px")
+            } else {
+                setElementStyle(addGrpLeft, "flex")
+                setElementStyle(addGrpRight, "flex")
+                setElementStyle(addGrpTop, "", "10px")
+            }
         }else{
             /**** 隐藏整体内容 ***/
             if(addGRPElement && !addGRPElement.classList.contains('addGrpSpan_hidden')){
@@ -1891,11 +1130,13 @@ let gsContentScript = {
                     try{
                         let iframe = iframes[i]
                         selection = iframe.frameElement?.contentWindow?.getSelection()
-                        content = selection.toString()?.trim()
+                        content = selection?.toString()?.trim()
                         if (content){
                             break
                         }
-                    }catch(e){}
+                    }catch(e){
+                        // console.log('get selection for iframe error:', e)
+                    }
                 }
             }
         }
@@ -1909,7 +1150,7 @@ let gsContentScript = {
                     getSelectionForIframe(self.frames)
                 }else{
                     selection = self.frames?.frameElement?.contentWindow?.getSelection()
-                    content = selection.toString()?.trim()
+                    content = selection?.toString()?.trim()
                 }
 
             }else if(self.frameElement){
@@ -1917,16 +1158,18 @@ let gsContentScript = {
                     getSelectionForIframe(self.frameElement)
                 }else{
                     selection = self.frameElement?.contentWindow?.getSelection()
-                    content = selection.toString()?.trim()
+                    content = selection?.toString()?.trim()
                 }
             }
 
             /*** 针对window ***/
             if(!content){
                 selection = window.getSelection ? window.getSelection() : window.document.getSelection();
-                content =  selection.toString()?.trim()
+                content =  selection?.toString()?.trim()
             }
-        }catch(e){}
+        }catch(e){
+            console.log('get selection content error:', e)
+        }
 
         return content
     },
@@ -1950,7 +1193,11 @@ let gsContentScript = {
         }
     },
 
-    startHandle(e) {
+    /**
+     * 处理页面点击事件
+     * @param e
+     */
+    processSelectionTextContent(e) {
         if (e.target.nodeName === 'GRPSPAN' || (e.target.getAttribute && e.target.getAttribute('grpcallnumber'))) {
             // 已添加自定义grpspan的内容不做处理
             return
@@ -1970,68 +1217,167 @@ let gsContentScript = {
             if (addGrpSpan) {
                 addGrpSpan.style.display = "none"
             }
+            // console.log('select content is not get!')
             return
         }
 
-        /** 网页拨号 **/
-        new Promise((res, rej) => {
-            let getPhoneContents = gsContentScript.getContentForfuzzyMatch(content)
-            content = null
-            if (getPhoneContents && Object.prototype.toString.call(getPhoneContents) === '[object Array]') {
-                gsContentScript.showContent(getPhoneContents)
-                gsContentScript.displayContentBasedOnlanguage()
-                res(getPhoneContents)
-            } else {
-                rej('The current data is not an array or data is null')
-            }
-        }).then((data) => {
-            if(data && data.length) {
-                if(addGrpSpan){
-                    addGrpSpan.style.display = "block"
-                }
-                gsContentScript.showContentPosition(data, e)
-                gsContentScript.handlePhoneNumber()
-            }else{
-                if(addGrpSpan){
-                    addGrpSpan.style.display = "none"
-                }
-            }
-        }).catch((e) => {
-            console.log("error:", e)
-            if (addGrpSpan) {
-                addGrpSpan.style.display = "none"
+        // 发送消息给背景页查询是否启用划词拨号功能
+        gsContentScript.sendMessageToBackgroundJS({cmd: 'configureQuery'}, function (configs){
+            gsContentScript.wordDialingEnabled = configs.wordDialing
+            gsContentScript.contactSearchFrom = configs.contactSearchFrom
+
+            if(gsContentScript.wordDialingEnabled){
+                /** 网页拨号 **/
+                new Promise((res, rej) => {
+                    let getPhoneContents = gsContentScript.getContentForFuzzyMatch(content)
+                    content = null
+                    if (getPhoneContents && Object.prototype.toString.call(getPhoneContents) === '[object Array]') {
+                        gsContentScript.showContent(getPhoneContents)
+                        gsContentScript.displayContentBasedOnLanguage()
+                        res(getPhoneContents)
+                    } else {
+                        rej('The current data is not an array or data is null')
+                    }
+                }).then((data) => {
+                    if(data && data.length) {
+                        if(addGrpSpan){
+                            addGrpSpan.style.display = "block"
+                        }
+                        gsContentScript.setContentPosition(data, e)
+                        gsContentScript.handlePhoneNumber()
+                    }else{
+                        if(addGrpSpan){
+                            addGrpSpan.style.display = "none"
+                        }
+                    }
+                }).catch((e) => {
+                    console.log("error:", e)
+                    if (addGrpSpan) {
+                        addGrpSpan.style.display = "none"
+                    }
+                })
+            }else {
+                //  nothing to do
             }
         })
-    }
+    },
+
+    /**
+     * 解析浏览器UA信息
+     * @returns {{}}
+     */
+    getBrowserDetail() {
+        function extractVersion(uastring, expr, pos) {
+            let match = uastring.match(expr)
+            return match && match.length >= pos && parseInt(match[pos], 10)
+        }
+
+        // Returned result object.
+        var result = {}
+        result.browser = null
+        result.version = null
+        result.UIVersion = null
+        result.chromeVersion = null
+        result.systemFriendlyName = null
+
+        if (navigator.userAgent.match(/Windows/)) {
+            result.systemFriendlyName = 'windows'
+        } else if (navigator.userAgent.match(/Mac/)) {
+            result.systemFriendlyName = 'mac'
+        } else if (navigator.userAgent.match(/Linux/)) {
+            result.systemFriendlyName = 'linux'
+        }
+
+        // Fail early if it's not a browser
+        if (typeof window === 'undefined' || !window.navigator) {
+            result.browser = 'Not a browser.'
+            return result
+        }
+
+        // Edge.
+        if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
+            result.browser = 'edge'
+            result.version = extractVersion(navigator.userAgent, /Edge\/(\d+).(\d+)$/, 2)
+            result.UIVersion = navigator.userAgent.match(/Edge\/([\d.]+)/)[1] // Edge/16.17017
+        } else if (!navigator.mediaDevices && (!!window.ActiveXObject || 'ActiveXObject' in window || navigator.userAgent.match(/MSIE (\d+)/) || navigator.userAgent.match(/rv:(\d+)/))) {
+            // IE
+            result.browser = 'ie'
+            if (navigator.userAgent.match(/MSIE (\d+)/)) {
+                result.version = extractVersion(navigator.userAgent, /MSIE (\d+).(\d+)/, 1)
+                result.UIVersion = navigator.userAgent.match(/MSIE ([\d.]+)/)[1] // MSIE 10.6
+            } else if (navigator.userAgent.match(/rv:(\d+)/)) {
+                /* For IE 11 */
+                result.version = extractVersion(navigator.userAgent, /rv:(\d+).(\d+)/, 1)
+                result.UIVersion = navigator.userAgent.match(/rv:([\d.]+)/)[1] // rv:11.0
+            }
+
+            // Firefox.
+        } else if (navigator.mozGetUserMedia) {
+            result.browser = 'firefox'
+            result.version = extractVersion(navigator.userAgent, /Firefox\/(\d+)\./, 1)
+            result.UIVersion = navigator.userAgent.match(/Firefox\/([\d.]+)/)[1] // Firefox/56.0
+
+            // all webkit-based browsers
+        } else if (navigator.webkitGetUserMedia && window.webkitRTCPeerConnection) {
+            // Chrome, Chromium, Webview, Opera, Vivaldi all use the chrome shim for now
+            var isOpera = !!navigator.userAgent.match(/(OPR|Opera).([\d.]+)/)
+            // var isVivaldi = navigator.userAgent.match(/(Vivaldi).([\d.]+)/) ? true : false;
+            if (isOpera) {
+                result.browser = 'opera'
+                result.version = extractVersion(navigator.userAgent, /O(PR|pera)\/(\d+)\./, 2)
+                result.UIVersion = navigator.userAgent.match(/O(PR|pera)\/([\d.]+)/)[2] // OPR/48.0.2685.39
+                if (navigator.userAgent.match(/Chrom(e|ium)\/([\d.]+)/)[2]) {
+                    result.chromeVersion = extractVersion(navigator.userAgent, /Chrom(e|ium)\/(\d+)\./, 2)
+                }
+            } else {
+                result.browser = 'chrome'
+                result.version = extractVersion(navigator.userAgent, /Chrom(e|ium)\/(\d+)\./, 2)
+                result.UIVersion = navigator.userAgent.match(/Chrom(e|ium)\/([\d.]+)/)[2] // Chrome/61.0.3163.100
+            }
+        } else if ((!navigator.webkitGetUserMedia && navigator.userAgent.match(/AppleWebKit\/([0-9]+)\./)) || (navigator.webkitGetUserMedia && !navigator.webkitRTCPeerConnection)) {
+            if (navigator.userAgent.match(/Version\/(\d+).(\d+)/)) {
+                result.browser = 'safari'
+                result.version = extractVersion(navigator.userAgent, /AppleWebKit\/(\d+)\./, 1)
+                result.UIVersion = navigator.userAgent.match(/Version\/([\d.]+)/)[1] // Version/11.0.1
+            } else { // unknown webkit-based browser.
+                result.browser = 'Unsupported webkit-based browser ' + 'with GUM support but no WebRTC support.'
+                return result
+            }
+            // Default fallthrough: not supported.
+        } else {
+            result.browser = 'Not a supported browser.'
+            return result
+        }
+
+        return result
+    },
 }
 
 
 /*******************************************************************************************************************/
 /***********************************************屏幕取词呼叫***********************************************************/
 /*******************************************************************************************************************/
+if(gsContentScript.getBrowserDetail().browser === 'firefox'){
+    gsContentScript.loadContentScript()
 
+    window.addEventListener("mouseup",   function (event){
+        gsContentScript.processSelectionTextContent(event)
+    })
+}else {
+    /**
+     * 内容注入
+     * 注意：必须设置了run_at=document_start 此段代码才会生效  DOMContentLoaded。
+     **/
+    document.addEventListener('DOMContentLoaded',function(){
+        console.log('DOMContentLoaded completed')
+        // 注入自定义JS
+        gsContentScript.loadContentScript()
+    })
 
-
-/** 内容注入
- **/
-// 注意： 必须设置了run_at=document_start 此段代码才会生效  DOMContentLoaded
-document.addEventListener('DOMContentLoaded',async function(){
-
-    // 注入自定义JS
-    await gsContentScript.init()
-
-    await gsContentScript.injectCustomJs();
-    await gsContentScript.initCustomPannel()
-    await gsContentScript.initCustomEventListens()
-})
-
-
-/**
- * 页面dom节点扫描
- */
-window.addEventListener('load',function(){
-
-    window.addEventListener("click",function(e){
-        gsContentScript.startHandle(e)
-    },false)
-})
+    /**
+     * 页面dom节点扫描获取选中文本内容
+     */
+    window.addEventListener("mouseup", function (event){
+        gsContentScript.processSelectionTextContent(event)
+    })
+}

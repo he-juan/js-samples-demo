@@ -4,10 +4,38 @@ const grpLang = {
     en_us: window.GRP_LOCALES["en-US"],
 }
 
-function getLocalLanguage(lang) {
-    let currentLocaleData
+/**
+ * 获取浏览器设置语言
+ * @returns {string}
+ */
+function getCurrentLanguage(){
+    const userLanguage = navigator.language
+    console.log('The browser\'s current locale is：', userLanguage)
+    let languageCode = userLanguage.split('-')[0];   // 提取语言代码
+    let lang
 
-    switch (lang) {
+    switch (languageCode){
+        case 'en':
+            lang = 'en-US'
+            break
+        case 'zh':
+            lang = 'zh-CN'
+            break
+        default:
+            lang = 'en-US'
+            break
+    }
+    return lang
+}
+
+/**
+ * 获取国际化语言
+ * @returns {{messages, lang: string}}
+ */
+function getLocalLanguage() {
+    let currentLanguage = getCurrentLanguage()
+    let currentLocaleData
+    switch (currentLanguage) {
         case 'en-US':
             currentLocaleData = Object.assign(grpLang.en_us)
             break
@@ -18,29 +46,9 @@ function getLocalLanguage(lang) {
             break
     }
 
-    return {
-        lang: lang,
-        messages: currentLocaleData
-    }
+    currentLocaleData.language = currentLanguage
+    console.log('current locale：', currentLocaleData)
+    return currentLocaleData
 }
 
-// reducers
-let localLang = 'en-US'
-const preLocalLang = localStorage.getItem('grpLocale')
-console.log('get pre local lang: ' + preLocalLang)
-
-localLang = preLocalLang || navigator.language
-if (localLang?.indexOf('en') >= 0) {
-    localLang = 'en-US'
-} else if (localLang?.indexOf('zh') >= 0) {
-    localLang = 'zh-CN'
-} else {
-    // default en-US
-    localLang = 'en-US'
-}
-console.log('The browser\'s current locale is：', localLang)
-
-let result = getLocalLanguage(localLang)
-window.currentLocale = result.messages
-window.currentLocale.language = localLang
-console.log('current locale：', window.currentLocale)
+window.currentLocale = getLocalLanguage()

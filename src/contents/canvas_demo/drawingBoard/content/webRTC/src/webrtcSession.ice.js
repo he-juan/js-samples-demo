@@ -8,25 +8,6 @@ WebRTCSession.prototype.onConnectionStateChange = function () {
     }
 }
 
-WebRTCSession.prototype.onDataChannelMessage = function(event){
-    let dataChannel = event.channel || event;
-    let This = this
-    log.info('Received dataChannel', arguments)
-    dataChannel.binaryType = 'arraybuffer';
-    This.pc.dataChannel = dataChannel
-    This.pc.dataChannel.onopen = function (e) {
-        log.info('data channel connect')
-    }
-    This.pc.dataChannel.onmessage = function (e) {
-        log.info("receive dataChannel message:",e.data)
-        if(e.data.byteLength){
-            This.handleDataChannelFile(e)
-        }else{
-            This.handleDataChannelMessage(e.data)
-        }
-    }
-}
-
 WebRTCSession.prototype.onIceConnectionStateChange = function () {
     let This = this
     let pc = This.pc
@@ -79,10 +60,11 @@ WebRTCSession.prototype.doIceRestart = function () {
     let This = this
     let pc = This.pc
     log.info('Prepare start do ice restart!')
-    if (!gsRTC.socket || !gsRTC.socket.wsIsConnected()){
-        log.warn('webSocket is unavailable and for ice restart.')
-        return
-    }
+    // if (!gsRTC.socket || !gsRTC.socket.wsIsConnected()){
+    //     log.warn('webSocket is unavailable and for ice restart.')
+    //     This.onIceRestartFailed()
+    //     return
+    // }
 
     let iceRestartInvite = This.sendInviteQueue.filter(item => {return item.action = 'iceRestart'})[0]
     if(!iceRestartInvite){
@@ -154,7 +136,11 @@ WebRTCSession.prototype.onIceRestartFailed = function () {
     This.pc.iceFailureNum = 0
     This.pc.isIceFailed = true
     log.info('ice reconnect failed, need to hang up the line ' + This.lineId)
+    if(This.remoteShare || This.localShare){
+        gsRTC.trigger('errorTip', gsRTC.CODE_TYPE.ICE_CONNECTION_FAILED.codeType, This.lineId)
+    }
     gsRTC.clearSession({lineId: This.lineId})
+
     // gsRTC.trigger('iceReconnect', {
     //     lineId: This.lineId,
     //     peerAccount: This.peerAccount,

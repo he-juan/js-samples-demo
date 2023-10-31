@@ -45,6 +45,10 @@ html, body {
     font-size: 24px;
     color: #222222;
     letter-spacing: 0;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
 }
 
 .fileShare{
@@ -76,6 +80,10 @@ html, body {
     height: 20px;
     margin-bottom: 82px;
     display:flex;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
 }
 
 .videoContent{
@@ -104,15 +112,21 @@ html, body {
     background-color: gray;
     color: white;
     position: absolute;
-    width: 120px;
-    height: 40px;
-    z-index: 99;
+    height: 25px;
+    z-index: 999;
     cursor: pointer;
     border-radius: 5px;
     text-align: center;
-    line-height: 40px;
+    line-height: 25px;
     pointer-events: none;
+    user-select:none;
     display: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    white-space: nowrap;
+    opacity: 0.8;
+    padding: 0px 8px;
 }
 
 .btnContainer{
@@ -127,8 +141,12 @@ html, body {
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    padding: 70% 0;
+    padding: 45% 0;
     box-sizing: border-box;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
 }
 
 .setBtnContainer{
@@ -153,7 +171,7 @@ html, body {
     align-items: center;
 }
 
-.presentVideoContainter {
+.presentVideoContainer {
     width:100%;
     height:100%;
     margin: auto;
@@ -164,7 +182,7 @@ html, body {
     align-items: center;
 }
 
-.presentVideoContainter[data-fullscreen=true] {
+.presentVideoContainer[data-fullscreen=true] {
     max-width:100%;
     width:100%;
     margin:0;
@@ -176,7 +194,6 @@ html, body {
     z-index: 8;
     width: 100%;  /* 设置video元素的宽度为容器的100% */
     height: 100%; /* 设置video元素的高度为容器的100% */
-    border: 1px solid red;
 }
 
 .areaContent{
@@ -197,7 +214,13 @@ html, body {
     opacity: 0.6;
 }
 
-fullVideo::after, .presentVideoContainter::after, .presentVideo::after, .canvas::after{
+.otherCanvas{
+    position: absolute;
+    z-index: 998;
+    opacity: 0.6;
+}
+
+fullVideo::after, .presentVideoContainer::after, .presentVideo::after, .canvas::after{
     content:'';
     clear:both;
     display:block;
@@ -684,7 +707,7 @@ fullVideo::after, .presentVideoContainter::after, .presentVideo::after, .canvas:
 }
 
 .tip-btn button{
-    width: 80px;
+    min-width: 80px;
     height: 32px;
     border-radius: 2px;
     font-family: OpenSans;
@@ -917,6 +940,10 @@ fullVideo::after, .presentVideoContainter::after, .presentVideo::after, .canvas:
 .file-tail-button-show{
     background: #2F91FF;
     cursor: pointer;
+}
+
+.file-tail-button-none{
+    display: none;
 }
 
 .file-content{
@@ -1359,7 +1386,7 @@ textarea, .textBox {
 /*}*/
 
 /***input range 设置****/
-[type="range"] {
+input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     margin: 0;
@@ -1367,15 +1394,15 @@ textarea, .textBox {
     background-color: transparent;
     width: 120px;
 }
-[type="range"]::-webkit-slider-runnable-track {
+input[type="range"]::-webkit-slider-runnable-track {
     height: 4px;
     background: #656565;
 }
-[type="range" i]::-webkit-slider-container {
+input[type="range" i]::-webkit-slider-container {
     height: 20px;
     overflow: hidden;
 }
-[type="range"]::-webkit-slider-thumb {
+input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 20px;
@@ -1386,7 +1413,28 @@ textarea, .textBox {
     margin-top: -8px;
     border-image: linear-gradient(#2F91FF,#2F91FF) 0 fill / 8 20 8 0 / 0px 0px 0 2000px;
 }
-/*2F91FF*/
+
+/*兼容Firefox浏览器*/
+input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 3px;
+    cursor: pointer;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0), 0 0 1px rgba(13, 13, 13, 0);
+    background: #ffffff;
+    border-radius: 3.3px;
+    border: 0.2px solid rgba(1, 1, 1, 0);
+}
+
+input[type=range]::-moz-range-thumb {
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(13, 13, 13, 0);
+    height: 20px;
+    width: 20px;
+    border-radius: 50px;
+    background: #2F91FF;
+    cursor: pointer;
+    outline: 0;
+}
+
 
 .toolbarChild_child_show{
     display:flex !important;
@@ -1583,4 +1631,98 @@ textarea, .textBox {
 .schedule {
     color: #6E727D;
     font-size: 14px;
+}
+
+/***canvas 右侧工具栏***/
+.rightTools{
+    max-height: 300px;
+    overflow-y: auto;
+    position: absolute;
+    right: 0px;
+    z-index: 1000;
+}
+.scaleContent{
+    width: 40px;
+    height: 100%;
+    border-radius: 5px;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 8px 8px;
+    margin: 0 auto;
+    background-color: #F7F5F1;
+}
+
+ul, li{
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+}
+.toolsWrapper{
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+}
+.rightToolContent{
+    height: 30px;
+    border-radius: 5px;
+    text-align: center;
+    flex-shrink: 0;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    cursor: pointer;
+    margin: 5px;
+}
+.rightToolContent:hover .user-eye{
+    display: block;
+}
+.rightToolContent:hover .user-name{
+    opacity: 0;
+}
+
+.user-backgroundColor{
+    border-radius: 50%;
+    background-color: rgb(254, 71, 55);
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 12px;
+    box-shadow: white 0px 0px 0px 2px inset;
+}
+.user-name{
+    flex-shrink:0;
+    font-size:12px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    white-space: nowrap;
+    color: black;
+    font-family: Times, "Times New Roman", Georgia, serif;
+    text-align: center;
+    width: 100%;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+
+.user-name:hover{
+    text-overflow: clip;
+}
+
+.user-eye{
+    flex-shrink:0;
+    width: 100%;
+    height: 100%;
+    margin-right:5px;
+    cursor: pointer;
+    display: none;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 22px;
+    position: absolute;
+    z-index: 999;
 }

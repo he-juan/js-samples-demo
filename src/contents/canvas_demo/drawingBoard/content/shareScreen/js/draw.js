@@ -1,11 +1,12 @@
 /**********************canvas 绘制 ***********************/
 class CanvasExample {
     isMouseDown = false            // 鼠标是否可以点击
-    points = []                    // 点击获取的坐标
-    startX = null                  // 开始点击的横坐标
-    startY = null                  // 开始点击的纵坐标
-    currentX = null                // 当前点击的横坐标
-    currentY = null                // 当前点击的纵坐标
+    pausePainting = false          // 暂停绘制
+    points = []                      // 点击获取的坐标
+    notes = []                       // 便签
+    texts = []                       // 文本
+    startX = null                     // 开始点击的横坐标
+    startY = null                     // 开始点击的纵坐标
     root = document
     dpr = window.devicePixelRatio
 
@@ -18,10 +19,52 @@ class CanvasExample {
     fullScreenModel = null
     dragMoveModal = null
 
+    /**对端 canvas 大小**/
+    remoteCanvas = {
+        width: null,
+        height: null
+    }
+
+    canvasStyle = {
+        width: null,
+        height: null,
+    }
+
+    canvasStyleRatio = {
+        x: 1,
+        y: 1
+    }
+
     /**编写文字输入框**/
     textBox = document.getElementsByClassName("textBox")[0]
-    textContent = ''        // 输入的内容
+    textContent = ''          //  textArea输入的内容
+    textAreaRect = null         //  textArea 的位置信息
     showInputFlag = false
+
+    /**右侧工具栏**/
+    rightTools = document.getElementsByClassName("rightTools")[0]
+    scaleContent = document.getElementsByClassName("scaleContent")[0]
+    toolsWrapper = document.getElementsByClassName("toolsWrapper")[0]
+
+    /**跟随鼠标显示用户名**/
+    showPosition = document.getElementsByClassName("showPosition")[0]
+
+    /**框选区域的参数**/
+    isCompleteSelectArea = false
+    selectAreaElement = document.getElementsByClassName("selectionArea")[0]
+    mouseX1 = 0
+    mouseY1 = 0
+    mouseX2 = 0
+    mouseY2 = 0
+
+    /***关于用户和评论显示问题**/
+    isShowAccount = true
+    isShowComment = true
+
+    /**canvas 和 video的父元素**/
+    area = document.getElementsByClassName("areaContent")[0]
+    canvasArray = []
+
 
     /******************监听 当前页面video宽高的变化 ****/
     resizeObserver = new ResizeObserver((entries) => {
@@ -40,75 +83,38 @@ class CanvasExample {
                 }
                 this.setSize()
             }
+
             this.width = this.canvas.width
             this.height = this.canvas.height
-            let canvasPos = this.canvas.getBoundingClientRect()
-            sendCurrentMousePosition({type: 'remotePosition',lineId: currentLine, position:{ width:canvasPos.width, height:canvasPos.height}})
             console.log('Size changed');
         });
 
     });
 
-    /**框选区域的参数**/
-    isCompleteSelectArea = false
-    selectAreaElement = document.getElementsByClassName("selectionArea")[0]
-    mouseX1 = 0
-    mouseY1 = 0
-    mouseX2 = 0
-    mouseY2 = 0
-
-    /***关于用户和评论显示问题**/
-    isShowAccount = false
-    isShowComment = false
-
-
     constructor(config) {
         this.initConfig(config)
         this.initEvent()
         this.initObserver()
+        this.scaleContent.textContent = currentLocale['L44']
     }
 
-    /** canvas 绘制表格
-     * **/
-    drawTable(){
-        let gridSize = 50
-        let getRatio = this.getCanvasRatio()
-        let row = parseInt(this.height / gridSize) / getRatio.xRatio;
-        let col = parseInt(this.width / gridSize) / getRatio.yRatio;
-
-        for(let i=0;i < row;i++)
-        {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, (i * gridSize - 0.5) /getRatio.yRatio);
-            this.ctx.lineTo(this.width/getRatio.xRatio, (i * gridSize - 0.5)/ getRatio.yRatio);
-            this.ctx.strokeStyle = "#ccc";
-            this.ctx.stroke();
-        }
-        for(let i=0;i < col;i++)
-        {
-            this.ctx.beginPath();
-            this.ctx.moveTo((i * gridSize - 0.5) / getRatio.xRatio, 0);
-            this.ctx.lineTo((i * gridSize - 0.5) / getRatio.xRatio, this.height/getRatio.yRatio);
-            this.ctx.strokeStyle="#ccc";
-            this.ctx.stroke();
-        }
-    }
     initConfig(config){
         this.canvas = config.canvas
         this.ctx = config.canvas.getContext('2d')
-        this.width =  config.canvas.width
-        this.height =  config.canvas.height
         this.videoElement = config.videoElement
         this.videoContainer = config.toolParam?.targetEl
         this.videoWrapper = config.videoWrapper
         this.canvasToolsBar = new CanvasToolsBar()
         this.fullScreenModel = new toggleFullScreenModal(config.toolParam)
         this.dragMoveModal = new DragMoveModel(config.dragParam)
+
+        this.width =  config.canvas.width = 1600
+        this.height =  config.canvas.height = 1600
     }
 
     initCanvas(){
-        this.ctx.clearRect(0, 0, this.width, this.height)
-        this.loadImage();
+        this.ctx.clearRect(0, 0, this.canvasStyle.width, this.canvasStyle.height)
+        this.loadImage(this.ctx);
     }
 
     /**监听video宽高的变化**/
@@ -126,23 +132,32 @@ class CanvasExample {
 
         /**全局监听***/
         this.root.addEventListener('keydown', this.keydownHandler)
-        this.textBox.addEventListener('keyup',this.DrawTextHandler)
+        this.textBox.addEventListener('input',this.setTextAreaHandler)
         this.videoElement.addEventListener('loadedmetadata',this.videoHandler)
+
+        /**监听事件处理右侧工具栏**/
+        this.scaleContent.addEventListener('click', this.changeContentHandler)
     }
 
     videoHandler = () =>{
         this.setSize()
     }
 
-    setSize(){
+    setSize(content){
         this.videoElement.parentNode.style.width = ""
         this.videoElement.parentNode.style.height = ""
 
-        var containerWidth =  this.videoElement.parentNode.clientWidth ;
-        var containerHeight = this.videoElement.parentNode.clientHeight ;
+        let containerWidth =  this.videoElement.parentNode.clientWidth ;
+        let containerHeight = this.videoElement.parentNode.clientHeight ;
 
-        var videoRatio = this.videoElement.videoWidth / this.videoElement.videoHeight;
-        var containerRatio = containerWidth / containerHeight;
+        let containerRatio = containerWidth / containerHeight;
+        let videoRatio
+
+        if(content && content.videoWidth && content.videoHeight){
+            videoRatio = content.videoWidth / content.videoHeight
+        }else{
+            videoRatio = this.videoElement.videoWidth / this.videoElement.videoHeight;
+        }
 
         if (videoRatio > containerRatio) {
             /***设置video大小***/
@@ -152,10 +167,6 @@ class CanvasExample {
             /** 设置canvas大小 **/
             this.canvas.style.width  = containerWidth + 'px';
             this.canvas.style.height = containerWidth / videoRatio + 'px';
-
-            /** 设置videoWrapper大小 **/
-            this.videoWrapper.style.minWidth = containerWidth + 'px'
-            this.videoWrapper.style.minHeight = containerWidth / videoRatio + 'px'
 
             /** 设置video parentNode 大小 **/
             this.videoElement.parentNode.style.width = containerWidth + 'px'
@@ -167,13 +178,398 @@ class CanvasExample {
             this.canvas.style.width  = containerHeight * videoRatio + 'px';
             this.canvas.style.height = containerHeight + 'px';
 
-            /** 设置videoContainer 的大小 **/
-            this.videoWrapper.style.minWidth = containerHeight * videoRatio + 'px'
-            this.videoWrapper.style.minHeight = containerHeight + 'px'
-
             /** 设置video parentNode 大小 **/
             this.videoElement.parentNode.style.width = containerHeight * videoRatio + 'px'
             this.videoElement.parentNode.style.height = containerHeight + 'px'
+        }
+        /**设置本地canvas缩放比例***/
+        this.setCanvasScale(this.canvas)
+
+        /***设置其他canvas的大小****/
+        if(this.canvasArray.length){
+            for(let canvas of this.canvasArray){
+                canvas.style.width = this.canvas.clientWidth + 'px'
+                canvas.style.height = this.canvas.clientHeight + 'px'
+
+                /**处理其他canvas缩放比例**/
+                this.setCanvasScale(canvas)
+            }
+        }
+
+        // /**获取canvas变化 前后比例**/
+        this.handleCanvasStyleRatio()
+
+        /**告知对端: 本端canvas大小**/
+        let canvasPos = this.canvas.getBoundingClientRect()
+        sendCurrentMousePosition({type: 'remotePosition',lineContent: this.getCurrentLine(), width:canvasPos.width, height:canvasPos.height})
+
+        /**保存全屏后canvas的大小**/
+        this.canvasStyle.width = canvasPos.width
+        this.canvasStyle.height = canvasPos.height
+    }
+
+    /**
+     * 获取 canvas 画板的比例(针对全屏或者退出全屏前后的大小比例)
+     * **/
+    handleCanvasStyleRatio(){
+        let rect = this.canvas.getBoundingClientRect()
+        if(rect.width !== this.canvasStyle.width){
+            if(this.fullScreenModel.isCurrentFullScreen){
+                this.canvasStyleRatio.x = rect.width / this.canvasStyle.width
+                this.canvasStyleRatio.y  = rect.height / this.canvasStyle.height
+            }else{
+                this.canvasStyleRatio.x = 1
+                this.canvasStyleRatio.y  = 1
+            }
+        }
+    }
+
+    /**
+     * 设置canvas缩放比例
+     * **/
+    setCanvasScale(canvas){
+        if(!canvas) return
+
+        let ctx = canvas.getContext('2d')
+        let {width, height} = canvas.getBoundingClientRect()
+
+        // 计算画布的缩放比例
+        const scaleX = canvas.width / width;
+        const scaleY = canvas.height / height;
+
+        // 清除之前的缩放比例
+        ctx.resetTransform();
+
+        // 设置画布缩放比例
+        ctx.scale(scaleX, scaleY);
+    }
+
+    /***创建canvas
+     * @param config.name       :    canvas 的标志
+     * @param config.brushColor :    canvas 本身笔尖的颜色
+     * **/
+    createCanvas (config){
+        if(!config?.account?.id) return
+        let canvas = document.createElement('canvas')
+        canvas.width = 1600
+        canvas.height = 1600
+        canvas.points = []
+        canvas.setAttribute('name',config.account?.name)
+        canvas.setAttribute('nameId',config.account?.id)
+        canvas.name = config.account?.name
+        canvas.nameId = config.account?.id
+        canvas.brushColor = config.brushColor
+        canvas.style.width = this.area.clientWidth + 'px'
+        canvas.style.height = this.area.clientHeight + 'px'
+        canvas.classList.add('otherCanvas')
+        this.canvasArray.push(canvas)
+        this.area.append(canvas)
+        this.setCanvasScale(canvas)
+    }
+
+    /**创建右侧工具栏***/
+    createTools(data){
+        let fragment = document.createDocumentFragment()
+
+        /**首先创建li 节点***/
+        let li = document.createElement('li').cloneNode(true)
+        li.className = 'rightToolContent'
+        li.setAttribute('name', data?.account?.name)
+        li.setAttribute('nameId', data?.account?.id)
+        li.setAttribute('color', data.brushColor)
+
+        /**创建 color***/
+        let color = document.createElement('div').cloneNode(true)
+        color.className = `user-backgroundColor`
+        color.setAttribute('name', data?.account?.name)
+        color.setAttribute('nameId', data?.account?.id)
+        color.setAttribute('title', data?.account?.name)
+        color.setAttribute('color', data.brushColor)
+        color.style.backgroundColor = data.brushColor
+        li.appendChild(color)
+
+        /**创建icon***/
+        let icon = document.createElement('div').cloneNode(true)
+        icon.className = `user-eye GRP-icon-eyes-open`
+        icon.setAttribute('name', data?.account?.name)
+        icon.setAttribute('nameId', data?.account?.id)
+        icon.setAttribute('color', data.brushColor)
+        icon.onclick = this.rightToolsHandler
+        color.appendChild(icon)
+
+        /**创建 name ***/
+        let name = document.createElement('div').cloneNode(true)
+        name.className = `user-name`
+        name.setAttribute('name', data?.account?.name)
+        name.setAttribute('nameId', data?.account?.id)
+        name.setAttribute('color', data.brushColor)
+        name.textContent = data?.account?.name ? this.truncateStringByByte(data?.account?.name, 2): ""
+        color.appendChild(name)
+
+        fragment.appendChild(li)
+        this.toolsWrapper.appendChild(fragment)
+    }
+    /**
+     * 按字节截取字符串
+     * @param inputString
+     * @param length
+     * @returns {string}
+     */
+    truncateStringByByte (inputString, length){
+        if (!inputString || length <= 0) {
+            return '';
+        }
+
+        inputString = inputString.trim()
+        let result = '';
+        let byteCount = 0;
+
+        for (let i = 0; i < inputString.length; i++) {
+            const char = inputString[i];
+            const charCode = char.charCodeAt(0);
+
+            // 检查字符的UTF-16编码是否占据2个字节
+            if (charCode <= 0xff && byteCount + 1 <= length) {
+                result += char;
+                byteCount += 1;
+            } else if (charCode > 0xff && byteCount + 2 <= length) {
+                result += char;
+                byteCount += 2;
+            } else {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 创建形状内容，如橡皮擦样式或者激光笔
+     * @param config.account
+     * @param config.action
+     * @param config.x
+     * @param config.y
+     **/
+    createShapes(config ={}){
+        if(!config?.account?.id || !config?.account?.name || !config?.action) return
+
+        let element = document.createElement('div')
+        element.className = `mouseStyle otherMouseStyle`
+        element.setAttribute('name', config.account.name)
+        element.setAttribute('nameId', config.account.id)
+
+        this.setShapes(config, element)
+        this.area.appendChild(element)
+    }
+
+    /**
+     * 设置形状样式
+     * @param element
+     * @param config.eraserSize
+     * @param config.pointerColor
+     * @param config.action
+     * @param config.x
+     * @param config.y
+     * **/
+    setShapes(config={}, element = null){
+        if(!config?.action || !element ) return
+
+        if(config.action === 'eraserFlag'){
+            let mouseRadius = parseInt(config.eraserSize)
+            element.style.width = mouseRadius * 10 * this.canvasStyleRatio.x + 'px'
+            element.style.height = mouseRadius * 10 * this.canvasStyleRatio.y + 'px'
+            element.style.left = config.x - 5 * mouseRadius * this.canvasStyleRatio.x + 'px'
+            element.style.top = config.y - 5 * mouseRadius * this.canvasStyleRatio.y + 'px'
+            element.style.boxShadow = `0 0 8px 0 #00000033`
+            element.style.display = "block";
+        }else if(config.action === 'pointerFlag'){
+            element.style.width = 6 + 'px'
+            element.style.height = 6 + 'px'
+            element.style.left = config.x + 'px'
+            element.style.top = config.y + 'px'
+            element.style.boxShadow = `0 0 6px 3px ${config.pointerColor}`
+            element.style.display = "block";
+        }
+
+    }
+
+    /**
+     * 更改形状样式
+     * @param data.account
+     * @param data.action
+     * @param data.eraserSize
+     * @param data.x
+     * @param data.y
+     **/
+    changeShapesStyle(data={}){
+        if(!data?.account?.id) return
+        let otherMouseStyle = document.getElementsByClassName('otherMouseStyle')
+        if(otherMouseStyle.length){
+            for(let ele of otherMouseStyle){
+                let name = ele.getAttribute("nameId")
+                if(name === data.account.id){
+                    this.setShapes(data,ele)
+                    break
+                }
+            }
+        }
+    }
+
+    /***创建鼠标跟随样式（账户）***/
+    createMouseAccount(config){
+        if(!config?.account?.id) return
+        let element = document.createElement('div')
+        element.className = `showPosition otherShowPosition`
+        element.setAttribute('name',config.account?.name)
+        element.setAttribute('nameId',config.account?.id)
+        element.name = config.account?.name
+        element.nameId = config.account?.id
+        element.textContext = `${config.account?.name || config.account?.id}`
+        element.style.backgroundColor = config.brushColor
+        this.area.appendChild(element)
+    }
+
+    /**更改右侧工具栏圆圈的颜色**/
+    changeToolColor(data){
+        let rightToolContent = document.getElementsByClassName("rightToolContent")
+        let changeChild = function(parent){
+            let child = parent?.children
+            if(child.length){
+                for(let note of child){
+                    if(note.classList.contains('user-backgroundColor')){
+                        note.style.backgroundColor = data.brushColor
+                    }
+                    note.setAttribute('color', data.brushColor)
+                }
+            }
+        }
+        if(rightToolContent.length){
+            for(let tool of rightToolContent){
+                let name = tool.getAttribute("nameId")
+                if(name === data?.account?.id){
+                    tool.setAttribute('color', data.brushColor)
+                    changeChild(tool)
+                    break
+                }
+            }
+        }
+    }
+
+    /**更改显示位置div的背景颜色**/
+    changeElementStyleForPosition(data){
+        let This = this
+        let otherShowPosition = document.getElementsByClassName('otherShowPosition')
+        let displayPosition = function(ele){
+            if(This.isShowAccount){
+                ele.style.left = data.currentX + 5 + 'px'
+                ele.style.top =  data.currentY + 5 + 'px'
+                ele.style.backgroundColor = data.brushColor
+                ele.style.display = 'block'
+                ele.textContent = `${data.account.name || data.account.id}`
+            }else{
+                ele.style.display = 'none'
+            }
+        }
+        if(otherShowPosition.length) {
+            for(let element of otherShowPosition){
+                if(element.getAttribute('nameId') === data.account.id){
+                    displayPosition(element)
+                    break
+                }
+            }
+        }
+    }
+
+
+    /***更改canvas 层级 ***/
+    changeCanvasZindex(data){
+        let zIndex = window.getComputedStyle(data.canvas).zIndex
+        if(data.isLocal){
+            if (zIndex === '999') {
+                data.canvas.style.zIndex = 'auto'
+            } else {
+                data.canvas.style.zIndex = '999'
+            }
+        }else{
+            if (zIndex === '998') {
+                data.canvas.style.zIndex = 'auto'
+            } else {
+                data.canvas.style.zIndex = '998'
+            }
+        }
+
+        /***修改当前li 的背景**/
+        let rightToolContent = document.getElementsByClassName("rightToolContent")
+        let parent = data?.target?.parentElement
+        if(rightToolContent.length){
+            for(let li of rightToolContent){
+                if(li === parent){
+                    if(zIndex === 'auto'){
+                        li.style.backgroundColor = '#F7F5F1'
+                    }else{
+                        li.style.backgroundColor = '#E8E2D6'
+                    }
+                }
+            }
+
+        }
+    }
+
+    /**隐藏或者显示内容**/
+    changeContentHandler = (e)=>{
+        e.preventDefault()
+        let target = e.target
+        let This = this
+        if(target.classList.contains('scaleContent')){
+            let content = target.textContent
+            if(content === currentLocale['L44']){
+                target.textContent = currentLocale['L45']
+                This.rightTools.style.width = 'auto'
+                This.toolsWrapper.style.display = 'none'
+            }else if(content === currentLocale['L45']){
+                target.textContent = currentLocale['L44']
+                This.rightTools.style.width = '130px'
+                This.toolsWrapper.style.display = 'block'
+            }
+        }
+    }
+
+    rightToolsHandler = (e)=>{
+        e.preventDefault()
+        let target = e.target
+        let This = this
+        let nameId = target.getAttribute("nameId")
+        let changeLocalCanvas = function(){
+            This.changeCanvasZindex({ canvas: This.canvas, target: target, isLocal: true })
+        }
+
+        let changeOtherCanvas = function(){
+            let isFind = false
+            if(This.canvasArray.length){
+                for(let canvas of This.canvasArray){
+                    if(canvas.nameId === nameId){
+                        isFind = true
+                        This.changeCanvasZindex({ canvas: canvas, target: target, isLocal: false })
+                        break
+                    }
+                }
+            }
+
+            if(!isFind && This.canvas.nameId == nameId){
+                changeLocalCanvas()
+            }
+        }
+
+        if(target && target.classList.contains('user-eye')){
+            /** 更改样式**/
+            if(target && target.classList.contains('GRP-icon-eyes-close')){
+                target.classList.remove('GRP-icon-eyes-close')
+                target.classList.add('GRP-icon-eyes-open')
+            }else if(target && target.classList.contains('GRP-icon-eyes-open')){
+                target.classList.remove('GRP-icon-eyes-open')
+                target.classList.add('GRP-icon-eyes-close')
+            }
+            changeOtherCanvas()
         }
     }
 
@@ -186,11 +582,15 @@ class CanvasExample {
         this.isShowComment = state
     }
 
-    //输入文字编写
-    DrawTextHandler = (event)=>{
-        let getKeyCode = event && event.keyCode
-        let isAddCols = getKeyCode === 13 ? true: false
-        this.makeExpandingArea(isAddCols)
+    setTextAreaHandler = (event)=>{
+        console.warn("event:",event)
+        if(this.canvasToolsBar.textFlag){
+             // event.target.wrap = 'off'
+            let getKeyCode = event && event.keyCode
+            let data = event && event.data
+            let isAddCols = getKeyCode === 13 ? true: false
+            this.makeExpandingArea(isAddCols,event)
+        }
     }
 
     // 监听delete按键 或者ESC 按键
@@ -203,7 +603,7 @@ class CanvasExample {
 
     // 鼠标按下事件
     mousedownHandler = (event)=>{
-        if(this.canvasToolsBar.areaDeleteFlag) return
+        if(this.canvasToolsBar.areaDeleteFlag || this.pausePainting) return
 
         setDefaultToolBarChild()
         let {left, top} = this.canvas.getBoundingClientRect()
@@ -213,13 +613,37 @@ class CanvasExample {
         let getRatio = this.getPostionRatio(true)
         startX = startX / getRatio.xRatio
         startY = startY / getRatio.yRatio
-        this.canvasDown(startX,startY)
-        sendCurrentMousePosition({type: 'mousedown', lineId: currentLine, position:{startX: startX, startY: startY}})
-        window.addEventListener("mouseup", this.mouseupHandler)
+        this.canvasDown({startX,startY, event})
+
+        if(!this.canvasToolsBar.textFlag){
+            window.addEventListener("mouseup", this.mouseupHandler)
+        }
+        let param = {
+            type: 'mouseDown',
+            lineContent: this.getCurrentLine(),
+            account: localAccount,
+            brushColor: this.canvasToolsBar.getBrushColor(),
+            brushStrokeSize: this.canvasToolsBar.getBrushStrokeSize(),
+            x: startX.toString(),
+            y: startY.toString(),
+            rect: this.canvas.getBoundingClientRect(),
+            action: this.canvasToolsBar.getCurrentSelectedTool()
+        }
+
+        if(this.canvasToolsBar.eraserFlag){
+            param.eraserSize = this.canvasToolsBar.getEraserSize()
+        }
+
+        if(this.canvasToolsBar.pointerFlag){
+            param.pointerColor = this.canvasToolsBar.getPointerColor()
+        }
+
+        sendCurrentMousePosition(param)
     }
 
     // 鼠标移动事件
     mousemoveHandler = (event)=>{
+        if(this.pausePainting) return
         let {left, top} = this.canvas.getBoundingClientRect()
         let currentX = event.clientX - left
         let currentY = event.clientY - top
@@ -227,119 +651,548 @@ class CanvasExample {
         /**鼠标样式**/
         changeMouseStyle(currentX, currentY)
 
-        if(this.canvasToolsBar.pointerFlag || this.isMouseDown){
+        if(this.isMouseDown){
             let getRatio = this.getPostionRatio(true)
             currentX = currentX / getRatio.xRatio
             currentY = currentY / getRatio.yRatio
-            this.canvasMove(currentX,currentY,event)
-            sendCurrentMousePosition({type: 'mousemove', lineId: currentLine, position:{startX: currentX, startY: currentY, e: event}})
+            this.canvasMove({currentX,currentY,event})
+
+            let param = {
+                type: 'mouseMove',
+                lineContent: this.getCurrentLine(),
+                account: localAccount,
+                brushColor: this.canvasToolsBar.getBrushColor(),
+                brushStrokeSize: this.canvasToolsBar.getBrushStrokeSize(),
+                x: currentX.toString(),
+                y: currentY.toString(),
+                rect: this.canvas.getBoundingClientRect(),
+                action: this.canvasToolsBar.getCurrentSelectedTool(),
+                e: event
+            }
+
+            if(this.canvasToolsBar.eraserFlag){
+                param.eraserSize = this.canvasToolsBar.getEraserSize()
+            }
+            if(this.canvasToolsBar.pointerFlag){
+                param.pointerColor = this.canvasToolsBar.getPointerColor()
+            }
+
+            sendCurrentMousePosition(param)
         }
     }
 
     // 鼠标松开事件
     mouseupHandler = (event)=>{
+        if(this.pausePainting) return
         this.canvasUp()
-        sendCurrentMousePosition({type: 'mouseup', lineId: currentLine })
         window.removeEventListener("mouseup", this.mouseupHandler)
     }
 
     //鼠标划过、离开事件
     mouseleaveHandler = (event)=>{
-        showPosition.style.display = "none";
+        if(this.pausePainting) return
+        this.showPosition.style.display = "none";
         mouseStyle.style.display = "none"
-        sendCurrentMousePosition({type: 'mouseleave', lineId: currentLine, })
+        sendCurrentMousePosition({type: 'mouseLeave', lineContent: this.getCurrentLine() })
+    }
+
+    /***
+     * 创建便签
+     * */
+    createNote(pos){
+        let note = {
+            x: pos.x,
+            y: pos.y,
+            width: 100,
+            height: 100,
+            text: '',
+            color: this.canvasToolsBar.getNoteColor(),
+            dragging: false,
+            isDrawing: false,
+            offsetX: 0,
+            offsetY: 0
+        };
+
+        // 将便签添加到数组中
+        this.notes.push(note);
+
+        // 绘制矩形
+        this.drawNote(note);
+
+    }
+
+    /**
+     * 绘制矩形
+     * **/
+    drawNote(note){
+        note.isDrawing = true
+        this.ctx.beginPath();
+
+        let width = note.width * this.canvasStyleRatio.x
+        let height = note.height * this.canvasStyleRatio.y
+
+        // 绘制便签
+        this.ctx.fillStyle = note.color
+        this.ctx.fillRect(note.x, note.y, width, height);
+        this.ctx.stroke()
+        this.ctx.restore();
+        this.ctx.closePath();
     }
 
     /*** 鼠标监听点击事件处理
-     * @param startX
-     * @param startY
+     * @param data.startX
+     * @param data.startY
      */
-    canvasDown (startX,startY){
-
-        let getPosition = this.changeCanvasPosition(startX, startY)
-        this.startX = getPosition.nextX
-        this.startY = getPosition.nextY
+    canvasDown (data){
+        this.startX = data.startX
+        this.startY = data.startY
 
         if (this.canvasToolsBar.textFlag) {
-            if(this.showInputFlag){
-                this.textContent = this.textBox.value
-                this.textBox.style['z-index'] = 1
-                this.textBox.value = ""
-                this.showInputFlag = false
-                this.drawing(this.startX, this.startY);
+            this.setTextBoxStyle({x: data.startX, y: data.startY})
 
-                /** 绘图后将文本框恢复到原点***/
-                this.textBox.style.display = 'none'
-                // this.textBox.style.left = '30px';
-                // this.textBox.style.top = '30px';
+        } else if(this.canvasToolsBar.noteFlag){
+            if(this.showInputFlag){
+                this.handleDrawNote({text: this.textBox.value})
+                this.setTextBoxStyle({x: data.startX, y: data.startY})
 
             }else{
-                this.showInputFlag = true
+                //判断当前位置是否已经存在note
+                let selectionNote
+                for (var i = 0; i < this.notes.length; i++) {
+                    var note = this.notes[i];
+                    if (this.startX > note.x && this.startX < note.x + note.width &&
+                        this.startY > note.y && this.startY < note.y + note.height){
+                        selectionNote = note
+                        break;
+                    }
+                }
 
-                /** 每次点击恢复原本大小 且在对应的位置显示输入框**/
-                this.textBox.cols = 1;
-                this.textBox.rows = 1;
-                this.textBox.style.height = '19px'
-                this.textBox.style.left = startX + 'px'
-                this.textBox.style.top = startY + 'px'
-                this.textBox.style.display = 'block'
-                this.textBox.style['z-index'] = 999;
-
-                this.textBox.style.color = this.canvasToolsBar.textColor
-                this.textBox.style.fontSize = this.canvasToolsBar.textFontSize
+                /**1. 获取已经存在的note 2.设置textBox的样式（显示之前的value）  3.清除当前note的画布内容 4.绘制当前note的矩形框 ***/
+                if(selectionNote){
+                    this.setTextBoxStyle({x: selectionNote.x, y: selectionNote.y, note: selectionNote}, true)
+                    this.ctx.clearRect(selectionNote.x, selectionNote.y, selectionNote.width, selectionNote.height)
+                    this.drawNote(selectionNote)
+                }else{
+                    this.setTextBoxStyle({x: data.startX, y: data.startY})
+                    this.createNote({x: data.startX, y: data.startY})
+                }
             }
+        } else{
+            if(this.canvasToolsBar.noteFlag || this.canvasToolsBar.textFlag) return
 
-        }else{
             this.isMouseDown = true
             // this.loadImage();
             this.points.push({ x: this.startX, y: this.startY });
         }
     }
     /** canvas : mousemove
-     * @param currentX
-     * @param currentY
-     * @param event
+     * @param data.currentX
+     * @param data.currentY
+     * @param data.event
      */
-    canvasMove(currentX,currentY,event){
+    canvasMove(data){
         let This = this
-        let displayPosition = function (x,y) {
+        let displayPosition = function (position) {
             // 显示坐标
             if(This.isShowAccount){
-                showPosition.style.left = x + 5 + 'px'
-                showPosition.style.top =  y + 5 + 'px'
-                showPosition.style.display = 'block'
-                showPosition.textContent = `x: ${parseInt(x)}, y:${parseInt(y)}`
+                This.showPosition.style.left = position.currentX + 5 + 'px'
+                This.showPosition.style.top =  position.currentY + 5 + 'px'
+                This.showPosition.style.display = 'block'
+                This.showPosition.textContent = `${localAccount?.name || localAccount?.id}`
             }else{
-                showPosition.style.display = 'none'
+                This.showPosition.style.display = 'none'
             }
         }
-        let drawing = function(x,y){
+        let drawing = function(position){
             if(This.isMouseDown || This.isShowComment){
-                let getPosition = This.changeCanvasPosition(x, y)
-                This.currentX = getPosition.nextX
-                This.currentY = getPosition.nextY
-                This.drawing(This.startX, This.startY, This.currentX, This.currentY, event)
+                This.drawing({x1: This.startX, y1: This.startY, x2: position.currentX, y2: position.currentY, event:position.event, target: position.target})
             }
         }
 
-        displayPosition(currentX,currentY)
-        drawing(currentX,currentY,event)
+        displayPosition(data)
+        drawing(data)
     }
 
     /**canvas: mouseup  **/
     canvasUp() {
-        this.lastImage = initCanvas.toDataURL('image/png');
+        this.lastImage = this.canvas.toDataURL('image/png');
         this.isMouseDown = false
         this.points = []
 
-        this.textBox.value = ''
+        if(!this.canvasToolsBar.noteFlag){
+            this.textBox.value = ''
+        }
 
+        this.showPosition.style.display = 'none'
+
+        sendCurrentMousePosition({type: 'mouseUp', lineContent: this.getCurrentLine(), account: localAccount})
+    }
+
+    /**
+     * 橡皮擦
+     **/
+    eraser(data){
+        if(!data || !data.canvas || !data.eraserSize) return
+        let canvas = data.canvas
+        let size = data.eraserSize * 10 / 2 * this.canvasStyleRatio.x
+        let ctx = canvas.getContext('2d')
+
+        ctx.save()
+        ctx.beginPath()
+
+        ctx.arc(data.x, data.y, size, 0, 2 * Math.PI);
+        ctx.clip();
+        ctx.clearRect(0, 0, this.canvasStyle.width, this.canvasStyle.height);
+
+        ctx.restore();
+        ctx.closePath();
+    }
+
+    /**
+     * 设置textarea的样式和大小
+     * **/
+    setTextBoxStyle(data, isRestoreValue = false){
         if(this.showInputFlag){
+            this.textContent = this.textBox.value
             this.showInputFlag = false
+
+            if(this.canvasToolsBar.textFlag){
+                this.textAreaRect = this.textBox.getBoundingClientRect()
+                this.handleTextAreaText(data)
+
+            }
+
+            /** 绘图后将文本框恢复到原点***/
+            this.textBox.style.display = 'none'
+            this.textBox.style['z-index'] = 1
+            this.textBox.value = ""
+
+        }else{
+            this.showInputFlag = true
+
+            /** 每次点击恢复原本大小 且在对应的位置显示输入框**/
+            this.textBox.style.left = data.x + 'px'
+            this.textBox.style.top = data.y + 'px'
+            this.textBox.style.display = 'block'
+            this.textBox.style['z-index'] = 999;
+            this.textBox.focus()
+
+            /**修改样式**/
+            if(this.canvasToolsBar.textFlag){
+                this.textBox.cols = 1;
+                this.textBox.rows = 1;
+                this.textBox.style.height = '19px'
+                this.textBox.style.width = ''
+                this.textBox.style.color = this.canvasToolsBar.textColor
+                this.textBox.style.fontSize = this.canvasToolsBar.getTextFontSize() * this.canvasStyleRatio.x + 'px'
+
+            }else if(this.canvasToolsBar.noteFlag) {
+                this.textBox.style.width = 98 * this.canvasStyleRatio.x + 'px'
+                this.textBox.style.height = 96 * this.canvasStyleRatio.y + 'px'
+                this.textBox.style.fontSize = 12 * this.canvasStyleRatio.x + 'px'
+                this.textBox.style.color = 'black'
+
+                //恢复原来的值
+                if(isRestoreValue){
+                    this.textBox.value = data.note.text
+                }
+            }
         }
     }
 
-    loadImage(){
+    /**
+     * 绘制文本文字
+     * **/
+    handleTextAreaText(data){
+        this.createText({x: parseFloat(this.textBox.style.left), y: parseFloat(this.textBox.style.top), text: this.textContent, event: data.event, target: data.target})
+        sendCurrentMousePosition({
+            type: 'textFlag',
+            action: this.canvasToolsBar.getCurrentSelectedTool(),
+            lineContent: this.getCurrentLine(),
+            canvas: this.canvas,
+            text: this.textContent,
+            textColor: this.canvasToolsBar.getTextColor(),
+            textFontSize: this.canvasToolsBar.getTextFontSize(),
+            x: parseFloat(this.textBox.style.left),
+            y: parseFloat(this.textBox.style.top)
+        })
+
+    }
+
+    /**
+     * 输入文字
+     * **/
+    handleDrawNote(data){
+        if(this.canvasToolsBar.noteFlag){   // 便签
+            let note = this.notes.find(item => item.isDrawing)
+            if(!note) return
+
+            // 针对当前便签保存内容
+            note.text = data.text
+            note.isDrawing = false
+
+            // 设置字体样式
+            const getTestAreaStyle = getComputedStyle(this.textBox)
+            const fontSize = getTestAreaStyle.getPropertyValue('font-size');
+            const fontFamily = getTestAreaStyle.getPropertyValue('font-family');
+
+            let size = parseInt(fontSize)
+            let width = 98 * this.canvasStyleRatio.x
+
+            this.ctx.font = size + 'px ' + fontFamily;
+            this.ctx.fillStyle = getTestAreaStyle.getPropertyValue('color');
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'top';
+
+            this.ctx.beginPath();
+            this.drawText({type: 'noteFlag', x: note.x, y: note.y, text: note.text, fontSize: size, ctx: this.ctx, limitWidth: width})
+            this.ctx.stroke()
+            this.ctx.restore();
+            this.ctx.closePath();
+
+            sendCurrentMousePosition({
+                type: 'noteFlag',
+                action: this.canvasToolsBar.getCurrentSelectedTool(),
+                lineContent: this.getCurrentLine(),
+                canvas: this.canvas,
+                bgColor: this.canvasToolsBar.getNoteColor(),
+                text: note.text,
+                width: note.width,
+                height: note.height,
+                fontSize: 12,
+                x: note.x,
+                y: note.y,
+            })
+        }
+    }
+
+    /**
+     * 创建文字
+     **/
+    createText(data){
+        let text = {
+            x: data.x,
+            y: data.y,
+            text: data.text,
+            textColor: this.canvasToolsBar.getTextColor(),
+            fontSize: this.canvasToolsBar.getTextFontSize(),
+            dragging: false,
+            isDrawing: false,
+            offsetX: 0,
+            offsetY: 0
+        }
+        this.texts.push(text)
+
+        this.drawing({x1: data.x, y1: data.y, event: data.event, target: data.target});
+    }
+
+    /**绘制文字
+     * @param data.type： textFlag、noteFlag
+     * @param data.x
+     * @param data.y
+     * @param data.ctx
+     * @param data.fontSize
+     * @param data.text：文本内容
+     * @param data.limitWidth： 限制宽度
+     * @param data.startLeft: 相对于窗口的起始位置（针对textFlag）
+     **/
+    drawText(data){
+        let allChars = data.text.split('')
+        let lineText = '';    // 每行的内容
+        let px = parseInt(data.x) + 5
+        let py = parseInt(data.y) + 5
+
+        let ctx = data.ctx
+        let lineHeight = parseInt(data.fontSize,17);
+        for (let i = 0; i < allChars.length; i++) {
+            // measureText 可计算绘制内容的宽度
+            let metric = ctx.measureText(lineText + allChars[i]);
+
+            if (metric.width < data.limitWidth) {
+
+                if(data.type === 'textFlag'){
+                    let canvasRect = this.canvas.getBoundingClientRect()
+                    let width = data.startLeft + metric.width
+                    if( width < canvasRect.right ){
+                        lineText = lineText + allChars[i];
+                        ctx.fillText(lineText, px, py);
+                        if(allChars[i] === '\n'){
+                            lineText = '';
+                            py = py + lineHeight;
+                        }
+                    }else{
+                        ctx.fillText(lineText, px, py);
+                        lineText = allChars[i];
+                        py =  py + lineHeight;
+                    }
+                }else if(data.type === 'noteFlag'){
+                    lineText = lineText + allChars[i];
+                    ctx.fillText(lineText, px, py);
+                    if(allChars[i] === '\n'){
+                        lineText = '';
+                        py = py + lineHeight;
+                    }
+                }
+
+            }else {
+                ctx.fillText(lineText, px, py);
+                lineText = allChars[i];
+                py =  py + lineHeight;
+            }
+        }
+    }
+
+    otherCanvasDown(data){
+        /**处理远端绘制内容**/
+        if(data.target){
+            data.target.points.push({ x: this.startX, y: this.startY })
+            this.drawing({x1: data.startX, y1: data.startY, event: data.event, target: data.target, action: data.action});
+        }
+    }
+
+    otherCanvasMove(data){
+        let This = this
+
+        /** 处理绘制内容 **/
+        if(This.isMouseDown || This.isShowComment){
+            This.drawing({x1: This.startX, y1: This.startY, x2: data.currentX, y2: data.currentY, event:data.event, target: data.target, action: data.action})
+        }
+    }
+
+    otherCanvasUp(content){
+        if(!content || !content.target){
+            console.log('target empty for other canvasUp')
+            return
+        }
+
+        /**处理canvas位置***/
+        let canvas = content.target
+        canvas.points = []
+
+        /***隐藏鼠标显示***/
+        let otherShowPosition = document.getElementsByClassName('otherShowPosition')
+        if(otherShowPosition.length){
+            if(!content?.account?.id)return
+            for(let index of otherShowPosition){
+                let nameId = index.getAttribute('nameId')
+                if(nameId === content.account.id){
+                    index.style.display = "none";
+                    break
+                }
+            }
+        }
+
+        /**隐藏形状图显示**/
+        let otherMouseStyle = document.getElementsByClassName('otherMouseStyle')
+        if(otherMouseStyle.length){
+            if(!content?.account?.id)return
+            for(let index of otherMouseStyle){
+                let nameId = index.getAttribute('nameId')
+                if(nameId === content.account.id){
+                    index.style.display = "none";
+                    break
+                }
+            }
+        }
+    }
+
+    otherCanvasDelete(data){
+        if(!data || !data.target){
+            console.log('target empty for other canvasDelete')
+            return
+        }
+
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+            let ctx = canvas.getContext('2d')
+
+            if(data.type === 'areaDelete'){
+                ctx.clearRect(data.x, data.y, data.width, data.height)
+            }else if(data.type === 'allDelete'){
+                ctx.clearRect(0, 0, this.canvasStyle.width, this.canvasStyle.height)
+            }
+        }
+    }
+
+    /** 绘制远端text
+     * @param data.type
+     * @param data.x
+     * @param data.y
+     * @param data.text
+     * @param data.target
+     * @param data.textColor
+     * @param data.textFontSize
+     * @param data.startLeft
+     * **/
+    otherCanvasDrawText(data){
+
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+            let ctx = canvas.getContext('2d')
+            let font = data.textFontSize * this.canvasStyleRatio.x
+            let width = 261 * this.canvasStyleRatio.x
+            let left = canvas.getBoundingClientRect().x + data.x
+
+            // 设置字体样式
+            ctx.fillStyle = data.textColor;
+            ctx.font = font + 'px ' + "'Open Sans', 'SimHei', sans-serif";
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            ctx.beginPath();
+            this.drawText({type: data.type, x: data.x, y: data.y, text: data.text, fontSize: font, ctx: ctx, limitWidth: width, startLeft: left})
+            ctx.stroke()
+            ctx.restore();
+            ctx.closePath();
+        }
+    }
+
+    /** 绘制远端note
+     * @param data.type
+     * @param data.x
+     * @param data.y
+     * @param data.width
+     * @param data.height
+     * @param data.text
+     * @param data.fontSize
+     * @param data.target
+     * @param data.bgColor
+     * **/
+    otherCanvasDrawNote(data){
+        if(!data || !data.target){
+            console.log('target empty for other canvasDrawNote')
+            return
+        }
+
+        let size = data.fontSize * this.canvasStyleRatio.x
+        let width = 98 * this.canvasStyleRatio.x
+        data.width = data.width * this.canvasStyleRatio.x
+        data.height = data.height * this.canvasStyleRatio.y
+
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+            let ctx = canvas.getContext('2d')
+
+            // 绘制便签方框
+            ctx.beginPath();
+            ctx.fillStyle = data.bgColor
+            ctx.fillRect(data.x, data.y, data.width, data.height);
+            ctx.stroke()
+
+            // 绘制文字
+            ctx.fillStyle = '#000000';
+            ctx.font = size + 'px ' + "'Open Sans', 'SimHei', sans-serif";
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            this.drawText({type: 'noteFlag', x: data.x, y: data.y, text: data.text, fontSize: size, ctx: ctx, limitWidth: width})
+            ctx.stroke()
+            ctx.restore();
+            ctx.closePath();
+        }
+    }
+
+    loadImage(ctx){
         let self = this;
         let img = new Image();
         img.src = self.lastImage;
@@ -353,180 +1206,188 @@ class CanvasExample {
         this.textBox.style.display = "none"
     }
 
-    drawing (x1,y1,x2,y2,e){
-        let self = this
-        if(!self.ctx) return
-        if(this.canvasToolsBar.areaDeleteFlag) return
 
-        // 设置画笔的颜色和大小
-        self.ctx.fillStyle = this.canvasToolsBar.textColor                      // 填充颜色为红色
-        self.ctx.strokeStyle = this.canvasToolsBar.brushColor                   // 画笔的颜色
-        self.ctx.lineWidth = this.canvasToolsBar.brushStrokeSize                // 指定描边线的宽度
-        // ctx.globalAlpha = 0.8;        // 画笔透明度
-
-        self.ctx.save()
-        self.ctx.beginPath()
-
-        if(self.rectFlag){
-            self.initCanvas()
-            if (e.shiftKey === true) {
-                // 正方形
-                let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
-                self.ctx.fillRect(x1, y1, d, d);
-            } else {
-                // 普通方形
-                self.ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-            }
-        } else if (self.strokeRectFlag) {
-            self.initCanvas();
-            if (e.shiftKey === true) {
-                // 正方形
-                let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
-                self.ctx.strokeRect(x1, y1, d, d);
-            } else {
-                // 普通方形
-                self.ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-            }
-        } else if (self.circleFlag) {
-            self.initCanvas();
-            let k = ((x2 - x1) / 0.55);
-            let w = (x2 - x1) / 2;
-            let h = (y2 - y1) / 2;
-
-            if (e.shiftKey === true) {
-                // circle
-                let r = Math.sqrt(w * w + h * h);
-                self.ctx.arc(w + x1, h + y1, r, 0, Math.PI * 2);
-            } else {
-                // ellipse
-                // bezier double ellipse algorithm
-                self.ctx.moveTo(x1, y1 + h);
-                self.ctx.bezierCurveTo(x1, y1 + h * 3, x1 + w * 11 / 5, y1 + h * 3, x1 + w * 11 / 5, y1 + h);
-                self.ctx.bezierCurveTo(x1 + w * 11 / 5, y1 - h, x1, y1 - h, x1, y1 + h);
-            }
-            ctx.fill();
-        } else if (self.strokeCircelFlag) {
-            // console.log('画空心圆形')
-            self.initCanvas();
-            let k = ((x2 - x1) / 0.55);
-            let w = (x2 - x1) / 2;
-            let h = (y2 - y1) / 2;
-
-            if (e.shiftKey === true) {
-                // circle
-                let r = Math.sqrt(w * w + h * h);
-                self.ctx.arc(w + x1, h + y1, r, 0, Math.PI * 2);
-            } else {
-                // ellipse
-                // bezier double ellipse algorithm
-                self.ctx.moveTo(x1, y1 + h);
-                self.ctx.bezierCurveTo(x1, y1 + h * 3, x1 + w * 11 / 5, y1 + h * 3, x1 + w * 11 / 5, y1 + h);
-                self.ctx.bezierCurveTo(x1 + w * 11 / 5, y1 - h, x1, y1 - h, x1, y1 + h);
-            }
-            self.ctx.stroke();
-        } else if (self.lineFlag) {
-            self.initCanvas();
-            self.ctx.moveTo(x1, y1);
-            self.ctx.lineTo(x2, y2);
-            self.ctx.stroke();
-        } else if (self.arrowFlag) {
-            // console.log('画箭头')
-            self.self.initCanvas();
-            self.ctx.moveTo(x1, y1);
-            self.ctx.lineTo(x2, y2);
-            self.ctx.stroke();
-            let endRadians = Math.atan((y2 - y1) / (x2 - x1));
-            endRadians += ((x2 >= x1) ? 90 : -90) * Math.PI / 180;
-            self.ctx.translate(x2, y2);
-            self.ctx.rotate(endRadians);
-            self.ctx.moveTo(0,  -2 * self.ctx.lineWidth);
-            self.ctx.lineTo(2 * self.ctx.lineWidth, 3 * self.ctx.lineWidth);
-            self.ctx.lineTo(-2 * self.ctx.lineWidth, 3 * self.ctx.lineWidth);
-            self.ctx.fillStyle = ctx.strokeStyle;
-            self.ctx.fill();
-
-        } else if (this.canvasToolsBar.textFlag || self.textFlag) {
-            // console.log('画文字')
-            self.ctx.font =  '16' * 1.5 +'px' +  " 'Open Sans', 'SimHei', sans-serif"
-            self.ctx.font =  this.canvasToolsBar.textFontSize * 1.5 +'px' +  " 'Open Sans', 'SimHei', sans-serif"
-            self.ctx.textBaseline = 'hanging';     // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top";
-            self.ctx.textAlign = 'left';       // "center" | "end" | "left" | "right" | "start"; 值不同，绘制的时候 fillText 的坐标也要修改
-
-            console.warn("get textContent:",self.textContent)
-            let allChars = self.textContent && self.textContent.split('')
-            let lineText = '';    // 每行的内容
-            let getRatio = self.getCanvasRatio()
-            let x = parseInt(self.textBox.style.left) / getRatio.xRatio
-            let y = parseInt(self.textBox.style.top) /getRatio.yRatio;
-
-            let lineHeight = 20 / getRatio.yRatio;   // 每行的高度
-            for (let i = 0; i < allChars.length; i++) {
-                // measureText 可计算绘制内容的宽度
-                let metric = self.ctx.measureText(lineText + allChars[i]);
-                if (metric.width < 261/ getRatio.xRatio /*ctx.canvas.width / dpr*/) {
-                    lineText = lineText + allChars[i];
-                    if (i === allChars.length - 1) {
-                        // 绘制结束的文本
-                        // ctx.fillText(lineText, 0, y);
-                        self.ctx.fillText(lineText, x, y);
-                    }else if(allChars[i] === '\n'){
-                        // 绘制整行内容
-                        self.ctx.fillText(lineText, x, y);
-                        lineText = '';
-                        y = y + lineHeight;
-                    }
-                } else {
-
-                    console.warn("2222:",allChars[i])
-                    // 绘制整行内容
-                    // ctx.fillText(lineText, 0, y);
-                    ctx.fillText(lineText, x, y);
-                    lineText = allChars[i];
-                    y =  y + lineHeight;
-
-                }
-            }
-        } else if (self.canvasToolsBar.eraserFlag ||self.eraserFlag) {
-            // 橡皮擦
-            let getRatio = self.getCanvasRatio()
-            let size = Number(self.canvasToolsBar.eraserSize)  / getRatio.xRatio
-            size = size * 10 / 2
-
-            self.ctx.arc(x1, y1, size, 0, 2 * Math.PI);
-            self.ctx.clip();
-            self.ctx.clearRect(0, 0, self.width, self.height);
-
-            self.startX = self.currentX;
-            self.startY = self.currentY;
-        } else if(this.canvasToolsBar.clearFlag || self.clearFlag){
-            self.initCanvas()
-            self.lastImage = null
-            self.canvasToolsBar.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
-
-            // 清除并隐藏输入框
-            self.setDefaultTextBox()
+    drawing (data) {
+        let points = !data.target ? this.points : data.target.points
+        let getCanvas = !data.target ? this.canvas : data.target
+        let type
+        let brushColor
+        let brushStrokeSize
+        if(getCanvas === this.canvas){
+            type = this.canvasToolsBar.getCurrentSelectedTool()
+            brushColor = this.canvasToolsBar.getBrushColor()
+            brushStrokeSize = this.canvasToolsBar.getBrushStrokeSize()
         }else {
-            self.ctx.lineJoin = 'round';
-            self.ctx.lineCap = 'round';
-            self.points.push({ x: x2, y: y2 });
-            // ctx.globalCompositeOperation = "xor";//使用异或操作对源图像与目标图像进行组合。
-            self.ctx.beginPath();
-            let x = (self.points[self.points.length - 2].x + self.points[self.points.length - 1].x) / 2,
-                y = (self.points[self.points.length - 2].y + self.points[self.points.length - 1].y) / 2;
-            if (self.points.length == 2) {
-                self.ctx.moveTo(self.points[self.points.length - 2].x, self.points[self.points.length - 2].y);
-                self.ctx.lineTo(x, y);
-            } else {
-                let lastX = (self.points[self.points.length - 3].x + self.points[self.points.length - 2].x) / 2,
-                    lastY = (self.points[self.points.length - 3].y + self.points[self.points.length - 2].y) / 2;
-                self.ctx.moveTo(lastX, lastY);
-                self.ctx.quadraticCurveTo(self.points[self.points.length - 2].x, self.points[self.points.length - 2].y, x, y);
-            }
-            self.ctx.stroke();
-            self.points.slice(0, 1);
+            type = data.action
+            brushColor = getCanvas.brushColor
+            brushStrokeSize = getCanvas.brushStrokeSize
         }
-        self.ctx.restore();
-        self.ctx.closePath();
+        let param ={
+            x1: data.x1,
+            y1: data.y1,
+            x2: data.x2,
+            y2: data.y2,
+            color: brushColor,
+            size: brushStrokeSize,
+            canvas: getCanvas,
+            points: points,
+            action: type
+        }
+        this.startDraw(param)
+    }
+
+
+    /***根据类别进行绘制***/
+    startDraw( content){
+        let x1 = content.x1
+        let y1 = content.y1
+        let x2 = content.x2
+        let y2 = content.y2
+
+        let self = this
+        let points = content?.canvas.points || content.points
+        let ctx = content?.canvas.getContext('2d')
+        if(!ctx) return
+
+        ctx.strokeStyle = content.color                                    // 画笔的颜色
+        ctx.lineWidth = content.size                                       // 指定描边线的宽度
+        ctx.fillStyle = self.canvasToolsBar.getTextColor()                 // 填充颜色为红色
+
+        ctx.save()
+        ctx.beginPath()
+
+        switch(content.action){
+            case 'rectFlag':
+                self.initCanvas(ctx)
+                if (e.shiftKey === true) {   // 正方形
+                    let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
+                    ctx.fillRect(x1, y1, d, d);
+                } else {                    // 普通方形
+                    ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+                }
+                break;
+            case 'strokeRectFlag':
+                self.initCanvas(ctx);
+                if (e.shiftKey === true) {    // 正方形
+                    let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
+                    ctx.strokeRect(x1, y1, d, d);
+                } else {                      // 普通方形
+                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                }
+                break;
+            case 'circleFlag':
+            case 'strokeCircleFlag':
+                // 圆
+                self.initCanvas(ctx);
+                let k = ((x2 - x1) / 0.55);
+                let w = (x2 - x1) / 2;
+                let h = (y2 - y1) / 2;
+
+                if (e.shiftKey === true) {     // circle
+                    let r = Math.sqrt(w * w + h * h);
+                    ctx.arc(w + x1, h + y1, r, 0, Math.PI * 2);
+                } else {                        // ellipse
+                    // bezier double ellipse algorithm
+                    ctx.moveTo(x1, y1 + h);
+                    ctx.bezierCurveTo(x1, y1 + h * 3, x1 + w * 11 / 5, y1 + h * 3, x1 + w * 11 / 5, y1 + h);
+                    ctx.bezierCurveTo(x1 + w * 11 / 5, y1 - h, x1, y1 - h, x1, y1 + h);
+                }
+
+                if(content.type === 'circleFlag'){
+                    ctx.fill();         // 实心
+                }else if(content.type === 'strokeCircleFlag'){
+                    ctx.stroke();       // 空心
+                }
+                break;
+            case 'lineFlag':
+                // 线条
+                self.initCanvas(ctx);
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                break;
+            case  'arrowFlag':
+                // 箭头
+                self.initCanvas(ctx);
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                let endRadians = Math.atan((y2 - y1) / (x2 - x1));
+                endRadians += ((x2 >= x1) ? 90 : -90) * Math.PI / 180;
+                ctx.translate(x2, y2);
+                ctx.rotate(endRadians);
+                ctx.moveTo(0,  -2 * ctx.lineWidth);
+                ctx.lineTo(2 * ctx.lineWidth, 3 * ctx.lineWidth);
+                ctx.lineTo(-2 * ctx.lineWidth, 3 * ctx.lineWidth);
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.fill();
+                break;
+            case 'textFlag':
+                // 写字
+
+                let font = self.canvasToolsBar.getTextFontSize() * self.canvasStyleRatio.x
+                let width = 261 * self.canvasStyleRatio.x
+
+                ctx.font =  font +'px' +  " 'Open Sans', 'SimHei', sans-serif"
+
+                ctx.textBaseline = 'top';         // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top";
+                ctx.textAlign = 'left';           // "center" | "end" | "left" | "right" | "start"; 值不同，绘制的时候 fillText 的坐标也要修改
+
+                this.drawText({
+                    type: 'textFlag',
+                    text: self.textContent,
+                    x: self.textBox.style.left,
+                    y: self.textBox.style.top,
+                    ctx: ctx,
+                    fontSize: font,
+                    limitWidth: width,
+                    startLeft: self.textAreaRect.left
+                })
+
+                break;
+            case 'eraserFlag':
+                // 橡皮擦
+                let size = Number(self.canvasToolsBar.eraserSize)
+                size = size * 10 / 2 * this.canvasStyleRatio.x
+
+                ctx.arc(x2, y2, size, 0, 2 * Math.PI);
+                ctx.clip();
+                ctx.clearRect(0, 0, self.canvasStyle.width, self.canvasStyle.height);
+                break;
+            case 'clearFlag':
+                // 清空
+                self.initCanvas()
+                self.lastImage = null
+                self.canvasToolsBar.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
+
+                // 清除并隐藏输入框
+                self.setDefaultTextBox()
+                break;
+            default:
+                // 任意画
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+                points.push({ x: x2, y: y2 });
+                // ctx.globalCompositeOperation = "xor";//使用异或操作对源图像与目标图像进行组合。
+                ctx.beginPath();
+                let x = (points[points.length - 2].x + points[points.length - 1].x) / 2,
+                    y = (points[points.length - 2].y + points[points.length - 1].y) / 2;
+                if (points.length == 2) {
+                    ctx.moveTo(points[points.length - 2].x, points[points.length - 2].y);
+                    ctx.lineTo(x, y);
+                } else {
+                    let lastX = (points[points.length - 3].x + points[points.length - 2].x) / 2,
+                        lastY = (points[points.length - 3].y + points[points.length - 2].y) / 2;
+                    ctx.moveTo(lastX, lastY);
+                    ctx.quadraticCurveTo(points[points.length - 2].x, points[points.length - 2].y, x, y);
+                }
+                ctx.stroke();
+                points.slice(0, 1);
+                break;
+        }
+        ctx.restore();
+        ctx.closePath();
     }
 
     /** 转换canvas的像素坐标
@@ -544,7 +1405,7 @@ class CanvasExample {
     /** 获取canvas画布大小和像素大小getCanvasRatio比例
      * @param canvas.width, canvas.height: canvas画布像素的大小
      * @param canvasStyleWidth, canvasStyleHeight: 肉眼可见的canvas大小
-     * @return  xRatio = canvasStyleWidth / cavasHtmlWidth;
+     * @return  xRatio = canvasStyleWidth / canvasHtmlWidth;
      * @return  yRatio  = canvasStyleHeight / canvasHtmlHeight
      ***/
     getCanvasRatio(){
@@ -559,6 +1420,8 @@ class CanvasExample {
 
     getPostionRatio (isLocal){
         let { width: localWidth, height: localHeight} = this.canvas.getBoundingClientRect()
+        let remoteWidth = this.remoteCanvas.width
+        let remoteHeight = this.remoteCanvas.height
         let xRatio, yRatio;
         if(isLocal){
             xRatio = 1
@@ -579,7 +1442,7 @@ class CanvasExample {
     /** 清空内容
      * **/
     clearCanvas(){
-        this.initCanvas()
+        this.initCanvas(this.ctx)
         this.lastImage = null
 
         // 清除并隐藏输入框
@@ -589,12 +1452,65 @@ class CanvasExample {
     /**
      * textarea 内容及样式处理
      ***/
-    makeExpandingArea(isAddCols = false){
+    makeExpandingArea(isAddCols, event){
+        let data = event.data
+        let target = event.target
+        let isAddWidth = true
         this.textBox.style.height = 'auto';
         this.textBox.style.height = this.textBox.scrollHeight + 'px';
 
-        if(!isAddCols && textBox.cols < 30){
-            textBox.cols  = textBox.cols + 1
+        /**1.先判断字体是否达到canvas 的右边界， 如果存在，则换行且不增加宽度**/
+        /**2.针对当前行的文字比上一行文字少，则不需要增加宽度**/
+        if(this.canvasToolsBar.getCurrentSelectedTool() === 'textFlag'){
+            let targetRect = target.getBoundingClientRect()
+            let canvasRect = this.canvas.getBoundingClientRect()
+            let width = targetRect.width + targetRect.left
+
+            /**针对当前行的文字比上一行文字少，则不需要增加宽度**/
+            if(width > canvasRect.right){
+                // target.style.whiteSpace = 'pre-wrap'
+                return
+            }
+
+            if(!data){
+                this.textBoxValue = ''
+                isAddWidth = false
+            }else{
+                this.textBoxValue += event.data
+
+                // 获取textarea的行宽和高度
+                let style = getComputedStyle(this.textBox);
+                let lineWidth = parseInt(style.width);
+                let lineHeight = parseInt(style.lineHeight);
+
+                // 获取textarea的字体大小
+                let fontSize = style.fontSize;
+
+                // 创建一个隐藏的span元素，用来获取字体宽度
+                let hiddenSpan = document.createElement('span');
+                hiddenSpan.style.fontSize = fontSize;
+                hiddenSpan.style.visibility = 'hidden';
+
+                document.body.appendChild(hiddenSpan);
+                hiddenSpan.textContent = this.textBoxValue
+
+                let width = hiddenSpan.offsetWidth || hiddenSpan.style.width
+
+                // 移除隐藏的span元素
+                document.body.removeChild(hiddenSpan);
+
+
+                /***针对当前行的文字比上一行文字少，则不需要增加宽度******/
+                if(width <= lineWidth  && isAddWidth){
+                    return
+                }
+            }
+
+        }
+
+        /**3.针对设置的固定宽度是否到达，若没有，则继续增加宽度，采用cols处理**/
+        if(!isAddCols && data && this.textBox.cols < 30 ){
+            this.textBox.cols  = this.textBox.cols + 1
         }
     }
 
@@ -656,19 +1572,59 @@ class CanvasExample {
      * 清除框选区域
      * **/
     clearSelectArea(){
-        // if(this.selectAreaElement.hidden) return
-        let x3 = Math.min(this.mouseX1, this.mouseX2)
-        let y3 = Math.min(this.mouseY1, this.mouseY2)
-        let { nextX: canvasPreX, nextY: canvasPreY } = this.changeCanvasPosition(x3, y3)
-        let { width, height} = this.selectAreaElement.getBoundingClientRect()
-        let { nextX: selectAreaWidth, nextY: selectAreaHeight } = this.changeCanvasPosition(width, height)
         if(!this.ctx) return
 
-        this.ctx.clearRect(canvasPreX, canvasPreY, selectAreaWidth, selectAreaHeight)
+        let startX = Math.min(this.mouseX1, this.mouseX2)
+        let startY = Math.min(this.mouseY1, this.mouseY2)
+        let { width, height} = this.selectAreaElement.getBoundingClientRect()
+
+        this.ctx.clearRect(startX, startY, width, height)
         this.selectAreaElement.hidden = 1
 
+        this.deleteSelectedNote({startX: startX, startY: startY,endX: startX + width, endY: startY + height })
+
         /*** 保存当前的画面 **/
-        this.canvas.lastImage = initCanvas.toDataURL('image/png')
+        this.canvas.lastImage = this.canvas.toDataURL('image/png')
+
+        /**告知对端清除位置**/
+        let param = {
+            type: 'areaDelete',
+            lineContent: this.getCurrentLine(),
+            x: startX.toString(),
+            y: startY.toString(),
+            width: width,
+            height: height,
+            canvas: this.canvas
+        }
+        sendCurrentMousePosition(param)
+    }
+
+    /**
+     * 删除框选的便签
+     * **/
+    deleteSelectedNote(data){
+        // 判断便签是否在框选区域内
+        for (var i = this.notes.length - 1; i >= 0; i--) {
+            var note = this.notes[i];
+            if (data.startX <= note.x + note.width && data.endX >= note.x &&
+                data.startY <= note.y + note.height && data.endY >= note.y) {
+                this.notes.splice(i,1)
+            }
+        }
+    }
+
+    /**获取当前线路Id**/
+    getCurrentLine(){
+        if(!currentLocalLine || !currentRemoteLine ) return
+        let lineContent = {
+            local: null,
+            remote: null
+        }
+        if( currentLocalLine && currentRemoteLine){
+            lineContent.local = currentLocalLine
+            lineContent.remote = currentRemoteLine
+        }
+        return lineContent
     }
 
 }
@@ -846,7 +1802,7 @@ class DragMoveModel {
             if (pageY > this.startY) {
                 this.moveInsY = pageY - this.startY
             }
-            // console.log('moveInsX', this.moveInsX, 'moveInsY', this.moveInsY)
+
             if(this.moveMode === 'position') {
                 this._topLeftMoveTargetEl()
             }else {
@@ -927,6 +1883,7 @@ class toggleFullScreenModal{
         this.canvasToolBar = config.canvasToolBar     // 整行工具栏
         this.toolBarContent = config.toolBarContent   // 工具栏wrapper
         this.toolbar = config.toolbar                 // 工具栏
+        this.canvas = config.canvas
         this.isLoadingSuccess = config.isLoading
     }
 
@@ -972,7 +1929,7 @@ class toggleFullScreenModal{
 
         /**按钮点击事件**/
         if(this.clickElement){
-            console.warn("this.clickElement:",this.clickElement)
+            console.log("this.clickElement:",this.clickElement)
             this.clickElement.addEventListener('click',(e)=>{
                 let target = e.target
                 if (target && target.classList.contains('fullScreen')) {
@@ -980,7 +1937,7 @@ class toggleFullScreenModal{
                     this.toggleFullScreen(this.isLoadingSuccess,e)
                 } else if (target && target.classList.contains('pictureInPicture')) {
                     this.currentOperation = 'pictureInPicture'
-                    this.togglePictureInPicture(this.isLoadingSuccess)
+                    this.togglePictureInPicture()
                 }
             })
         }
@@ -1016,30 +1973,31 @@ class toggleFullScreenModal{
      **/
     toggleFullScreen(isStopScreen = null,e){
         if(!this.isLoadingSuccess){
-            console.warn("current no exist shareScreen stream,fullScreen not supported")
+            console.log("current no exist shareScreen stream,fullScreen not supported")
             return
         }
         let isFullScreenEnabled = this.isFullscreenEnabled()
         if( !isFullScreenEnabled){
-            console.warn("current browser do not support fullScreen")
+            console.log("current browser do not support fullScreen")
             return
         }
+
+        /**保存全屏之前canvas大小**/
+        let rect = this.canvas.getBoundingClientRect()
+        can.canvasStyle.width = rect.width
+        can.canvasStyle.height = rect.height
 
         let isFullscreen = this.isFullScreen()
         let fullScreenElement = this.fullScreenElement()
         if (!isFullscreen && !fullScreenElement /*&& !isStopScreen*/) {
             if (this.video.requestFullscreen) {
                 this.targetEl.requestFullscreen()
-                this.video.requestFullscreen()
             } else if (this.video.webkitRequestFullScreen) {
                 this.targetEl.webkitRequestFullScreen()
-                this.video.webkitRequestFullScreen()
             } else if (this.video.mozRequestFullScreen) {
                 this.targetEl.mozRequestFullScreen()
-                this.video.mozRequestFullScreen()
             }  else if (this.video.msRequestFullscreen) {
                 this.targetEl.msRequestFullscreen()
-                this.video.msRequestFullscreen()
             }
 
             this.setFullscreenData(true);
@@ -1067,12 +2025,12 @@ class toggleFullScreenModal{
      **/
     togglePictureInPicture(isStopScreen = null) {
         if(!this.isLoadingSuccess){
-            console.warn("current no exist shareScreen stream, pictureInPicture not supported")
+            console.log("current no exist shareScreen stream, pictureInPicture not supported")
             return
         }
 
         if(!document.pictureInPictureEnabled){
-            console.warn("current browser do not support pictureInPicture")
+            console.log("current browser do not support pictureInPicture")
             return
         }
 
@@ -1080,7 +2038,7 @@ class toggleFullScreenModal{
             document.exitPictureInPicture();
         } else {
             if(!isStopScreen){
-                presentVideo.requestPictureInPicture();
+                this.video.requestPictureInPicture();
             }
         }
     }
@@ -1109,12 +2067,6 @@ class toggleFullScreenModal{
             /** 处理框选区域隐藏***/
             can.selectAreaElement.hidden = 1
 
-            /**处理canvas的大小问题**/
-            let width = window.getComputedStyle(presentVideo).width
-            let height = window.getComputedStyle(presentVideo).height
-            can.canvas.style.width = width + 'px'
-            can.canvas.style.height = height + 'px'
-
         }else{                                       // 当前在全屏 或者画中画
             if(this.canvasToolBar.classList.contains("canvasToolBar_top_40")){
                 this.canvasToolBar.classList.remove("canvasToolBar_top_40")
@@ -1128,10 +2080,6 @@ class toggleFullScreenModal{
             if(!this.toolBarContent.classList.contains('toolbar_border_change')){
                 this.toolBarContent.classList.toggle('toolbar_border_change')
             }
-
-            /** 处理canvas的大小问题**/
-            can.canvas.style.width = window.screen.width  + 'px'
-            can.canvas.style.height = window.screen.height   + 'px'
         }
         this.toggleClickElementStyle(state, e)
         this.toggleToolBarSize(state)
@@ -1148,8 +2096,8 @@ class toggleFullScreenModal{
             if(toolbar && toolbar.firstElementChild && !toolbar.firstElementChild.classList.contains("toolbar_button_hidden")){
                 toolbar.firstElementChild.classList.add("toolbar_button_hidden")
             }
-            if(toolbarContent && toolbarContent.classList.contains("toolbarContent_width")){
-                toolbarContent.classList.remove("toolbarContent_width")
+            if(this.targetEl && this.targetEl.classList.contains("toolbarContent_width")){
+                this.targetEl.classList.remove("toolbarContent_width")
             }
 
         }else{
@@ -1157,8 +2105,8 @@ class toggleFullScreenModal{
                 toolbar.firstElementChild.classList.remove("toolbar_button_hidden")
             }
 
-            if(!(toolbarContent && toolbarContent.classList.contains("toolbarContent_width"))){
-                toolbarContent.classList.add("toolbarContent_width")
+            if(!(this.targetEl && this.targetEl.classList.contains("toolbarContent_width"))){
+                this.targetEl.classList.add("toolbarContent_width")
             }
 
             if(toolbar && toolbar.firstElementChild && !toolbar.firstElementChild.firstElementChild.classList.contains("toolbar_button_first")){

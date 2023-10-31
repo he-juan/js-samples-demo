@@ -1,8 +1,12 @@
 let WebRTCSocketInstance = function (url, protocol, callback = null) {
     console.info('create new webSocket.')
+    this.websocketUrl = url
+    this.websocketProtocol = protocol
     this.websocketId = null
     this.wsReconnectTimeoutEvent = null
-    this.wsReconnectTime = 2
+    this.wsReconnecting = false
+    this.wsReconnectTime =6*1000   // 非保活状态下，后台10秒后断开连接
+    this.wsReconnectCount = 0
     this.WS_RECONNECTED_TIMEOUT_TIME = 120
     this.wsKeepAliveTimeProcessor = null
     this.wasWebsocketClosed = false
@@ -66,17 +70,19 @@ WebRTCSocketInstance.prototype.createWebSocket = function (url, protocols, callb
                 if(data){
                     if(data.hasOwnProperty('allow')){
                         if(data.allow){
-                            console.log('create ws success.')
+                            console.log('***************************** create ws success *****************************')
                             ws.keepAlive()
                             This.isChannelOpen = true
+                            This.wsReconnecting = false
+                            grpDialingApi.websocketStatus = 1
+                            callback && callback({code: 999, data: data})
                         }else {
-                            console.warn('create ws failed, cause: ', data.reason)
+                            console.log('create ws failed, cause: ', data.reason)
                             This.wsCleanUp()
-                        }
 
-                        if(callback){
-                            callback({code: data.allow ? 999 : '', data: data})
-                            callback = null
+                            if(!This.wsReconnecting){
+                                callback && callback({code: '', data: data})
+                            }
                         }
                     }else {
                         if(This.isChannelOpen){
@@ -99,7 +105,7 @@ WebRTCSocketInstance.prototype.createWebSocket = function (url, protocols, callb
         // safari extension使用setInterval或setTimeout递归调用时不按设置时间触发，导致ws保活失败
         This.wsKeepAliveTimeProcessor = setTimeout(function () {
             if (This.keepAliveWithoutResponse >= This.WS_KEEP_ALIVE_TIMEOUT_FLAG) {
-                console.warn('Keep alive failed, close webSocket')
+                console.log('Keep alive failed, close webSocket')
                 ws.close(4000)
                 clearTimeout(This.wsKeepAliveTimeProcessor)
                 This.wsKeepAliveTimeProcessor = null
@@ -113,14 +119,28 @@ WebRTCSocketInstance.prototype.createWebSocket = function (url, protocols, callb
 
     ws.onclose = function (event) {
         console.log('websocket onclose code: ' + event.code)
-        if(callback){
-            callback({code: event.code})
-            callback = null
-        }
         This.isChannelOpen = false
+
+        if(grpDialingApi.isLogin){
+            // 已登录，尝试重连
+            This.wsReconnecting = true
+            grpDialingApi.websocketStatus = 2
+            grpDialingApi.socketOnClose({status: grpDialingApi.websocketStatus, code: event.code})
+            This.wsReconnect(This.wsReconnectTime, callback)
+        }
     }
 
     return ws
+}
+
+WebRTCSocketInstance.prototype.wsReconnect = function (timer, callback){
+    let This = this
+    console.log('webSocket reConnect within time ' + timer)
+    This.wsReconnectTimeoutEvent = setTimeout(function(){
+        console.log('reconnecting timer trigger...')
+            This.wsReconnectCount++
+            This.ws = This.createWebSocket(This.websocketUrl, This.websocketProtocol, callback)
+    }, timer)
 }
 
 /**
@@ -130,8 +150,8 @@ WebRTCSocketInstance.prototype.createWebSocket = function (url, protocols, callb
  */
 WebRTCSocketInstance.prototype.sendMessage = function (data) {
     let This = this
-    if(!This.ws){
-        console.log('websocket has not been created yet to send message')
+    if(!This.ws || !This.wsIsConnected()){
+        console.log('websocket unavailable')
         return
     }
     if(!data){
@@ -158,7 +178,7 @@ WebRTCSocketInstance.prototype.handleRecvMessage = function (message){
                 }
                 break
             case 'line_status':
-                if(message.data && message.data.length){
+                if(message.data){
                     grpDialingApi.sendMessage2Popup({cmd: 'setLineStatus', lines: message.data})
                     grpDialingApi.handleShareScreenRequest({cmd: 'setLineStatus', lines: message.data})
                 }
@@ -168,41 +188,62 @@ WebRTCSocketInstance.prototype.handleRecvMessage = function (message){
                     grpDialingApi.loginData.accountLists = message.data
                     grpDialingApi.sendMessage2Popup({cmd: 'updateAccountLists', accountLists: message.data})
                     grpDialingApi.extensionNamespace.storage.local.set({ 'updateAccountLists': message.data}, function () {
-                        console.warn("set accountLists success")
+                        console.log("set accountLists success")
                     })
                 }
                 break
             default:
                 break
         }
-    }else if(message.action === 'detect_remote_connection_state'){
-        console.warn("get remote reconnection state")
-    } else{
+    }else{
 
         let data = This.parseMessageBody(message)
         let action = data.type
-        let requestType = data.message && data.message.actionType
+        let cmd
 
         console.info("receive " + action +" message:" + JSON.stringify(message, null, '  '))
 
         switch (action) {
             case 'createMediaSession':
                 console.info("start handle createMediaSession content")
-                grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'receiveShareScreenRequest', content: message, localShare: false}))
+                if(message.createMediaSession.shareType === 'shareFile'){
+                    cmd = 'quicallReceiveShareFileRequest'
+                }else {
+                    cmd = 'receiveShareScreenRequest'
+                }
+                grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: cmd, content: message, localShare: false}))
                 break;
             case 'createMediaSessionRet':
                 console.info("start handle createMediaSessionRet content")
-                grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'remoteAnswerSdp', content: message}))
+
+                if(message.createMediaSessionRet.shareType === 'shareFile'){
+                    cmd = 'quicallRemoteAnswerSdp'
+                }else {
+                    cmd = 'remoteAnswerSdp'
+                }
+                grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: cmd, content: message}))
                 break;
             case 'destroyMediaSession':
                 console.info("start handle destroyMediaSession content")
                 grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'receiveScreenHangupRequest', content: message}))
+                break
             case 'destroyMediaSessionRet':
                 console.info("start handle destroyMediaSessionRet content")
                 grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'localShareScreenHangup', content: message}))
                 break;
+            case 'detectMediaSession':
+            case 'detectMediaSessionRet':
+                console.info("start handle detectMediaSessionRet content")
+                grpDialingApi.handleDetectMediaSession(JSON.stringify({cmd: 'handleMediaSession', content: message}))
+                break
+            case 'cancelRequest':
+                grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'cancelRequest', content: message}))
+                break;
+            case 'cancelRequestRet':
+                grpDialingApi.handleShareScreenRequest(JSON.stringify({cmd: 'cancelRequestRet', content: message}))
+                break
             default:
-                console.warn("get current requestType is " + action)
+                console.log("get current requestType is " + action)
                 break;
         }
     }
@@ -226,10 +267,13 @@ WebRTCSocketInstance.prototype.parseMessageBody = function(message){
     let getAttributeArray = Object.keys(message)   // ect: local_line、(createMediaSession、createMediaSessionRet)
     if(message.hasOwnProperty('createMediaSession') || message.hasOwnProperty('createMediaSessionRet') ||
         message.hasOwnProperty('updateMediaSession') ||  message.hasOwnProperty('updateMediaSessionRet') ||
-        message.hasOwnProperty('destroyMediaSession') ||  message.hasOwnProperty('destroyMediaSessionRet')){
+        message.hasOwnProperty('destroyMediaSession') ||  message.hasOwnProperty('destroyMediaSessionRet') ||
+        message.hasOwnProperty('detectMediaSession') ||  message.hasOwnProperty('detectMediaSessionRet') ||
+        message.hasOwnProperty('cancelRequest') || message.hasOwnProperty('cancelRequestRet')
+    ){
         for(let key in getAttributeArray){
             action = getAttributeArray[key]
-            if(action.indexOf('MediaSession') > 0){
+            if(action.indexOf('MediaSession') > 0 || action.indexOf('cancel') >= 0){
                 data = message[action]
                 break
             }
@@ -248,17 +292,17 @@ WebRTCSocketInstance.prototype.wsIsConnected = function(){
         switch (This.ws.readyState){
             case WebSocket.OPEN:
                 // The connection is open and ready to communicate.
-                console.log('The connection is open and ready to communicate.')
+                // console.log('The connection is open and ready to communicate.')
                 connected = true
                 break
             case WebSocket.CONNECTING:
-                console.warn('Socket has been created. The connection is not yet open.')
+                console.log('Socket has been created. The connection is not yet open.')
                 break
             case WebSocket.CLOSING:
-                console.warn('The connection is in the process of closing.')
+                console.log('The connection is in the process of closing.')
                 break
             case WebSocket.CLOSED:
-                console.warn('The connection is closed or could not be opened.')
+                console.log('The connection is closed or could not be opened.')
                 break
             default:
                 break
@@ -279,7 +323,7 @@ WebRTCSocketInstance.prototype.wsCleanUp = function(){
     This.wsReconnectTimeoutEvent = null
     clearTimeout(This.wsKeepAliveTimeProcessor)
     This.wsKeepAliveTimeProcessor = null
-    This.wsReconnectTime = 2
+    This.wsReconnectCount = 0
     This.keepAliveWithoutResponse = 0
     This.wasWebsocketClosed = false
     This.isChannelOpen = true
