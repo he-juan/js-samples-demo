@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>three</title>
+    <style>
+        html body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script src="js/file/three.js"></script>
+    <script src="js/file/OrbitControls.js"></script>
+    <script src="js/file/d3-geo.v1.min.js"></script>
+</head>
+<body>
+<div id="webgl-output"></div>
+
+<script>
+    class chinaMap{
+
+        constructor () {
+            this.init()
+        }
+
+        init(){
+
+            this.scene = new  THREE.Scene()   // 定义场景
+
+            this.setCamera()                  // 定义摄像机
+            this.setAxes()                    // 定义坐标系
+            this.createPlane()                // 创建平面
+            this.createCube()                 // 创建立方体
+
+            this.createSphere()               // 创建球体
+            this.createCircle()               // 创建圆形几何体
+            this.createCone()                 // 创建圆锥几何体
+            this.createWireframe()            // 创建网格几何体
+
+            this.createLight()                // 创建光源
+            this.setRenderer()                // 定义渲染器
+
+
+            // this.animate()
+
+            document.getElementById('webgl-output').appendChild(this.renderer.domElement)    // 将渲染结果添加到dom元素中
+            this.renderer.render(this.scene, this.camera)                                    // 使用指定的摄像机来渲染场景
+
+        }
+
+        /**设置透视相机**/
+        setCamera() {
+            // 第二参数就是 长度和宽度比 默认采用浏览器  返回以像素为单位的窗口的内部宽度和高度
+            this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight - 60), 0.1,  1000)
+            this.camera.position.set(-100, 40, 100)                                         // 设置相机位置(x,y,z)
+            this.camera.lookAt(this.scene.position)                                         // 通过lookAt将摄像机指向场景中心,(默认指向0,0,0)
+        }
+
+        /**设置渲染器**/
+        setRenderer(){
+            this.renderer = new THREE.WebGLRenderer()
+            this.renderer.setClearColor( new THREE.Color(0x000000))                         // 设置场景的背景颜色
+            this.renderer.setSize(window.innerWidth, window.innerHeight - 60)               // 设置场景大小
+            this.renderer.shadowMap.enabled = true                                          // 开启渲染阴影
+        }
+
+        /**设置坐标系**/
+        setAxes(){
+            this.axes = new THREE.AxesHelper(20)                                            // 创建坐标系(x,y,z; x红色,y绿色,z蓝色),设置轴线粗细值为20
+            this.scene.add(this.axes)                                                       // 将轴线添加到场景中
+        }
+
+        /**创建平面**/
+        createPlane(){
+            const planeGeometry = new THREE.PlaneGeometry(80, 80)                            // 定义平面的大小
+            const planeMaterial = new THREE.MeshBasicMaterial({                              // 通过创建材质对象来设置平面的外观,这里使用的是基本材质
+                color: 0xaaaaaa,
+            })
+
+            this.plane = new THREE.Mesh(planeGeometry, planeMaterial)                        // 将大小和外观组合进Mesh对象,赋值给平面对象
+            this.plane.rotation.x = -0.5 * Math.PI                                           // 平面绕x轴旋转九十度
+            this.plane.position.set(0, 0, 0)                                                 // 定义其在场景中的位置
+            this.scene.add(this.plane)                                                       // 添加平面到场景中
+        }
+
+        /** 创建方块、立方体 **/
+        createCube() {
+            const cubeGeometry = new THREE.BoxGeometry(4, 4, 4)                              // 定义方块大小
+            const cubeMaterial = new THREE.MeshBasicMaterial({                               // 定义方块外观
+                color: 0xff0000,
+                wireframe: true,
+            })
+            this.cube = new THREE.Mesh(cubeGeometry, cubeMaterial)                          // 将大小和外观组合进Mesh对象,赋值给方块对象
+            this.cube.position.set(5, 5, 5)                                                 // 设置方块位置
+            this.scene.add(this.cube)                                                       // 添加到场景中
+        }
+
+        /**创建球体**/
+        createSphere(){
+            const sphereGeometry = new THREE.SphereGeometry(4,20,20)                         // 定义球体大小
+            const sphereMaterial = new THREE.MeshBasicMaterial({                             // 定义球体外观
+                color: 0x7777ff,
+                wireframe: true,
+            })
+
+            this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)                       // 将大小和外观组合进Mesh对象,赋值给球体对象
+            this.sphere.position.set(-15,5,5)                                                  // 定义其在场景中的位置
+            this.scene.add(this.sphere)                                                        // 添加球体到场景中
+        }
+
+        /**创建光源
+         * 需要注意的是：MeshBasicMaterial材质不会对光源有任何反应，基本材质只会使用指定的颜色来渲染物体
+         **/
+        createLight(){
+            this.spotLight = new  THREE.SpotLight(0xffffff)                                       // 定义光源
+            this.spotLight.position.set(10,40,40)                                                 // 设置光源位置
+            this.spotLight.castShadow = true                                                      // 启用光源阴影功能
+            this.scene.add(this.spotLight)                                                            // 将光源添加进场景
+        }
+
+        /**创建圆形几何体**/
+        createCircle(){
+            const geometry = new THREE.CircleGeometry(5, 32)
+            const material = new THREE.MeshLambertMaterial({color: 0xffff00, wireframe: true,})
+
+            this.circle = new THREE.Mesh(geometry, material)
+            this.circle.position.set(10, 5, 10)
+            this.circle.castShadow = true
+            this.scene.add(this.circle)
+        }
+
+        /** 创建圆锥几何体**/
+        createCone() {
+            const geometry = new THREE.ConeGeometry(5, 10, 32)
+            const material = new THREE.MeshBasicMaterial({ color: 0xfaaf00, wireframe: true })
+
+            this.cone = new THREE.Mesh(geometry, material)
+            this.cone.position.set(-10, 5, -10)
+            this.cone.castShadow = true
+            this.scene.add(this.cone)
+        }
+
+        // 创建网格几何体
+        createWireframe() {
+            const geometry = new THREE.SphereGeometry(5, 15, 50)
+            const wireframe = new THREE.WireframeGeometry(geometry)
+
+            this.line = new THREE.LineSegments(wireframe)
+            // this.line.material.depthTest = false
+            // this.line.material.opacity = 0.25
+            // this.line.material.transparent = true
+            this.line.position.set(-30, 5, -10)
+            this.line.castShadow = true
+            this.scene.add(this.line)
+        }
+
+        // 执行动画
+        animate() {
+            // stats.update();
+            this.cube.rotation.x += 0.03
+            this.cube.rotation.y += 0.03
+            this.sphere.position.x += 0.1
+            if (this.sphere.position.x > 20) {
+                this.sphere.position.x = -20
+            }
+            this.renderer.render(this.scene, this.camera)
+            requestAnimationFrame(this.animate)
+        }
+
+    }
+
+    let map = new chinaMap().init()
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>three</title>
+    <style>
+        html body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script src="js/file/three.js"></script>
+    <script src="js/file/OrbitControls.js"></script>
+    <script src="js/file/d3-geo.v1.min.js"></script>
+</head>
+<body>
+    <div id="webgl-output"></div>
+     <script>
+         class chinaMap{
+
+             constructor () {
+                 this.init()
+             }
+
+             init(){
+
+                 this.scene = new  THREE.Scene()   // 定义场景
+
+                 this.setCamera()                  // 定义摄像机
+                 this.setRenderer()                // 定义渲染器
+                 this.setAxes()                    // 定义坐标系
+
+
+                 document.getElementById('webgl-output').appendChild(this.renderer.domElement)
+
+             }
+
+             /**设置透视相机**/
+             setCamera() {
+                 // 第二参数就是 长度和宽度比 默认采用浏览器  返回以像素为单位的窗口的内部宽度和高度
+                 this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight - 60), 0.1,  1000)
+                 this.camera.position.set(50,50,50)                                          // 设置相机位置(x,y,z)
+                 this.camera.lookAt(this.scene.position)                                      // 通过lookAt将摄像机指向场景中心,(默认指向0,0,0)
+             }
+
+             /**设置渲染器**/
+             setRenderer(){
+                 this.renderer = new THREE.WebGLRenderer()
+                 this.renderer.setClearColor( new THREE.Color(0x000000))                   // 设置场景的背景颜色
+                 this.renderer.setSize(window.innerWidth, window.innerHeight - 60)         // 设置场景大小
+             }
+
+             /**设置坐标系**/
+             setAxes(){
+                 this.axes = new THREE.AxesHelper(20)                                       // 创建坐标系(x,y,z; x红色,y绿色,z蓝色),设置轴线粗细值为20
+                 this.scene.add(this.axes)                                                  // 将轴线添加到场景中
+             }
+         }
+
+         new chinaMap().init()
+     </script>
+</body>
+</html>
