@@ -885,3 +885,9 @@ can = new CanvasExample({
     toolParam: fullScreenParam,
     dragParam: dragParam
 })
+
+/**开启共享**/
+let video = document.getElementsByClassName("presentVideo")[0]
+navigator.mediaDevices.getDisplayMedia({video:{width:1920, height: 1080}}).then(function(stream){
+    video.srcObject = stream
+})

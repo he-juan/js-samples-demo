@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/initCanvas.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/initCanvas.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -226,7 +227,7 @@
   "keyToString": {
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "E:/private/js-samples-demo",
+    "last_opened_file_path": "E:/private/js-samples-demo/src/contents/canvas_demo/drawingBoard/content",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -237,8 +238,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="E:\private\js-samples-demo\src\contents" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\content" />
+      <recent name="E:\private\js-samples-demo\src\contents" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\example" />
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\asset" />
@@ -284,6 +285,7 @@
       <workItem from="1692582818947" duration="11954000" />
       <workItem from="1698895217992" duration="862000" />
       <workItem from="1698991356611" duration="36000" />
+      <workItem from="1699584191110" duration="804000" />
     </task>
     <servers />
   </component>
