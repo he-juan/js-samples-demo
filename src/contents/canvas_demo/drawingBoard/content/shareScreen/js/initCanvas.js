@@ -5,6 +5,7 @@ let can
 let toolbar = document.getElementsByClassName("toolbar")[0]
 let dragBtn = document.getElementsByClassName("dragBtn")[0]
 let defaultMouseBtn = document.getElementsByClassName("mouseBtn")[0]
+let shapeBtn = document.getElementsByClassName("shapeBtn")[0]
 let pointerBtn = document.getElementsByClassName("pointerBtn")[0]
 let brushBtn = document.getElementsByClassName("brushBtn")[0]
 let textBtn = document.getElementsByClassName("textBtn")[0]
@@ -16,6 +17,7 @@ let settingsBtn = document.getElementsByClassName("settingsBtn")[0]
 
 /**工具按钮配套子组件***/
 let toolbarChild = document.getElementsByClassName("toolbarChild")[0]
+let shapeChild = document.getElementsByClassName("shapeChild")[0]
 let pointerChild = document.getElementsByClassName("pointerChild")[0]
 let brushChild = document.getElementsByClassName("brushChild")[0]
 let textChild = document.getElementsByClassName("textChild")[0]
@@ -32,18 +34,25 @@ let account = document.getElementsByClassName("setting-display-account")[0]
 let isShowComment = true   // 是否显示其他成员的内容
 let isShowAccount = true   // 是否显示其他成员的账户
 
+/**工具栏监听事件**/
+toolbar.onclick = function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    can.canvasToolsBar.handleParentClick(e)
+}
+
 /**子组件空地方被点击（隐藏子组件且设置zIndex）**/
 toolbarChild.onclick = function(){
     setDefaultToolBarChild()
 }
 
-/**工具栏监听事件**/
-let tool_bar = document.getElementsByClassName("toolbar")[0]
-tool_bar.onclick = function(e){
-    can.canvasToolsBar.handleParentClick(e)
+/**子工具栏监听事件***/
+shapeChild.onclick = function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    can.canvasToolsBar.handleLineStyleOfShape(e)
 }
 
-/**子工具栏监听事件***/
 pointerChild.onclick = function(e){
     e.preventDefault();
     e.stopPropagation();
@@ -120,6 +129,7 @@ let CanvasToolsBar = function(){
     this.settingFlag = false
 
     /***子工具栏默认状态***/
+    this.lineStyle = 'arbitraryLine'  //线条样式如： line、 arrow、 arbitraryLine（默认样式）、pencilFlag、penFlag、 circleFlag、 rectFlag、 strokeRectFlag、 strokeCircleFlag
     this.pointerColor = '#FE4737'
     this.brushColor = getRandomColor()
     this.brushStrokeSize = '4'
@@ -199,6 +209,7 @@ let CanvasToolsBar = function(){
 
         /***标记状态**/
         this.mouseFlag = false
+        this.shapeFlag = false
         this.pointerFlag = false
         this.brushFlag = false
         this.textFlag = false
@@ -230,7 +241,10 @@ let CanvasToolsBar = function(){
     }
 
     this.getCurrentSelectedTool = function(){
-        let toolArray = ['mouseFlag', 'pointerFlag', 'brushFlag', 'textFlag', 'noteFlag', 'eraserFlag', 'areaDeleteFlag', 'clearFlag']
+        let toolArray = [
+            'mouseFlag', 'shapeFlag', 'pointerFlag', 'brushFlag', 'textFlag',
+            'noteFlag', 'eraserFlag', 'areaDeleteFlag', 'clearFlag'
+        ]
         let content = toolArray.find((item)=>{
             if(this[item]) return item
         })
@@ -239,6 +253,10 @@ let CanvasToolsBar = function(){
 
     this.setDefaultOfChild = function(){
         /**子级工具栏***/
+        if(shapeChild && shapeChild.classList.contains('toolbarChild_child_show')){
+            shapeChild && shapeChild.classList.remove('toolbarChild_child_show')
+        }
+
         if(pointerChild && pointerChild.classList.contains('toolbarChild_child_show')){
             pointerChild && pointerChild.classList.remove('toolbarChild_child_show')
         }
@@ -272,6 +290,11 @@ let CanvasToolsBar = function(){
             element.classList.add('childWrapper-bg')
         }
     }
+
+    this.setLineStyle = function(style){
+        this.lineStyle = style
+    }
+
     this.setPointerColor = function(color){
         this.pointerColor = color
     }
@@ -328,11 +351,15 @@ let CanvasToolsBar = function(){
         return this.textFontSize
     }
 
+    this.getLineStyle = function(){
+        return this.lineStyle
+    }
+
     this.changeToolBarStyle = function(data){
         this.setDefaultOfParent(data && data.flag)
 
         /** 针对存在子组件：添加子组件的类名zIndex**/
-        let settingsView = ['pointer', 'brush', 'text', 'note', 'eraser', 'settings']
+        let settingsView = ['shape', 'pointer', 'brush', 'text', 'note', 'eraser', 'settings']
         settingsView.forEach(function(item){
             if(data.type === item){
                 if(!toolbarChild.classList.contains('toolbarChild-zIndex')){
@@ -360,6 +387,15 @@ let CanvasToolsBar = function(){
                 if(defaultMouseBtn.firstElementChild.classList.contains("GRP-icon-mouse-white")){
                     defaultMouseBtn.firstElementChild.classList.remove("GRP-icon-mouse-white")
                     defaultMouseBtn.firstElementChild.classList.add("GRP-icon-mouse-blue")
+                }
+                break
+            case 'shape':
+                if(shapeBtn.firstElementChild.classList.contains("GRP-icon-mouse-white")){
+                    shapeBtn.firstElementChild.classList.remove("GRP-icon-mouse-white")
+                    shapeBtn.firstElementChild.classList.add("GRP-icon-mouse-blue")
+                }
+                if(!(shapeChild && shapeChild.classList.contains('toolbarChild_child_show'))){
+                    shapeChild && shapeChild.classList.add('toolbarChild_child_show')
                 }
                 break
             case 'pointer':
@@ -445,25 +481,77 @@ let CanvasToolsBar = function(){
         /**得到当前点击是哪个组件，并显示子组件**/
         if(element.classList.value.indexOf("GRP-icon-mouse") !== -1){
             this.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
+        }else if(element.classList.value.indexOf("GRP-icon-shape") !== -1){
+            this.changeToolBarStyle({ flag:'shapeFlag', type: 'shape' })
         }else if(element.classList.value.indexOf("GRP-icon-laserPointer") !== -1){
             this.changeToolBarStyle({ flag:'pointerFlag', type: 'pointer'})
-       }else if(element.classList.value.indexOf("GRP-icon-brush") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-brush") !== -1){
             this.changeToolBarStyle({ flag: 'brushFlag', type: 'brush' } )
-       }else if(element.classList.value.indexOf("GRP-icon-text") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-text") !== -1){
             this.changeToolBarStyle({ flag: 'textFlag', type: 'text' })
-       }else if(element.classList.value.indexOf("GRP-icon-stickyNote") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-stickyNote") !== -1){
             this.changeToolBarStyle({ flag: 'noteFlag', type: 'note' })
-       }else if(element.classList.value.indexOf("GRP-icon-eraser") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-eraser") !== -1){
             this.changeToolBarStyle({ flag: 'eraserFlag', type: 'eraser' })
-       }else if(element.classList.value.indexOf("GRP-icon-areaDelete") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-areaDelete") !== -1){
             this.changeToolBarStyle({flag: 'areaDeleteFlag',  type: 'areaDelete'})
             can.handleSelectionArea()
-       }else if(element.classList.value.indexOf("GRP-icon-clear") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-clear") !== -1){
             this.changeToolBarStyle({type: 'clear'})
-       }else if(element.classList.value.indexOf("GRP-icon-settings") !== -1){
+        }else if(element.classList.value.indexOf("GRP-icon-settings") !== -1){
             this.changeToolBarStyle({type: 'settings'})
-       }
+        }
     }
+
+    this.handleLineStyleOfShape = function(e){
+        let element = e.target
+        if(element.classList.contains('shapeChild')){
+            return
+        }
+        let childNodes = element.childNodes
+
+        /**子组件的组件（多个）**/
+        let shapeChildWrapper = document.getElementsByClassName("shapeChildWrapper")
+        console.warn("shapeChildWrapper.length:",shapeChildWrapper.length)
+
+        /***1.清除之前选中的状态  2.设置选中的线条的样式**/
+        if(shapeChildWrapper.length) {
+            for (let i = 0; i < shapeChildWrapper.length; i ++) {
+                let elem = shapeChildWrapper[i]
+                if (elem.classList.contains('childWrapper-bg')) {
+                    elem.classList.remove("childWrapper-bg")
+                }
+            }
+        }
+
+        /** 2.设置选中的线条的样式 **/
+        if(element.classList.contains('shapeChildWrapper')){
+            element.classList.add('childWrapper-bg')
+        }else{
+            if(element.parentElement.classList.contains('shapeChildWrapper')){
+                element.parentElement.classList.add('childWrapper-bg')
+            }
+        }
+
+
+        /**获取线条样式**/
+        if(element.classList.value.indexOf('line') !== -1){
+            this.setLineStyle('lineFlag')
+        }else if(element.classList.value.indexOf('arrow') !== -1){
+            this.setLineStyle('arrowFlag')
+        }else if(element.classList.value.indexOf('arbitraryLine') !== -1){
+            this.setLineStyle('arbitraryLine')
+        }else if(element.classList.value.indexOf('circle') !== -1){
+            this.setLineStyle('strokeCircleFlag')
+        }else if(element.classList.value.indexOf('square') !== -1){
+            this.setLineStyle('strokeRectFlag')
+        }else if(element.classList.value.indexOf('pencil') !== -1){
+            this.setLineStyle('pencilFlag')
+        }else if(element.classList.value.indexOf('pen') !== -1){
+            this.setLineStyle('penFlag')
+        }
+    }
+
     this.handleChildClickOfPointer = function(e){
         let element = e.target
         if(element.classList.contains('pointerChild')){

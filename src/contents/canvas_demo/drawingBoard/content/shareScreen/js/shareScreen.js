@@ -906,18 +906,28 @@ function handleRemoteMousePositionChange(message){
     switch(message.type){
         case 'mouseDown':
             if(message?.action === 'eraserFlag' || message?.action === 'textFlag' || message?.action === 'noteFlag') return
-            can.otherCanvasDown({startX: position.x, startY: position.y, target: canvas, action: message.action})
+            can.otherCanvasDown({startX: position.x, startY: position.y, target: canvas, action: message.action, lineStyle: message.lineStyle})
             break;
         case 'mouseMove':
+            if( message.lineStyle === 'rectFlag' || message.lineStyle === 'circleFlag' ||
+                message.lineStyle === 'lineFlag' || message.lineStyle === 'arrowFlag' ||
+                message.lineStyle === 'strokeCircleFlag' || message.lineStyle === 'strokeRectFlag') {
+                return
+            }
             canvas.eraserSize = message.eraserSize
             if(message?.action === 'eraserFlag'){
                 can.eraser({canvas: canvas, eraserSize: message.eraserSize, x: position.x, y: position.y})
             }else{
-                can.otherCanvasMove({ currentX: position.x, currentY: position.y, event: message.e, target: canvas, action: message.action, brushColor: message.brushColor})
+                can.otherCanvasMove({ currentX: position.x, currentY: position.y, shiftKey: message.shiftKey, target: canvas, action: message.action, brushColor: message.brushColor,lineStyle: message.lineStyle})
             }
             break;
         case 'mouseUp':
+            if( message.action === 'shapeFlag' && (message.lineStyle === 'rectFlag' ||message.lineStyle === 'circleFlag' ||
+                message.lineStyle === 'lineFlag' ||message.lineStyle === 'arrowFlag' ||message.lineStyle === 'strokeCircleFlag' || message.lineStyle === 'strokeRectFlag')){
+                can.otherCanvasDraw({target: canvas, content: message})
+            }
             can.otherCanvasUp({account: message.account, target: canvas})
+
             break;
         case 'remotePosition':
             can.remoteCanvas.width = position.width

@@ -65,6 +65,9 @@ class CanvasExample {
     area = document.getElementsByClassName("areaContent")[0]
     canvasArray = []
 
+    /**保存canvas所有步骤**/
+    canvasHistory = []
+    currentCanvasValue = 0;
 
     /******************监听 当前页面video宽高的变化 ****/
     resizeObserver = new ResizeObserver((entries) => {
@@ -114,7 +117,15 @@ class CanvasExample {
 
     initCanvas(){
         this.ctx.clearRect(0, 0, this.canvasStyle.width, this.canvasStyle.height)
-        this.loadImage(this.ctx);
+        this.resetDraw()
+    }
+
+    /** 重置画布 **/
+    resetDraw = () => {
+        this.currentCanvasValue = 0;
+        this.canvasHistory = this.canvasHistory.slice(0, 1);
+        let canvasData = this.canvasHistory[0];
+        this.setCanvas(canvasData);
     }
 
     /**监听video宽高的变化**/
@@ -583,11 +594,8 @@ class CanvasExample {
     }
 
     setTextAreaHandler = (event)=>{
-        console.warn("event:",event)
         if(this.canvasToolsBar.textFlag){
-             // event.target.wrap = 'off'
             let getKeyCode = event && event.keyCode
-            let data = event && event.data
             let isAddCols = getKeyCode === 13 ? true: false
             this.makeExpandingArea(isAddCols,event)
         }
@@ -604,6 +612,7 @@ class CanvasExample {
     // 鼠标按下事件
     mousedownHandler = (event)=>{
         if(this.canvasToolsBar.areaDeleteFlag || this.pausePainting) return
+        this.updateCanvas()
 
         setDefaultToolBarChild()
         let {left, top} = this.canvas.getBoundingClientRect()
@@ -615,9 +624,12 @@ class CanvasExample {
         startY = startY / getRatio.yRatio
         this.canvasDown({startX,startY, event})
 
+
         if(!this.canvasToolsBar.textFlag){
             window.addEventListener("mouseup", this.mouseupHandler)
         }
+
+        /**发送当前内容给远端**/
         let param = {
             type: 'mouseDown',
             lineContent: this.getCurrentLine(),
@@ -627,7 +639,8 @@ class CanvasExample {
             x: startX.toString(),
             y: startY.toString(),
             rect: this.canvas.getBoundingClientRect(),
-            action: this.canvasToolsBar.getCurrentSelectedTool()
+            action: this.canvasToolsBar.getCurrentSelectedTool(),
+            lineStyle: this.canvasToolsBar.getLineStyle()
         }
 
         if(this.canvasToolsBar.eraserFlag){
@@ -655,7 +668,8 @@ class CanvasExample {
             let getRatio = this.getPostionRatio(true)
             currentX = currentX / getRatio.xRatio
             currentY = currentY / getRatio.yRatio
-            this.canvasMove({currentX,currentY,event})
+            let lineStyle = this.canvasToolsBar.getLineStyle()
+            this.canvasMove({currentX,currentY,event,lineStyle})
 
             let param = {
                 type: 'mouseMove',
@@ -667,7 +681,8 @@ class CanvasExample {
                 y: currentY.toString(),
                 rect: this.canvas.getBoundingClientRect(),
                 action: this.canvasToolsBar.getCurrentSelectedTool(),
-                e: event
+                lineStyle: lineStyle,
+                shiftKey: event?.shiftKey
             }
 
             if(this.canvasToolsBar.eraserFlag){
@@ -677,14 +692,30 @@ class CanvasExample {
                 param.pointerColor = this.canvasToolsBar.getPointerColor()
             }
 
-            sendCurrentMousePosition(param)
+            if( param.message !== 'shapeFlag' || ( param.message === 'shapeFlag' &&
+                (param.lineStyle !== 'pencilFlag' || param.lineStyle !== 'penFlag' ))
+            ){
+                sendCurrentMousePosition(param)
+            }
         }
     }
 
     // 鼠标松开事件
     mouseupHandler = (event)=>{
+        this.ctx.closePath()
+        this.updateCanvas()
+
         if(this.pausePainting) return
-        this.canvasUp()
+
+        let {left, top} = this.canvas.getBoundingClientRect()
+        let endX = event.clientX - left
+        let endY = event.clientY - top
+
+        let getRatio = this.getPostionRatio(true)
+        endX = endX / getRatio.xRatio
+        endY = endY / getRatio.yRatio
+
+        this.canvasUp({x: endX, y:endY, event: event})
         window.removeEventListener("mouseup", this.mouseupHandler)
     }
 
@@ -695,6 +726,47 @@ class CanvasExample {
         mouseStyle.style.display = "none"
         sendCurrentMousePosition({type: 'mouseLeave', lineContent: this.getCurrentLine() })
     }
+
+    /**
+     * 更新画布状态
+     **/
+    updateCanvas(){
+        let canvasData = this.ctx.getImageData(0,0, this.canvas.width, this.canvas.height)
+        if (this.currentCanvasValue < this.canvasHistory.length - 1) {
+            this.canvasHistory = this.canvasHistory.slice(0, this.currentCanvasValue + 1);
+        }
+        this.canvasHistory.push(canvasData);
+        this.currentCanvasValue += 1;
+    }
+
+    /**
+     * 存储画布状态
+     * **/
+    setCanvas = (canvasData) => {
+        this.ctx.putImageData(canvasData, 0, 0);
+    };
+
+    /**
+     * 撤销方法
+     */
+    revokeDraw = () => {
+        if (this.currentCanvasValue > 0) {
+            this.currentCanvasValue--;
+            const canvasData = this.canvasHistory[this.currentCanvasValue];
+            this.setCanvas(canvasData);
+        }
+    };
+
+    /**
+     * 恢复方法
+     */
+    restoreDraw = () => {
+        if (this.currentCanvasValue < this.canvasHistory.length - 1) {
+            this.currentCanvasValue++;
+            const canvasData = this.canvasHistory[this.currentCanvasValue];
+            this.setCanvas(canvasData);
+        }
+    };
 
     /***
      * 创建便签
@@ -781,10 +853,10 @@ class CanvasExample {
             if(this.canvasToolsBar.noteFlag || this.canvasToolsBar.textFlag) return
 
             this.isMouseDown = true
-            // this.loadImage();
             this.points.push({ x: this.startX, y: this.startY });
         }
     }
+
     /** canvas : mousemove
      * @param data.currentX
      * @param data.currentY
@@ -805,7 +877,15 @@ class CanvasExample {
         }
         let drawing = function(position){
             if(This.isMouseDown || This.isShowComment){
-                This.drawing({x1: This.startX, y1: This.startY, x2: position.currentX, y2: position.currentY, event:position.event, target: position.target})
+                This.drawing({
+                    x1: This.startX,
+                    y1: This.startY,
+                    x2: position.currentX,
+                    y2: position.currentY,
+                    shiftKey:position.event.shiftKey,
+                    target: position.target,
+                    lineStyle: This.canvasToolsBar.getLineStyle()
+                })
             }
         }
 
@@ -814,7 +894,7 @@ class CanvasExample {
     }
 
     /**canvas: mouseup  **/
-    canvasUp() {
+    canvasUp(data) {
         this.lastImage = this.canvas.toDataURL('image/png');
         this.isMouseDown = false
         this.points = []
@@ -825,7 +905,96 @@ class CanvasExample {
 
         this.showPosition.style.display = 'none'
 
-        sendCurrentMousePosition({type: 'mouseUp', lineContent: this.getCurrentLine(), account: localAccount})
+        let param = {
+            type: 'mouseUp',
+            lineContent: this.getCurrentLine(),
+            account: localAccount,
+            brushColor: this.canvasToolsBar.getBrushColor(),
+            brushStrokeSize: this.canvasToolsBar.getBrushStrokeSize(),
+            startX: this.startX,
+            startY: this.startY,
+            endX: data.x,
+            endY: data.y,
+            action: this.canvasToolsBar.getCurrentSelectedTool(),
+            lineStyle: this.canvasToolsBar.getLineStyle(),
+            shiftKey: data.event?.shiftKey
+        }
+
+        sendCurrentMousePosition(param)
+    }
+
+    /**
+     * 钢笔
+     * @param data.canvas
+     * @param data.x2
+     * @param data.y2
+     * @param data.color
+     * @param data.size
+     **/
+    pen(data){
+        let points = data?.canvas.points || data.points
+        let ctx = data?.canvas.getContext('2d')
+
+        let getRandomInt = function(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        points.push({
+            x: data.x2,
+            y: data.y2,
+            width: getRandomInt(3, 5)
+        });
+
+        ctx.strokeStyle = data.color
+
+        for (let i = 1; i < points.length; i++) {
+            ctx.beginPath();
+            ctx.moveTo(points[i-1].x, points[i-1].y);
+            ctx.lineWidth = points[i].width;
+            ctx.lineTo(points[i].x, points[i].y);
+            ctx.stroke();
+        }
+    }
+
+    /**
+     * 切片笔画
+     * @param data.canvas
+     * @param data.x2
+     * @param data.y2
+     * @param data.color
+     * @param data.size
+     **/
+     slicingPen(data){
+
+        let points = data?.canvas.points || data.points
+        let ctx = data?.canvas.getContext('2d')
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = data.color
+        ctx.lineJoin = ctx.lineCap = 'round';
+        ctx.beginPath();
+
+        ctx.globalAlpha = 1;
+        ctx.moveTo(points[0].x, points[0].y);
+        ctx.lineTo(data.x2, data.y2);
+        ctx.stroke();
+
+        ctx.moveTo(points[0].x - 4, points[0].y - 4);
+        ctx.lineTo(data.x2 - 4, data.y2 - 4);
+        ctx.stroke();
+
+        ctx.moveTo(points[0].x - 2, points[0].y - 2);
+        ctx.lineTo(data.x2 - 2, data.y2 - 2);
+        ctx.stroke();
+
+        ctx.moveTo(points[0].x + 2, points[0].y + 2);
+        ctx.lineTo(data.x2 + 2, data.y2 + 2);
+        ctx.stroke();
+
+        ctx.moveTo(points[0].x + 4, points[0].y + 4);
+        ctx.lineTo(data.x2 + 4, data.y2 + 4);
+        ctx.stroke();
+
+        points[0] = { x: data.x2, y: data.y2 };
     }
 
     /**
@@ -983,7 +1152,7 @@ class CanvasExample {
         }
         this.texts.push(text)
 
-        this.drawing({x1: data.x, y1: data.y, event: data.event, target: data.target});
+        this.drawing({x1: data.x, y1: data.y, shiftKey:data.event?.shiftKey, target: data.target});
     }
 
     /**绘制文字
@@ -1042,11 +1211,143 @@ class CanvasExample {
         }
     }
 
+    /**绘制方形
+     * @param data.action: rectFlag（实心）、strokeRectFlag（空心）
+     * @param data.shiftkey: 表示当前是正方形，否则就是普通方形
+     * @param data.canvas
+     * @param data.startX
+     * @param data.startY
+     * @param data.endX
+     * @param data.endY
+     **/
+    drawRectangle(data){
+        if(!data.canvas) return
+        let action
+        let x1 = data.startX
+        let y1 = data.startY
+        let x2 = data.endX
+        let y2 = data.endY
+        let ctx = data.canvas?.getContext('2d')
+
+        if(data.action === 'rectFlag'){
+            action = 'fillRect'
+        }else if(data.action === 'strokeRectFlag'){
+            action = 'strokeRect'
+        }
+
+        ctx.beginPath()
+        if (data.shiftKey) {   // 正方形
+            let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
+            ctx[action](x1, y1, d, d);
+        } else {                    // 普通方形
+            ctx[action](x1, y1, x2 - x1, y2 - y1);
+        }
+        ctx.closePath()
+    }
+
+    /** 绘制圆
+     * @param data.action: circleFlag（实心）、strokeCircleFlag（空心）
+     * @param data.shiftkey: 表示当前是正方形，否则就是普通方形
+     * @param data.canvas
+     * @param data.startX
+     * @param data.startY
+     * @param data.endX
+     * @param data.endY
+     * **/
+    drawRound(data){
+        if(!data.canvas) return
+
+        let x1 = data.startX
+        let y1 = data.startY
+        let x2 = data.endX
+        let y2 = data.endY
+        let ctx = data.canvas?.getContext('2d')
+
+        let k = ((x2 - x1) / 0.55);
+        let w = (x2 - x1) / 2  ;
+        let h = (y2 - y1) / 2 ;
+
+        ctx.beginPath()
+        if (data.shiftKey === true) {     // circle
+            let r = Math.sqrt(w * w + h * h);
+            ctx.arc(w + x1, h + y1, r, 0, Math.PI * 2);
+        } else {                        // ellipse
+            // bezier double ellipse algorithm
+            ctx.moveTo(x1, y1 + h);
+            ctx.bezierCurveTo(x1, y1 + h * 3, x1 + w * 11 / 5, y1 + h * 3, x1 + w * 11 / 5, y1 + h);
+            ctx.bezierCurveTo(x1 + w * 11 / 5, y1 - h, x1, y1 - h, x1, y1 + h);
+        }
+
+        if(data.action === 'circleFlag'){
+            ctx.fill();         // 实心
+        }else if(data.action === 'strokeCircleFlag'){
+            ctx.stroke();       // 空心
+        }
+        ctx.closePath()
+    }
+
+    /**
+     * 绘制直线
+     * @param data.canvas
+     * @param data.startX
+     * @param data.startY
+     * @param data.endX
+     * @param data.endY
+     * **/
+    drawLine(data){
+        if(!data.canvas) return
+
+        let x1 = data.startX
+        let y1 = data.startY
+        let x2 = data.endX
+        let y2 = data.endY
+        let ctx = data.canvas?.getContext('2d')
+        ctx.beginPath()
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.closePath()
+    }
+
+    /** 绘制箭头
+     * @param data.action: arrowFlag（实心）
+     * @param data.canvas
+     * @param data.startX
+     * @param data.startY
+     * @param data.endX
+     * @param data.endY
+     **/
+    drawArrow(data){
+        if(!data.canvas) return
+
+        let x1 = data.startX
+        let y1 = data.startY
+        let x2 = data.endX
+        let y2 = data.endY
+        let ctx = data.canvas?.getContext('2d')
+        ctx.beginPath()
+
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        let endRadians = Math.atan((y2 - y1) / (x2 - x1));
+        endRadians += ((x2 >= x1) ? 90 : -90) * Math.PI / 180;
+        ctx.translate(x2, y2);
+        ctx.rotate(endRadians);
+        ctx.moveTo(0,  -2 * ctx.lineWidth);
+        ctx.lineTo(2 * ctx.lineWidth, 3 * ctx.lineWidth);
+        ctx.lineTo(-2 * ctx.lineWidth, 3 * ctx.lineWidth);
+        ctx.fill();
+
+        ctx.closePath()
+    }
+
     otherCanvasDown(data){
         /**处理远端绘制内容**/
         if(data.target){
             data.target.points.push({ x: this.startX, y: this.startY })
-            this.drawing({x1: data.startX, y1: data.startY, event: data.event, target: data.target, action: data.action});
+            this.drawing({x1: data.startX, y1: data.startY, shiftKey: data.shiftKey, target: data.target, action: data.action,lineStyle: data.lineStyle});
         }
     }
 
@@ -1055,7 +1356,7 @@ class CanvasExample {
 
         /** 处理绘制内容 **/
         if(This.isMouseDown || This.isShowComment){
-            This.drawing({x1: This.startX, y1: This.startY, x2: data.currentX, y2: data.currentY, event:data.event, target: data.target, action: data.action})
+            This.drawing({x1: This.startX, y1: This.startY, x2: data.currentX, y2: data.currentY, shiftKey: data.shiftKey, target: data.target, action: data.action,lineStyle: data.lineStyle})
         }
     }
 
@@ -1192,11 +1493,94 @@ class CanvasExample {
         }
     }
 
+    /**绘制远端内容
+     *
+     **/
+    otherCanvasDraw(data){
+        console.warn("data:",data)
+        if(!data || !data.target){
+            console.log('target empty for other canvasDraw')
+            return
+        }
+        let getRatio = can.getPostionRatio(false)
+        let position ={
+            x1: data.content.startX / getRatio.xRatio,
+            y1: data.content.startY / getRatio.yRatio,
+            x2: data.content.endX / getRatio.xRatio,
+            y2: data.content.endY / getRatio.yRatio,
+        }
+        let param
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+            let ctx = canvas.getContext('2d')
+            ctx.strokeStyle = data.content.brushColor                                          // 画笔的颜色
+            ctx.lineWidth = data.content.brushStrokeSize * this.canvasStyleRatio.x             // 指定描边线的宽度
+            ctx.fillStyle = data.content.brushColor                                            // 填充颜色
+
+            switch(data.content.lineStyle){
+                case 'rectFlag':
+                case 'strokeRectFlag':
+                    param = {
+                        action: data.content.lineStyle,
+                        shiftkey: data.content?.shiftKey,
+                        canvas: canvas,
+                        startX: position.x1,
+                        startY: position.y1,
+                        endX: position.x2,
+                        endY: position.y2
+                    }
+                    this.drawRectangle(param)
+                    break;
+                case 'circleFlag':
+                case 'strokeCircleFlag':
+                    param = {
+                        action: data.content.lineStyle,
+                        shiftkey: data.content?.shiftKey,
+                        canvas: canvas,
+                        startX: position.x1,
+                        startY: position.y1,
+                        endX: position.x2,
+                        endY: position.y2
+                    }
+                    this.drawRound(param)
+                    break;
+                case 'lineFlag':
+                    param = {
+                        canvas: canvas,
+                        startX: position.x1,
+                        startY: position.y1,
+                        endX: position.x2,
+                        endY: position.y2
+                    }
+                    this.drawLine(param)
+                    break;
+                case 'arrowFlag':
+                    param = {
+                        action: data.content.lineStyle,
+                        shiftkey: data.content?.shiftKey,
+                        canvas: canvas,
+                        startX: position.x1,
+                        startY: position.y1,
+                        endX: position.x2,
+                        endY: position.y2
+                    }
+                    ctx.save()
+                    this.drawArrow(param)
+                    ctx.restore();
+                    ctx.closePath();
+                    break
+                default:
+                    console.warn("current action is",data.content.lineStyle)
+                    break
+            }
+        }
+    }
+
     loadImage(ctx){
         let self = this;
         let img = new Image();
         img.src = self.lastImage;
-        ctx.drawImage(img, 0, 0, self.width, self.height);
+        ctx.drawImage(img, 0, 0, self.canvasStyle.width, self.canvasStyle.height);
     }
 
     setDefaultTextBox(){
@@ -1222,6 +1606,12 @@ class CanvasExample {
             brushColor = getCanvas.brushColor
             brushStrokeSize = getCanvas.brushStrokeSize
         }
+
+        /**针对shapeFlag 修改type**/
+        if(type === 'shapeFlag'){
+            type = data.lineStyle
+        }
+
         let param ={
             x1: data.x1,
             y1: data.y1,
@@ -1231,8 +1621,11 @@ class CanvasExample {
             size: brushStrokeSize,
             canvas: getCanvas,
             points: points,
-            action: type
+            action: type,
+            lineStyle: data.lineStyle,
+            shiftKey: data.shiftKey
         }
+
         this.startDraw(param)
     }
 
@@ -1250,78 +1643,82 @@ class CanvasExample {
         if(!ctx) return
 
         ctx.strokeStyle = content.color                                    // 画笔的颜色
-        ctx.lineWidth = content.size                                       // 指定描边线的宽度
+        ctx.lineWidth = content.size * this.canvasStyleRatio.x             // 指定描边线的宽度
         ctx.fillStyle = self.canvasToolsBar.getTextColor()                 // 填充颜色为红色
 
+        // Point-based with shadow
+        // ctx.shadowBlur = 10;
+        // ctx.shadowColor = content.color || 'rgb(0, 0, 0)'
+
         ctx.save()
-        ctx.beginPath()
 
         switch(content.action){
             case 'rectFlag':
-                self.initCanvas(ctx)
-                if (e.shiftKey === true) {   // 正方形
-                    let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
-                    ctx.fillRect(x1, y1, d, d);
-                } else {                    // 普通方形
-                    ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-                }
+                this.revokeDraw()
+                this.drawRectangle({
+                    action: content.action,
+                    shiftkey: content.shiftKey,
+                    canvas: content?.canvas,
+                    startX: content.x1,
+                    startY: content.y1,
+                    endX: content.x2,
+                    endY: content.y2
+                })
+                this.updateCanvas()
                 break;
             case 'strokeRectFlag':
-                self.initCanvas(ctx);
-                if (e.shiftKey === true) {    // 正方形
-                    let d = ((x2 - x1) < (y2 -y1)) ? (x2 - x1) : (y2 - y1);
-                    ctx.strokeRect(x1, y1, d, d);
-                } else {                      // 普通方形
-                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-                }
+                this.revokeDraw()
+                this.drawRectangle({
+                    action: content.action,
+                    shiftkey: content.shiftKey,
+                    canvas: content?.canvas,
+                    startX: content.x1,
+                    startY: content.y1,
+                    endX: content.x2,
+                    endY: content.y2
+                })
+                this.updateCanvas()
                 break;
             case 'circleFlag':
             case 'strokeCircleFlag':
                 // 圆
-                self.initCanvas(ctx);
-                let k = ((x2 - x1) / 0.55);
-                let w = (x2 - x1) / 2;
-                let h = (y2 - y1) / 2;
-
-                if (e.shiftKey === true) {     // circle
-                    let r = Math.sqrt(w * w + h * h);
-                    ctx.arc(w + x1, h + y1, r, 0, Math.PI * 2);
-                } else {                        // ellipse
-                    // bezier double ellipse algorithm
-                    ctx.moveTo(x1, y1 + h);
-                    ctx.bezierCurveTo(x1, y1 + h * 3, x1 + w * 11 / 5, y1 + h * 3, x1 + w * 11 / 5, y1 + h);
-                    ctx.bezierCurveTo(x1 + w * 11 / 5, y1 - h, x1, y1 - h, x1, y1 + h);
-                }
-
-                if(content.type === 'circleFlag'){
-                    ctx.fill();         // 实心
-                }else if(content.type === 'strokeCircleFlag'){
-                    ctx.stroke();       // 空心
-                }
+                this.revokeDraw()
+                this.drawRound({
+                    action: content.action,
+                    shiftkey: content.shiftKey,
+                    canvas: content?.canvas,
+                    startX: content.x1,
+                    startY: content.y1,
+                    endX: content.x2,
+                    endY: content.y2
+                })
+                this.updateCanvas()
                 break;
             case 'lineFlag':
                 // 线条
-                self.initCanvas(ctx);
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
+                this.revokeDraw()
+                this.drawLine({
+                    canvas: content?.canvas,
+                    startX: x1,
+                    startY: y1,
+                    endX: x2,
+                    endY: y2
+                })
+                this.updateCanvas()
                 break;
             case  'arrowFlag':
                 // 箭头
-                self.initCanvas(ctx);
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-
-                let endRadians = Math.atan((y2 - y1) / (x2 - x1));
-                endRadians += ((x2 >= x1) ? 90 : -90) * Math.PI / 180;
-                ctx.translate(x2, y2);
-                ctx.rotate(endRadians);
-                ctx.moveTo(0,  -2 * ctx.lineWidth);
-                ctx.lineTo(2 * ctx.lineWidth, 3 * ctx.lineWidth);
-                ctx.lineTo(-2 * ctx.lineWidth, 3 * ctx.lineWidth);
-                ctx.fillStyle = ctx.strokeStyle;
-                ctx.fill();
+                ctx.fillStyle = content.color
+                this.revokeDraw()
+                this.drawArrow({
+                    action: content.action,
+                    canvas: content?.canvas,
+                    startX: content.x1,
+                    startY: content.y1,
+                    endX: content.x2,
+                    endY: content.y2
+                })
+                this.updateCanvas()
                 break;
             case 'textFlag':
                 // 写字
@@ -1334,6 +1731,7 @@ class CanvasExample {
                 ctx.textBaseline = 'top';         // "alphabetic" | "bottom" | "hanging" | "ideographic" | "middle" | "top";
                 ctx.textAlign = 'left';           // "center" | "end" | "left" | "right" | "start"; 值不同，绘制的时候 fillText 的坐标也要修改
 
+                ctx.beginPath()
                 this.drawText({
                     type: 'textFlag',
                     text: self.textContent,
@@ -1351,12 +1749,14 @@ class CanvasExample {
                 let size = Number(self.canvasToolsBar.eraserSize)
                 size = size * 10 / 2 * this.canvasStyleRatio.x
 
+                ctx.beginPath()
                 ctx.arc(x2, y2, size, 0, 2 * Math.PI);
                 ctx.clip();
                 ctx.clearRect(0, 0, self.canvasStyle.width, self.canvasStyle.height);
                 break;
             case 'clearFlag':
                 // 清空
+                ctx.beginPath()
                 self.initCanvas()
                 self.lastImage = null
                 self.canvasToolsBar.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
@@ -1364,6 +1764,12 @@ class CanvasExample {
                 // 清除并隐藏输入框
                 self.setDefaultTextBox()
                 break;
+            case 'pencilFlag':
+                this.slicingPen(content)
+                break
+            case 'penFlag':
+                this.pen(content)
+                break
             default:
                 // 任意画
                 ctx.lineJoin = 'round';
@@ -1466,9 +1872,9 @@ class CanvasExample {
             let canvasRect = this.canvas.getBoundingClientRect()
             let width = targetRect.width + targetRect.left
 
-            /**针对当前行的文字比上一行文字少，则不需要增加宽度**/
+            /**先判断字体是否达到canvas 的右边界， 如果存在，则换行且不增加宽度**/
             if(width > canvasRect.right){
-                // target.style.whiteSpace = 'pre-wrap'
+                target.style.whiteSpace = 'pre-wrap'
                 return
             }
 
@@ -2176,5 +2582,3 @@ class toggleFullScreenModal{
         }
     }
 }
-
-
