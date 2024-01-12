@@ -2,29 +2,34 @@ import { DBmanager } from './indexedDB.js';
 import { X2JS } from './xml2json.js'
 import { GsApi } from './gs.sdk.min.js'
 import { WebRTCSocketInstance } from './gsRTC.socket.js'
+import { LineSession } from './background.session.js'
 
 const DEFAULT_COLOR = 'rgb(47, 145, 255)'
 /***************************************（一）gsApi创建、注册、呼叫****************************************************/
 let grpDialingApi = {
     language: '',
-    screen: {  // 屏幕尺寸
+    screen: {                           // 屏幕尺寸
         width: '',
         height: ''
     },
     manifestVersion: '',
     extensionNamespace: '',
-    keepUserInfo: true,  // 默认保存登录数据
-    contactSearchFrom: { // 通讯录搜索来源
+    keepUserInfo: true,                // 默认保存登录数据
+    contactSearchFrom: {               // 通讯录搜索来源
         ldap: true,
         localAddressBook: true
     },
-    wordDialingEnabled: true,   // 划词拨号
+    wordDialingEnabled: true,          // 划词拨号
     popupPort: '',
-    openerPopupId: 0,    // 已打开的popup页面ID
+    openerPopupId: 0,                  // 已打开的popup页面ID
     isLogin: false,
     permissionCheckRefuse: false,
     gsApi: null,
-    lineData: null,     // 线路
+    lineData: null,                    // 线路
+    preLineData: null,                 // 保存上一次的线路状态，主要用于websokcet多次推线路过来区别
+    maxLinesNum: 0,                    // 支持的最大线路数
+    maxConfListsNum: 0,                // 支持的最大会议人数
+    markLineDetect: [],                // 标记当前线路是否探测过
     ldapKeys: ['emailAttributes', 'nameAttributes', 'numberAttributes'],
     loginData: {
         selectedAccountId: '',
@@ -69,28 +74,12 @@ let grpDialingApi = {
     // 通过插件收发演示流
     socket: null,                      // 处理收发演示的请求
     websocketStatus: 0,                // webSocket 连接状态:-1 异常关闭； 0 未连接， 1 连接成功， 2 正在重连
-    localShare: false,                 // 表示当前本端是否开启共享，true表示本端开启共享，false表示本端未开启共享
-    currentShareLineId: '',            // 表示当前线路id
-    saveShareLineContent: [],          // 保存共享线路内容
     shareScreenPopupPort: '',
     openShareScreenTabId: '',          // 打开共享页面的 tabId
     shareTimer: null,                  // 共享通知定时器
     notificationId: null,              // 共享通知 id
     currentShareContent:{
-        lineId: '',                    // 本端线路
-        remoteLineId: '',              // 远端线路
-        shareType: ''  ,               // 共享内容： 'shareScreen'、'shareFile'
-        isEstablishSuccessPc: false,   // pc是否建立成功
         remoteCallInfo : ''            // 远端线路信息
-    },
-    peerInfoMessage: {                 // 接受消息体相关信息
-        action: '',
-        reqId: '',
-        localLineId: '',
-        sdp: '',
-        remoteLineId: '',
-        updateMessage: "",      // 更新的sdp内容
-        infoMsg: "",            // 回复当前的状态信息
     },
     notifyEvent: {
         shareScreen: {
@@ -108,6 +97,8 @@ let grpDialingApi = {
             message: "The opposite side refuses to accept the screen",
         },
     },
+    shareSessions: [],                       // 共享线路信息
+    peerScreenSharePendingRequest: null,     // 是否存在对端请求开开启共享但未告知到popup页面
 
     /**
      * gsApi init
@@ -364,7 +355,10 @@ let grpDialingApi = {
                         iconPath: '../quicall/assets/logo.blue.png'
                     })
 
-                    grpDialingApi.createWebSocket( )
+                    grpDialingApi.createWebSocket()
+
+                    grpDialingApi.getLinesNum()
+                    grpDialingApi.getConfLinesNum()
 
                     if (grpDialingApi.popupPort) {
                         // 返回当前登录状态
@@ -610,6 +604,88 @@ let grpDialingApi = {
     },
 
     /**
+     * 获取支持的最大线路数
+     */
+    getLinesNum: function (){
+        if (!grpDialingApi.gsApi) {
+            return
+        }
+
+        let configGetCallBack = function (event){
+            console.log('getLinesNum configGetCallBack:', event)
+            if (event.readyState === 4 || event.ok) {
+                let response
+                if (event.bodyInJsonFormat) {
+                    response = event.bodyInJsonFormat
+                } else if (event.response) {
+                    response = JSON.parse(event.response)
+                }
+                if (event.status === 200 && response !== 'error') {
+                    let configs = response.configs
+                    if(configs && configs.length){
+                        console.log('Get max lines num: ', configs[0].value)
+                        grpDialingApi.maxLinesNum = configs[0].value
+
+                        grpDialingApi.sendMessage2Popup({
+                            cmd: 'setMaxLinesNum',
+                            maxLinesNum: grpDialingApi.maxLinesNum
+                        })
+                    }
+                } else {
+                    console.log('get lines num response:', response)
+                }
+            }
+        }
+
+        grpDialingApi.gsApi.configGet({
+            pvalues: 'num_lines',
+            onreturn: configGetCallBack,
+            onerror: grpDialingApi.onErrorCatchHandler
+        })
+    },
+
+    /**
+     * 获取最大支持几方会议
+     */
+    getConfLinesNum: function (){
+        if (!grpDialingApi.gsApi) {
+            return
+        }
+
+        let configGetCallBack = function (event){
+            console.log('getConfLinesNum configGetCallBack:', event)
+            if (event.readyState === 4 || event.ok) {
+                let response
+                if (event.bodyInJsonFormat) {
+                    response = event.bodyInJsonFormat
+                } else if (event.response) {
+                    response = JSON.parse(event.response)
+                }
+                if (event.status === 200 && response !== 'error') {
+                    let configs = response.configs
+                    if(configs && configs.length){
+                        console.log('Get max conf lines num: ', configs[0].value)
+                        grpDialingApi.maxConfListsNum = configs[0].value
+
+                        grpDialingApi.sendMessage2Popup({
+                            cmd: 'setMaxConfListsNum',
+                            maxConfListsNum: grpDialingApi.maxConfListsNum
+                        })
+                    }
+                } else {
+                    console.log('get lines num response:', response)
+                }
+            }
+        }
+
+        grpDialingApi.gsApi.configGet({
+            pvalues: 'num_conf_lines',
+            onreturn: configGetCallBack,
+            onerror: grpDialingApi.onErrorCatchHandler
+        })
+    },
+
+    /**
      * 获取激活的账号列表
      */
     getAccounts: function (popupOpen) {
@@ -728,7 +804,11 @@ let grpDialingApi = {
 
                 if (responseRes && responseRes.response === "success") {
                     if (responseRes.body && responseRes.body.length) {
-                        grpDialingApi.sendMessage2Popup({ cmd: 'setLineStatus', lines: responseRes.body })
+                        grpDialingApi.sendMessage2Popup({
+                            cmd: 'setLineStatus',
+                            lines: responseRes.body,
+                            maxLinesNum: grpDialingApi.maxLinesNum
+                        })
                     }
                 }
             } else if (event.status === 401) {
@@ -926,118 +1006,6 @@ let grpDialingApi = {
         }
 
         return copy(obj)
-    },
-
-    isObjectXExactlyEqualToY: function (x, y) {
-        let i, l, leftChain, rightChain
-
-        function compare2Objects(x, y) {
-            let p
-
-            // remember that NaN === NaN returns false
-            // and isNaN(undefined) returns true
-            if (isNaN(x) && isNaN(y) && typeof x === 'number' && typeof y === 'number') {
-                return true
-            }
-
-            // Compare primitives and functions.
-            // Check if both arguments link to the same object.
-            // Especially useful on the step where we compare prototypes
-            if (x === y) {
-                return true
-            }
-
-            // Works in case when functions are created in constructor.
-            // Comparing dates is a common scenario. Another built-ins?
-            // We can even handle functions passed across iframes
-            if ((typeof x === 'function' && typeof y === 'function') ||
-                (x instanceof Date && y instanceof Date) ||
-                (x instanceof RegExp && y instanceof RegExp) ||
-                (x instanceof String && y instanceof String) ||
-                (x instanceof Number && y instanceof Number)) {
-                return x.toString() === y.toString()
-            }
-
-            // At last checking prototypes as good as we can
-            if (!(x instanceof Object && y instanceof Object)) {
-                return false
-            }
-
-            if (x.isPrototypeOf(y) || y.isPrototypeOf(x)) {
-                return false
-            }
-
-            if (x.constructor !== y.constructor) {
-                return false
-            }
-
-            if (x.prototype !== y.prototype) {
-                return false
-            }
-
-            // Check for infinitive linking loops
-            if (leftChain.indexOf(x) > -1 || rightChain.indexOf(y) > -1) {
-                return false
-            }
-
-            // Quick checking of one object being a subset of another.
-            // todo: cache the structure of arguments[0] for performance
-            for (p in y) {
-                if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
-                    return false
-                } else if (typeof y[p] !== typeof x[p]) {
-                    return false
-                }
-            }
-
-            for (p in x) {
-                if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
-                    return false
-                } else if (typeof y[p] !== typeof x[p]) {
-                    return false
-                }
-
-                switch (typeof (x[p])) {
-                    case 'object':
-                    case 'function':
-
-                        leftChain.push(x)
-                        rightChain.push(y)
-
-                        if (!compare2Objects(x[p], y[p])) {
-                            return false
-                        }
-
-                        leftChain.pop()
-                        rightChain.pop()
-                        break
-
-                    default:
-                        if (x[p] !== y[p]) {
-                            return false
-                        }
-                        break
-                }
-            }
-
-            return true
-        }
-
-        if (arguments.length < 1) {
-            console.log('Need two or more arguments to compare')
-            return true
-        }
-
-        for (i = 1, l = arguments.length; i < l; i++) {
-            leftChain = []
-            rightChain = []
-
-            if (!compare2Objects(arguments[0], arguments[i])) {
-                return false
-            }
-        }
-
-        return true
     },
 
     /**
@@ -1301,6 +1269,44 @@ let grpDialingApi = {
     },
 
     /**
+     * 获取到添加会议的softkey
+     * */
+    getConfSoftKey: function(){
+        console.log("get add conference softKey")
+        let requestURL = grpDialingApi.loginData?.url + '/cgi-bin/api-get_gui_element'
+        let initOptions = {
+            "method": "GET",
+            "credentials": "include",
+            "body": null,
+            "referrer": requestURL,
+            "referrerPolicy": "strict-origin-when-cross-origin",
+            "mode": "cors",
+            "headers": {
+                "accept": "application/json, text/plain, */*",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+            },
+        }
+        fetch(requestURL, initOptions).then(function (response) {
+            if (response.ok && response.status === 200) {
+                return response.json()
+            } else {
+                return null
+            }
+        }).then(function (responseBody) {
+            console.warn("responseBody:",responseBody)
+            if (responseBody) {
+                if (responseBody.response === "success") {
+
+                }
+            } else {
+            }
+        }).catch(function (error) {
+            console.error('get conference softKey error:', error)
+        })
+    },
+
+    /**
      * 获取所有通讯录信息
      */
     getExtendedContacts: function () {
@@ -1537,14 +1543,22 @@ let grpDialingApi = {
 
     /**
      * 给popup发送消息
-     * @param data
+     * @param data              发送数据
+     * @param isLegacyContent   是否是再次发送共享呼叫请求
      */
-    sendMessage2Popup: function (data) {
+    sendMessage2Popup: function (data, isLegacyContent) {
         if (grpDialingApi.popupPort) {
             data = JSON.stringify(data)   // 不转换为字符串格式，firefox无法成功发送消息
             grpDialingApi.popupPort.postMessage(data)
+
+            if(isLegacyContent){
+                grpDialingApi.peerScreenSharePendingRequest = null
+            }
         } else {
             console.log('popup port not exist!')
+            if(data.cmd === 'shareScreenRequest'){
+                grpDialingApi.peerScreenSharePendingRequest = data
+            }
         }
     },
 
@@ -1562,6 +1576,10 @@ let grpDialingApi = {
                 cmd: 'popupShowConfig',
                 grpClick2TalObj: grpDialingApi
             })
+        }
+
+        if(grpDialingApi.peerScreenSharePendingRequest){
+            grpDialingApi.sendMessage2Popup(grpDialingApi.peerScreenSharePendingRequest, true)
         }
 
         if (!grpDialingApi.isLogin) {
@@ -1594,7 +1612,13 @@ let grpDialingApi = {
             })
         }
         if(grpDialingApi.lineData){
-            grpDialingApi.sendMessage2Popup({cmd: 'setLineStatus', lines: grpDialingApi.lineData})
+            grpDialingApi.sendMessage2Popup({
+                cmd: 'setLineStatus',
+                lines: grpDialingApi.lineData,
+                maxLinesNum: grpDialingApi.maxLinesNum,
+                detectLine: grpDialingApi.markLineDetect,
+                shareSessions: grpDialingApi.shareSessions
+            })
         }
     },
 
@@ -1607,6 +1631,8 @@ let grpDialingApi = {
         grpDialingApi.gsApi.dologout()
         grpDialingApi.isLogin = false
         grpDialingApi.lineData = null
+        grpDialingApi.preLineData = null
+        grpDialingApi.markLineDetect = []
         grpDialingApi.websocketStatus = 0
 
         grpDialingApi.userInfoManagement()
@@ -1623,91 +1649,102 @@ let grpDialingApi = {
     },
 
     /** 接受演示
+     *  @param from
+     *  @param msg.lineId
      * */
-    receiveScreen: function(type){
-        console.log("receiveScreen type:", type + ", Is the current shared page being shared :", grpDialingApi.currentShareContent?.isEstablishSuccessPc)
+    receiveScreen: function(from, msg){
+        if(!msg || !msg.lineId){
+            console.log("receiveScreen: invalid parameter ")
+            return
+        }
+        let This = this
+        let sessions = this.shareSessions.filter((item)=> item.isEstablishSuccessPc === true )
 
-        if(grpDialingApi.currentShareContent.isEstablishSuccessPc){         //接受共享之前，判断当前是否存在共享，若存在，则先关闭pc再创建；否则直接打开共享页面；
-            grpDialingApi.sendMessage2ShareScreen({type: 'closeShareWindow' })
+        /** 接受共享之前，判断当前是否存在共享，若存在，则先关闭pc再创建；否则直接打开共享页面。**/
+        if(sessions.length){
+            for(let session of sessions){
+                This.clearShareContent({ lineId: session.lineId})
+                This.sendMessage2ShareScreen({type: 'closeShareWindow', data: {lineId: session.lineId} })
+            }
+
             setTimeout(function(){
-                grpDialingApi.openPopup("../shareScreen/shareScreen.html", "shareScreen");
+                This.openPopup("../shareScreen/shareScreen.html", "shareScreen");
             },2000)
         }else{
-            grpDialingApi.openPopup("../shareScreen/shareScreen.html", "shareScreen");
+            This.openPopup("../shareScreen/shareScreen.html", "shareScreen");
         }
     },
 
     /** 拒绝演示或共享或者倒计时结束
+     * @param type:   rejectScreen（拒绝）、sharePopupTimeOut（超时）
+     * @param message
      * */
     rejectScreen: function (type, message = {}) {
         console.log("current reject type:" + type);
+        if(!message.lineId){
+            console.log("rejectScreen: invalid parameter")
+            return
+        }
+
+        let data
+        let This = this
+        let session = this.getSession( {key: 'lineId', value: message.lineId})
+        if(message.shareType === 'shareScreen' && !session){
+            console.log("rejectScreen: no session")
+            return
+        }
+
+        /**1.关闭定时器 2.处理回复拒绝内容**/
+
+        /** 关闭定时器 **/
         clearTimeout(grpDialingApi.shareTimer);
 
-        // 首先区分当前是否存在pc：若没有pc 则是首次拒绝；
-        // 若有pc则是分两种情况，一种是当前确定开启新的演示，被拒绝； 另外一种是之前的pc, 更换开启演示者（第二种目前已经不存在）
+        /** 处理回复拒绝内容 **/
+            // 首先区分当前是否存在pc：若没有pc 则是首次拒绝；
+            // 若有pc则是分两种情况，一种是当前确定开启新的演示，被拒绝； 另外一种是之前的pc, 更换开启演示者（第二种目前已经不存在）
+        console.log("The length of the current shared line is :", This.shareSessions.length)
 
-        console.log("The length of the current shared line is :", grpDialingApi.saveShareLineContent.length)
-        if (!grpDialingApi.shareScreenPopupPort || grpDialingApi.saveShareLineContent.length) {
+        if(!This.shareScreenPopupPort || This.shareSessions.length){
             // pc没有建立成功 或者开启新的共享，用户拒绝或者延时
             let rspCode
             let rspMsg
             if (type === "rejectScreen") {
-                rspCode = grpDialingApi.CODE_TYPE.rejectScreen.codeType
-                rspMsg = grpDialingApi.CODE_TYPE.rejectScreen.message
-                grpDialingApi.deleteScreenLine(grpDialingApi.currentShareContent.lineId)
+                rspCode = This.CODE_TYPE.rejectScreen.codeType
+                rspMsg = This.CODE_TYPE.rejectScreen.message
             } else if (type === "sharePopupTimeOut") {
-                rspCode =  grpDialingApi.CODE_TYPE.timeOut.codeType
-                rspMsg = grpDialingApi.CODE_TYPE.timeOut.message
+                rspCode =  This.CODE_TYPE.timeOut.codeType
+                rspMsg = This.CODE_TYPE.timeOut.message
             }
-            let data = {
+
+            data = {
                 createMediaSessionRet:{
-                    line: message.localLineId || grpDialingApi.peerInfoMessage.localLineId,
-                    reqId: message.reqId || grpDialingApi.peerInfoMessage.reqId,
-                    action: message.action || grpDialingApi.peerInfoMessage.action,
-                    shareType: message.shareType || grpDialingApi.peerInfoMessage.shareType,
+                    line: message.lineId || session.lineId,
+                    reqId: message.reqId || session.reqId,
+                    action: message.action || session.action,
+                    shareType: message.shareType || session.shareType,
                     rspInfo: {
                         rspCode: rspCode,
                         rspMsg:rspMsg
                     }
                 },
-                local_line: message.localLineId || grpDialingApi.peerInfoMessage.localLineId
+                local_line: message.lineId || session.lineId
             }
-            // 清除接受共享端的相关内容
-            if(grpDialingApi.currentShareContent?.lineId){
-                grpDialingApi.deleteScreenLine(grpDialingApi.currentShareContent.lineId)
-                grpDialingApi.clearPeerInfoMessage(true);
-            }
-            grpDialingApi.socket && grpDialingApi.socket.sendMessage(data)
 
-        } else {
-            console.log("Determine whether there is an update currently ? ", !!grpDialingApi.peerInfoMessage?.updateMessage);
-
-            // pc建立成功，用户拒绝或者延时
-            if ( grpDialingApi.peerInfoMessage && grpDialingApi.peerInfoMessage.updateMessage ) {
-                if ( grpDialingApi.peerInfoMessage.updateMessage.hasOwnProperty( "updateMediaSession" ) ) {
-                    if (type === "rejectScreen") {
-                        grpDialingApi.peerInfoMessage.updateMessage.updateMediaSession.rspInfo =
-                            {
-                                rspCode: grpDialingApi.CODE_TYPE.rejectScreen.codeType,
-                                rspMsg: grpDialingApi.CODE_TYPE.rejectScreen.message,
-                            };
-                    } else if (type === "sharePopupTimeOut") {
-                        grpDialingApi.peerInfoMessage.updateMessage.updateMediaSession.rspInfo =
-                            {
-                                rspCode: grpDialingApi.CODE_TYPE.timeOut.codeType,
-                                rspMsg: grpDialingApi.CODE_TYPE.timeOut.message,
-                            };
-                    }
+            if(session && session.updateContent){
+                /** 更新开启共享 被拒绝 **/
+                if(This.shareScreenPopupPort){
+                    This.sendMessage2ShareScreen({
+                        cmd: "updateScreen",
+                        data: session.updateContent,
+                    });
                 }
-            }
+            }else{
+                /** （1）先发送消息到对端  （2）然后清除本地线路**/
+                This.socket && This.socket.sendMessage(data)
 
-            if(grpDialingApi.shareScreenPopupPort){
-                grpDialingApi.sendMessage2ShareScreen({
-                    cmd: "updateScreen",
-                    data: grpDialingApi.peerInfoMessage,
-                });
+                // 清除共享内容
+                session && This.deleteScreenLine(session.lineId)
             }
-            grpDialingApi.clearPeerInfoMessage();
         }
     },
 
@@ -1812,7 +1849,7 @@ let grpDialingApi = {
                 })
                 break
             case 'popupUnHoldLine':
-                console.info('un hold line ', request.lineId)
+                console.info('unHold line ', request.lineId)
                 if (!request.lineId) {
                     return;
                 }
@@ -1867,32 +1904,34 @@ let grpDialingApi = {
                 break
             case 'isReceiveScreen':
                 if(request.message){
-                    if(request.message.isReceive){
+                    console.log("get receive state is :", request.message)
+                    let msg = request.message
+                    if(msg.isReceive){
                         // 表示接受演示或共享文件
-                        grpDialingApi.receiveScreen("popup");
+                        grpDialingApi.receiveScreen("popup",{ lineId: msg.lineId});
+
+                        // 针对存在hold的线路处理
+                        // 场景一：（1）单线路或者多线路，当前线路处于hold状态，接受共享需要对当前线路解除hold;
+                        let holdLine = this.lineData.filter((item)=> item.state === 'onhold' && item.line === Number(msg.lineId) )
+                        if(holdLine.length){
+                            for(let item of holdLine){
+                                grpDialingApi.gsApi.phoneOperation({
+                                    arg: item.line,
+                                    cmd: 'unhold',
+                                    sid: grpDialingApi.sid,
+                                    onerror: grpDialingApi.onErrorCatchHandler
+                                })
+                            }
+                        }
                     }else{
                         // 表示拒绝演示或共享文件
-                        if(request.message?.shareType === 'shareFile'){
-                            grpDialingApi.rejectScreen("rejectScreen", request.message);
-                        }else {
-                            grpDialingApi.rejectScreen("rejectScreen")
-                        }
+                        grpDialingApi.rejectScreen("rejectScreen", msg);
                     }
                     grpDialingApi.clearNotification(grpDialingApi.notificationsId);
                 }
                 break
             case 'sharePopupTimeOut':
-                if(request.message?.shareType === 'shareFile'){
-                    grpDialingApi.rejectScreen("sharePopupTimeOut", request.message);
-                }else {
-                    grpDialingApi.rejectScreen("sharePopupTimeOut")
-                }
-                break
-            case "closePrePeerConnection":
-                console.info('closePrePeerConnection line ', request.lineId)
-                if(request.lineId){
-                    grpDialingApi.closePrePeerConnection({lineId:request.lineId})
-                }
+                grpDialingApi.rejectScreen("sharePopupTimeOut", request.message)
                 break
             case 'quicallLocalOfferSdp':
                 console.log("quicallLocalOfferSdp_request:", request.data)
@@ -1919,40 +1958,45 @@ let grpDialingApi = {
      * 处理共享页面打开事件
      */
     handleShareScreenOpen: function (){
-        console.log('screen share page on open, is localShare: ', grpDialingApi.localShare, " currentShareLineId is： ", grpDialingApi.currentShareContent.lineId)
+        let This = this
+        let message
+        let session = This.shareSessions.find((item)=> item.isEstablishSuccessPc === false && item.lineId  )
+        let isExistSuccessPc = this.shareSessions.filter((item)=> item.isEstablishSuccessPc === true )
+        if(!session){
+            console.log("handleShareScreenOpen, no session")
+            return
+        }
+        console.log('screen share page on open, is localShare: ', session.localShare, " currentShareLineId is： ", session.lineId)
+
         // 3.收发演示的页面打开后发送消息给背景页，背景页再发送SDP到演示页面进行处理
-        if (grpDialingApi.localShare) {
+        if (session.localShare) {
             // 插件端处理开启共享逻辑
-            let remoteName = grpDialingApi.currentShareContent.remoteCallInfo.remoteName || grpDialingApi.currentShareContent.remoteCallInfo.remotenumber
-            let message = {
+            message = {
                 cmd: 'localScreenShare',
-                localShare: grpDialingApi.localShare,
-                localAccountLists: grpDialingApi.loginData.accountLists,
-                data: {
-                    localLineId: grpDialingApi.currentShareContent.lineId,
-                    shareType: grpDialingApi.currentShareContent.shareType,
-                    remoteName: remoteName,
-                }
+                data: session,
+                localAccountLists: This.loginData.accountLists,
             }
-            grpDialingApi.sendMessage2ShareScreen(message)
+            This.sendMessage2ShareScreen(message)
         } else {
-            console.log("Is it currently shared?" + grpDialingApi.currentShareContent.isEstablishSuccessPc)
-            // 6. 收到消息，对端处理setRemote、doAnswer内容
-            let message = {
+            console.log("Is it currently shared ? " , isExistSuccessPc)
+            message = {
                 cmd: 'remoteScreenShare',
-                localShare: grpDialingApi.localShare,
-                localAccountLists: grpDialingApi.loginData.accountLists,
-                data: grpDialingApi.saveShareLineContent[0]
+                data: session,
+                lineData: This.lineData,
+                localAccountLists: This.loginData.accountLists,
             }
-            console.log("grpDialingApi.saveShareLineContent:", grpDialingApi.saveShareLineContent)
-            grpDialingApi.sendMessage2ShareScreen(message)
+            console.log("grpDialingApi.shareSessions:", this.shareSessions)
+            This.sendMessage2ShareScreen(message)
         }
 
-        if(grpDialingApi.lineData){
+        if(This.lineData){
             console.log('Send route information to shared window')
-            grpDialingApi.sendMessage2ShareScreen({type: 'setLineStatus', lines: grpDialingApi.lineData})
+            This.sendMessage2ShareScreen({
+                type: 'setLineStatus',
+                lines: This.lineData,
+                maxLinesNum: This.maxLinesNum
+            })
         }
-        grpDialingApi.sendMessage2Popup({ cmd: 'shareScreenOnOpen' })
     },
 
     /**
@@ -1981,59 +2025,95 @@ let grpDialingApi = {
      */
     handleLocalAnswerSdp: function (requestData, page){
         console.log('handleLocalAnswerSdp: ' + page)
-        if (requestData && grpDialingApi.socket) {
+        let This = this
+        if (requestData && This.socket) {
             // 插件端answer sdp 处理
             let data = JSON.parse(requestData)
-            let actionObj = grpDialingApi.socket.parseMessageBody(requestData)
+            let actionObj = This.socket.parseMessageBody(requestData)
             let action = actionObj.type
             if(page === 'shareScreen'){
+                let session = This.getSession({key: 'lineId', value: data.local_line})
                 let rspInfo = actionObj.message && actionObj.message.rspInfo
                 if(rspInfo && rspInfo.rspCode === 200){
-                    grpDialingApi.saveShareLineContent[0].isEstablishSuccessPc = true
-                    grpDialingApi.sendMessage2Popup({ cmd: 'isSharingTurnedOn', shareState: 'open', content: grpDialingApi.saveShareLineContent[0] , changeIconState: 'start'})
+                    let session = this.shareSessions.find((item)=> item.isEstablishSuccessPc === false && item.lineId === data.local_line)
+                    session.isEstablishSuccessPc = true
+                    let currentLine = This.findLineStateAndMark({lineId: data.local_line})
+                    This.sendMessage2Popup({
+                        cmd: 'isSharingTurnedOn',
+                        shareState: 'open',
+                        content: session,
+                        action: 'start',
+                        state: currentLine.state,
+                        mark: currentLine.mark
+                    })
                 }
             }
             data[action].actionType = 'localAnswerSdp'
-            grpDialingApi.socket.sendMessage(data)
+            This.socket.sendMessage(data)
         } else {
             console.log(page + ' local answer sdp is not offer!')
         }
     },
 
     /**
-     * 更新本端offer SDP
+     * 更新本端offer SDP: 主要用于关闭共享或者更新共享流程。
      * @param requestData
      */
     updateLocalOfferSdp: function (requestData){
-        if(!requestData){
+        if(!requestData || !requestData.local_line){
+            console.log("update local offer sdp: invalid parameter ")
             return
         }
 
         let actionObj = grpDialingApi.socket.parseMessageBody(requestData)
-        console.log("handleOfferUpdateSdp:", actionObj)
-        grpDialingApi.peerInfoMessage.sdp = actionObj.message.sdp
-        grpDialingApi.peerInfoMessage.reqId = actionObj.message.reqId
-        grpDialingApi.peerInfoMessage.localLineId = actionObj.message.line
-        grpDialingApi.peerInfoMessage.remoteLineId = null
-        grpDialingApi.peerInfoMessage.action = actionObj.message.action
-        grpDialingApi.peerInfoMessage.shareType = actionObj.message.shareType
-        grpDialingApi.peerInfoMessage.localShare = false;
-        grpDialingApi.localShare = grpDialingApi.peerInfoMessage.localShare
-        grpDialingApi.peerInfoMessage.updateMessage = requestData
-        if (actionObj.message.action === 'shareScreen') {
-            let title = grpDialingApi.notifyEvent.shareScreen.title.replace("{0}", remoteName)
-            let message = grpDialingApi.notifyEvent.shareScreen.message
-            grpDialingApi.createDesktopNotification({title: title, message: message})
-            grpDialingApi.sendMessage2Popup({
-                cmd: "isIncomingCall",
-                message: {
-                    lineId: requestData.local_line,
-                    receiveSharePopupNum: grpDialingApi.saveShareLineContent.length,
-                    currentShareContent: grpDialingApi.currentShareContent
-                }
-            })
+        console.log("updateLocalOfferSdp: get current content ", actionObj)
+
+        if(!actionObj.message || !actionObj.message.action){
+            console.log("update local offer sdp: current no action")
+            return
         }
-        console.log("grpDialingApi.peerInfoMessage:", grpDialingApi.peerInfoMessage)
+
+        let This = this
+        let session = this.getSession({key: 'lineId', value: requestData.local_line})
+        if(session){
+            let action = actionObj.message.action
+            let name = session.currentLineInfo.remotename || session.currentLineInfo.remotenumber
+            let updateContent = {
+                sdp: actionObj.message.sdp,
+                reqId: actionObj.message.reqId,
+                shareType: actionObj.message.shareType,
+                updateContent: requestData,
+                action: action,
+            }
+
+            /**当前线路处于pc建立成功，准备开启共享请求**/
+            if(action === 'shareScreen'){
+                /** （1） 保存当前共享相关内容   （2）桌面通知  （3）告知popup页面存在共享来电，是否接受 **/
+                updateContent.localShare = true
+                let title = This.notifyEvent.shareScreen.title.replace("{0}", name)
+                let message = This.notifyEvent.shareScreen.message
+
+
+                grpDialingApi.createDesktopNotification({title: title, message: message})
+                grpDialingApi.sendMessage2Popup({
+                    cmd: "shareScreenRequest",
+                    message: {
+                        lineId: requestData.local_line,
+                        receiveSharePopupNum: This.shareSessions.length,
+                        currentShareContent: session,
+                        lineData: This.lineData
+                    }
+                })
+            }else{
+                // 默认暂时没有
+                updateContent.localShare = false
+
+            }
+
+            session.updateMessage(updateContent)
+        }else{
+            console.log("updateLocalOfferSdp: current session no exist")
+        }
     },
 
     /**
@@ -2041,23 +2121,40 @@ let grpDialingApi = {
      * @param requestData
      */
     updateLocalAnswerSdp: function (requestData){
-        if(!requestData){
+        if(!requestData || !requestData.local_line){
+            console.log("update local answer sdp: invalid parameter ")
             return
         }
 
         let actionObj = grpDialingApi.socket.parseMessageBody(requestData)
-        console.log("handleOfferUpdateSdp:", actionObj)
-        grpDialingApi.peerInfoMessage.sdp = actionObj.message.sdp
-        grpDialingApi.peerInfoMessage.reqId = actionObj.message.reqId
-        grpDialingApi.peerInfoMessage.localLineId = actionObj.message.line
-        grpDialingApi.peerInfoMessage.remoteLineId = null
-        grpDialingApi.peerInfoMessage.action = actionObj.message.action
-        grpDialingApi.peerInfoMessage.shareType = actionObj.message.shareType
-        grpDialingApi.peerInfoMessage.localShare = actionObj.message.action === 'shareScreen';
-        grpDialingApi.peerInfoMessage.updateMessage = requestData
-        grpDialingApi.localShare = grpDialingApi.peerInfoMessage.localShare
-        grpDialingApi.peerInfoMessage.rspInfo = actionObj.message.rspInfo;
-        grpDialingApi.sendMessage2ShareScreen({ cmd: 'updateScreenRet', data: grpDialingApi.peerInfoMessage })
+        console.log("updateLocalAnswerSdp: get current content ", actionObj)
+
+        if(!actionObj.message || !actionObj.message.action){
+            console.log("update local answer sdp: current no action")
+            return
+        }
+
+        let session = this.getSession({key: 'lineId', value: requestData.local_line})
+        if(session){
+            let action = actionObj.message.action
+            let updateContent = {
+                sdp: actionObj.message.sdp,
+                reqId: actionObj.message.reqId,
+                shareType: actionObj.message.shareType,
+                rspInfo: actionObj.message.rspInfo,
+                updateContent: requestData,
+                action: action,
+            }
+
+            if(action === 'shareScreen'){
+                updateContent.localShare = false
+            }
+            session.updateMessage(updateContent)
+            grpDialingApi.sendMessage2ShareScreen({ cmd: 'updateScreenRet', data: session.updateContent })
+
+        }else{
+            console.log("updateLocalAnswerSdp: current session no exist")
+        }
     },
 
     /**
@@ -2078,7 +2175,7 @@ let grpDialingApi = {
 
     /**
      * 给shareScreen发送消息
-     * @param data
+     * @param data                 发送内容
      */
     sendMessage2ShareScreen: function (data) {
         if (grpDialingApi.shareScreenPopupPort) {
@@ -2126,25 +2223,114 @@ let grpDialingApi = {
                 grpDialingApi.stopScreenShare(request)
                 break;
             case 'closeScreenTab':
-                if (request.data && grpDialingApi.socket) {
-                    grpDialingApi.socket.sendMessage(request.data)
-                }
-                grpDialingApi.localShare = false
-                grpDialingApi.clearShareContent({lineId: request.lineId})
-                grpDialingApi.sendMessage2Popup({cmd: 'closeShareInformForPopup'})
-                break
-            case 'userClickCloseShare':
-                if (request.data && grpDialingApi.socket) {
-                    grpDialingApi.closePc({lineId: request.data.lineId})
-                    grpDialingApi.sendMessage2Popup({cmd: 'clearShareContentForPop'})
+                if(request.data){
+                    console.log("current close tab, current lineId is " + request.data.lineId)
+                    grpDialingApi.clearShareContent({lineId: request.data.lineId, isCloseStream: request.data.isCloseStream})
+                    grpDialingApi.sendMessage2Popup({cmd: 'closeShareInformForPopup', lineId: request.data.lineId})
                 }
                 break
+            case 'closeAllShareLine':
+                if (request.data && grpDialingApi.socket) {
+                    /***针对会议室的情况： 需要告知会议室成员当前线路需要销毁且对端需要关闭共享窗口**/
+                        /***（1）首先需要判断当前是否存在会议室，若有则处理，若没有，则只对当前线路处理。**/
+                    let confSessions = this.shareSessions.filter((item)=> Number(item.currentLineInfo.conf) === 1)
+                    if(confSessions.length){
+                        for(let session of confSessions){
+                            grpDialingApi.closePc({lineId: session.lineId})
+                        }
+                    }else{
+                        grpDialingApi.closePc({lineId: request.data.lineId})
+                    }
+
+                    /** 针对异常场景： websocket断开且浏览器检测到PC断开，导致不能接收到关闭窗口的请求。**/
+                    setTimeout(function(){
+                        if(grpDialingApi.shareSessions.length){
+                            for(let session of grpDialingApi.shareSessions){
+                                console.log("current close shareScreen Window")
+                                grpDialingApi.clearShareContent({lineId: session.lineId, isCloseStream: true})
+                                grpDialingApi.sendMessage2Popup({cmd: 'closeShareInformForPopup', lineId: session.lineId})
+                            }
+                        }
+                    },2000)
+                }
+                break
+            case 'otherLinesShareScreen':
+                console.log("current need handle other lines share")
+                grpDialingApi.startOtherLineShare()
+                break
+            case "hold":
+                grpDialingApi.gsApi.phoneOperation({
+                    arg: request.lineId,
+                    cmd: 'holdcall',
+                    sid: grpDialingApi.sid,
+                    onerror: grpDialingApi.onErrorCatchHandler
+                })
+                break
+            case "unHold":
+                grpDialingApi.gsApi.phoneOperation({
+                    arg: request.lineId,
+                    cmd: 'unhold',
+                    sid: grpDialingApi.sid,
+                    onerror: grpDialingApi.onErrorCatchHandler
+                })
+                break;
+            case "popupHangupLine":
+                grpDialingApi.gsApi.phoneOperation({
+                    arg: request.lineId,
+                    cmd: 'endcall',
+                    sid: grpDialingApi.sid,
+                    onerror: grpDialingApi.onErrorCatchHandler
+                })
+                break;
             default:
                 break
         }
     },
 
+    handleLineContents: function(msg){
+        console.log("handleLineContents, current cmd is ", msg.cmd)
+        let This = this
+        This.sendMessage2Popup({
+            cmd: 'setLineStatus',
+            lines: msg.lines,
+            maxLinesNum: This.maxLinesNum,
+            detectLine: This.markLineDetect
+        })
+
+    },
     /*****************************************************************************************************************/
+    /**
+     * 创建共享session
+     * @param data.lineId
+     * @param data.shareType
+     * @param data.isLocalShare
+     * **/
+    getShareSessionInstance: function (data){
+        console.log('get shareScreen new session ', data.lineId)
+        if(!data || !data.lineId){
+            console.log("getShareSessionInstance: invalid parameter")
+        }
+        let session = new LineSession(data)
+        this.shareSessions.push(session)
+        return session
+    },
+
+    /**
+     * 查找session
+     * @param data.key
+     * @param data.value
+     * @param data.role
+     * **/
+    getSession: function(data){
+        console.log('get Session: ' + JSON.stringify(data, null, '    '))
+        if(!data || !data.value){
+            console.log('get session: invalid parameters: ' + JSON.stringify(data, null, '    '))
+            return
+        }
+
+        return this.shareSessions.find(item =>{return  (String(item[data.key]) === String(data.value))});
+    },
+
     /**
      * 获取接收共享桌面端的线路信息
      * @param lineId
@@ -2166,47 +2352,62 @@ let grpDialingApi = {
      * @param request
      */
     sendShareScreenRequest: function (request){
-        let openShareWindow = function(){
-            if(typeof request.data.localLineId !== 'number'){
-                request.data.localLineId = Number(request.data.localLineId)
-            }
-            console.log('start openShare, currentShareLineId is:', request.data.localLineId)
-            grpDialingApi.currentShareContent.remoteCallInfo = grpDialingApi.getSharedLine( request.data.localLineId)
-            grpDialingApi.currentShareContent.lineId = request.data.localLineId
-            grpDialingApi.currentShareContent.shareType = request.data.shareType
 
-            grpDialingApi.saveShareLineContent.push(grpDialingApi.currentShareContent)
-            grpDialingApi.localShare = request.data.localShare
-            grpDialingApi.openPopup('../shareScreen/shareScreen.html', 'shareScreen')
+        let msg = request.data
+        let This = this
+        let currentLineContent = This.getSharedLine( msg.localLineId)
+        let openShareWindow = function(){
+            console.log('start openShare, currentShareLineId is:', msg.localLineId)
+            let config = {
+                lineId: msg.localLineId,
+                shareType:  msg.shareType,
+                localShare: msg.localShare,
+                currentLineInfo: currentLineContent
+            }
+            let session = This.getShareSessionInstance(config)
+            console.log("current session: ", session )
+
+
+            This.currentShareContent.remoteCallInfo = This.getSharedLine( msg.localLineId)
+            This.openPopup('../shareScreen/shareScreen.html', 'shareScreen')
         }
 
-        if(grpDialingApi.localShare){
-            // 演示者
-            if(!grpDialingApi.currentShareContent.isEstablishSuccessPc){
-                grpDialingApi.sendMessage2Popup({ cmd: 'isSharingTurnedOn' })
-            }else {
-                if(request.data.localLineId !== grpDialingApi.currentShareContent.lineId){  // 表示当前线路不一致，需要关闭之前的线路和pc
-                    console.log("grpDialingApi.currentShareContent.lineId:",grpDialingApi.currentShareContent)
-                    grpDialingApi.sendMessage2ShareScreen({type: 'closeShareWindow'})
-                    setTimeout(function(){
-                        openShareWindow()
-                    },2000)
+        /** 1. 针对线路相同：（1）判断是否存在主动共享线路  （2）判断是否存在被动共享线路**/
+        let isExistSameLine = This.shareSessions.filter((item)=> item.local.lineId === msg.localLineId && item.isEstablishSuccessPc === true)
 
-                }else{
-                    if(request.data.shareType !== grpDialingApi.currentShareContent.shareType){   // 表示当前需要打开共享页面（共享文件或者共享桌面）
-                        console.log("current share type change, type is " + request.data.shareType)
-                        grpDialingApi.sendMessage2ShareScreen({type: 'shareContent', data:request.data})
-                    }else {
-                        grpDialingApi.sendMessage2Popup({ cmd: 'isSharingTurnedOn'})
-                    }
-                }
+        /** 2. 针对线路不同： pc建立成功 ***/
+        let isExistDiffLine = This.shareSessions.filter((item)=> item.lineId !== msg.localLineId && item.isEstablishSuccessPc === true)
+
+        // 判断是看否存在会议室
+        let isExistConf = This.lineData.some((item)=> Number(item.conf) === 1)
+
+        if(isExistConf){    // 存在会议室
+            openShareWindow()
+
+            /**由于是更新打开 shareScreen 窗口，表示共享窗口和 background 后台 存在已经连接成功的情况**/
+            if(This.shareScreenPopupPort){
+                This.handleShareScreenOpen()
             }
-        }else{
-            if(grpDialingApi.currentShareContent.isEstablishSuccessPc){            // 已经存在pc,需要先关闭之前的pc，再创建新的pc
-                grpDialingApi.sendMessage2ShareScreen({type: 'closeShareWindow' })
+        }else{              // 不存在会议室
+            if(isExistSameLine.length || isExistDiffLine.length){
+
+                /** 3.线路相同：无论是共享端还是接收端，存在pc；需要先关闭之前的pc，再创建新的pc**/
+                    /** 3.1 同一条线路存在多个session，shareType不相同（shareScreen、shareFile）**/
+                    /** 3.2 线路相同,存在主动共享线路，关闭之前的线路和pc。 需要告知共享页面关闭共享以及对应的tabId，并告知另外一端关闭共享页面以及对应的tabId**/
+                    /** 3.3 线路相同，存在被动共享线路，关闭之前的线路和pc. 需要告知共享页面关闭共享以及对应的tabId，并告知另外一端关闭共享页面以及对应的tabId**/
+                /** 4.线路不同：无论是共享端还是接收端，存在pc；需要先关闭之前的pc，再创建新的pc**/
+                for(let session of isExistSameLine){
+                    This.sendMessage2ShareScreen({type: 'closeShareWindow',  data: {lineId: session.lineId}})
+                }
+
+                for(let lines of isExistDiffLine){
+                    This.sendMessage2ShareScreen({type: 'closeShareWindow',  data: {lineId: lines.lineId}})
+                }
+
                 setTimeout(function(){
                     openShareWindow()
                 },2000)
+
             }else{
                 openShareWindow()
             }
@@ -2221,9 +2422,9 @@ let grpDialingApi = {
         if(!request.content || !grpDialingApi.socket){
             return
         }
-
-        let actionObj = grpDialingApi.socket.parseMessageBody(request.content)
-        let remoteCallInfo = grpDialingApi.getSharedLine(request.content.local_line)
+        let This = this
+        let actionObj = This.socket.parseMessageBody(request.content)
+        let remoteCallInfo = This.getSharedLine(request.content.local_line)
         let msg
         if(page === 'quicall'){
             console.log("quicallReceiveShareFileRequest:", actionObj)
@@ -2242,38 +2443,47 @@ let grpDialingApi = {
             }
         }else{
             console.log("shareScreenRequest:", actionObj)
-            grpDialingApi.currentShareContent.sdp = actionObj.message.sdp
-            grpDialingApi.currentShareContent.reqId = actionObj.message.reqId
-            grpDialingApi.currentShareContent.lineId = request.content.local_line
-            grpDialingApi.currentShareContent.localLineId = request.content.local_line
-            grpDialingApi.currentShareContent.remoteLineId = actionObj.message.line
-            grpDialingApi.currentShareContent.shareType = actionObj.message.shareType
-            grpDialingApi.currentShareContent.action = actionObj.message.action
-            grpDialingApi.currentShareContent.localShare = request.localShare || false
-            grpDialingApi.saveShareLineContent.push(grpDialingApi.currentShareContent)
+            let config = {
+                lineId: request.content.local_line,
+                shareType: actionObj.message.shareType,
+                localShare: request.localShare || false,
+                currentLineInfo: remoteCallInfo
+            }
+            let session = This.getSession({key: 'lineId', value: config.lineId})
+            if(!session){
+                session = This.getShareSessionInstance(config)
+            }
 
-            grpDialingApi.peerInfoMessage.sdp = actionObj.message.sdp
-            grpDialingApi.peerInfoMessage.reqId = actionObj.message.reqId
-            grpDialingApi.peerInfoMessage.localLineId = request.content.local_line
-            grpDialingApi.peerInfoMessage.remoteLineId = actionObj.message.line
-            grpDialingApi.peerInfoMessage.action = actionObj.message.action
-            grpDialingApi.peerInfoMessage.shareType = actionObj.message.shareType
-            grpDialingApi.peerInfoMessage.localShare = request.localShare || false
 
-            let title = grpDialingApi.notifyEvent.shareScreen.title.replace("{0}", remoteCallInfo.remotename || remoteCallInfo.remotenumber)
-            let message = grpDialingApi.notifyEvent.shareScreen.message
-            grpDialingApi.currentShareContent.remoteCallInfo = remoteCallInfo
-            grpDialingApi.createDesktopNotification({title: title, message: message})
+            let localContent = {
+                lineId: request.content.local_line,
+                reqId: actionObj.message.reqId,
+            }
+            let remoteContent = {
+                lineId: actionObj.message.line,
+                reqId: actionObj.message.reqId,
+                sdp: actionObj.message.sdp,
+                remoteShare: true
+            }
+
+            session.setLocalContent(localContent)
+            session.setRemoteContent(remoteContent)
+
+            let title = This.notifyEvent.shareScreen.title.replace("{0}", remoteCallInfo.remotename || remoteCallInfo.remotenumber)
+            let message = This.notifyEvent.shareScreen.message
+            This.currentShareContent.remoteCallInfo = remoteCallInfo
+            This.createDesktopNotification({title: title, message: message})
             msg = {
                 lineId: request.content.local_line,
-                receiveSharePopupNum: grpDialingApi.saveShareLineContent.length,
-                currentShareContent: grpDialingApi.currentShareContent
+                receiveSharePopupNum: this.shareSessions.length,
+                currentShareContent: session,
+                lineData: this.lineData
             }
         }
         // 提示框： 显示用户接受还是拒绝
         /***告知popup页面共享来电**/
-        grpDialingApi.sendMessage2Popup({
-            cmd: "isIncomingCall",
+        This.sendMessage2Popup({
+            cmd: "shareScreenRequest",
             message: msg
         });
     },
@@ -2284,14 +2494,21 @@ let grpDialingApi = {
      */
     revRemoteStopScreenRequest: function (request){
         if (!request.content || !grpDialingApi.socket) {
+            console.log("revRemoteStopScreenRequest: invalid parameter")
             return
         }
+        let This = this
+
+        /*********本端接收到销毁线路请求 destroyMediaSession *************/
+            /** (1) 首先需要回复销毁线路请求 destroyMediaSessionRet  (2)background后台清除本线路的相关session ***/
+            /** (3) 需要告知shareScreen共享页面销毁当前线路共享       (4)需要告知popup页面相关参数的重置 ***/
+            /** 注意： background清除本端session的同时需要根据当前线路是否是会议室来处理是否需要关闭当前共享页面 ***/
 
         console.log("handle remote destroyMediaSession content")
-        let actionObj = grpDialingApi.socket.parseMessageBody(request.content)
+        let actionObj = This.socket.parseMessageBody(request.content)
         let message = {
             destroyMediaSessionRet: {
-                line: actionObj.message.line,
+                line: request.content.local_line,
                 reqId: actionObj.message.reqId,
                 rspInfo: {
                     rspCode: 200,
@@ -2300,15 +2517,15 @@ let grpDialingApi = {
             },
             local_line: request.content.local_line,
         }
-        if (grpDialingApi.socket) {          // 恢复对应的 request  ---> response
-            grpDialingApi.socket.sendMessage(message)
+        if (This.socket) {          // 恢复对应的 request  ---> response
+            This.socket.sendMessage(message)
         }
-        if(grpDialingApi.shareScreenPopupPort){                           // 针对存在共享窗口对其进行销毁相关内容
-            grpDialingApi.sendMessage2ShareScreen({ type: 'clearSession', data: {lineId: request.content.local_line} })
+        if(This.shareScreenPopupPort){                           // 针对存在共享窗口对其进行销毁相关内容
+            This.sendMessage2ShareScreen({ type: 'clearSession', data: {lineId: request.content.local_line} })
         }
 
-        grpDialingApi.sendMessage2Popup({cmd: 'closeShareInformForPopup'})    // 关闭共享通知窗口
-        grpDialingApi.clearShareContent({lineId: request.content.local_line})
+        This.sendMessage2Popup({cmd: 'closeShareInformForPopup'})    // 通知popup窗口当前关闭共享窗口
+        This.clearShareContent({lineId: request.content.local_line})
     },
 
     /**
@@ -2316,14 +2533,27 @@ let grpDialingApi = {
      */
     revLocalStopScreenRequest: function (request){
         if (!request.content || !grpDialingApi.socket) {
+            console.log("revLocalStopScreenRequest: invalid parameter")
             return
         }
+        let This = this
 
-        grpDialingApi.clearShareContent({lineId: request.content.local_line})
+        /****** 收到本端请求的回复内容 destroyMediaSessionRet *******/
+            /** (1)首先需要 background后台 清除本线路的相关session (2) 在队列中删除本端发送出去的ReqId ***/
+            /** (3) 需要判断当前共享线路是否是会议室，若不是，则直接关闭共享窗口；否则判断当前线路是不是主持人共享线路，针对进行处理 **/
+            /** (4) 需要告知popup页面相关参数的重置 ***/
+            /** 注意： background清除本端session的同时需要根据当前线路是否是会议室来处理是否需要关闭当前共享页面 ***/
 
-        if(grpDialingApi.shareScreenPopupPort){                           // 针对存在共享窗口对其进行销毁相关内容
-            grpDialingApi.sendMessage2ShareScreen({ type: 'clearSession', data: {lineId: request.content.local_line} })
+        let actionObj = This.socket.parseMessageBody(request.content)
+        let getInfoMsg = actionObj?.message?.rspInfo
+        console.log( "receive local stopScreen request get codeType is " + getInfoMsg.rspCode, "cause: " + getInfoMsg.rspMsg   );
+
+        This.clearShareContent({lineId: request.content.local_line})
+        This.deleteRandomReqId({reqId: actionObj.message?.reqId})
+        if(This.shareScreenPopupPort){                                   // 针对存在共享窗口对其进行销毁相关内容
+            This.closeShareScreenTab()
         }
+        This.sendMessage2Popup({cmd: 'clearShareContentForPop'})
     },
 
     /**
@@ -2338,11 +2568,11 @@ let grpDialingApi = {
         }
 
         console.log('handle remote answer sdp')
-        let actionObj = grpDialingApi.socket.parseMessageBody(request.content)
+        let actionObj = this.socket.parseMessageBody(request.content)
         let getInfoMsg = actionObj.message && actionObj.message.rspInfo;
         if(page === 'quicall'){
             console.log("quicallRemoteAnswerSdp:", actionObj)
-            grpDialingApi.sendMessage2Popup({
+            this.sendMessage2Popup({
                 cmd: request.cmd,
                 data: {
                     localLineId: request.content.local_line,
@@ -2353,25 +2583,123 @@ let grpDialingApi = {
             })
         }else{
             console.log("remoteAnswerSdp:", actionObj)
-            grpDialingApi.peerInfoMessage.sdp = actionObj.message.sdp
-            grpDialingApi.peerInfoMessage.reqId = actionObj.message.reqId
-            grpDialingApi.peerInfoMessage.localLineId = request.content.local_line
-            grpDialingApi.peerInfoMessage.remoteLineId = actionObj.message.line
-            grpDialingApi.peerInfoMessage.localShare = request.localShare || false
-            grpDialingApi.currentShareContent.remoteLineId = actionObj.message.line
+            let session = this.getSession({key: 'lineId', value: request.content.local_line})
+            let remote = {
+                lineId: actionObj.message.line,
+                reqId: actionObj.message.reqId,
+            }
+            let local = {
+                lineId: request.content.local_line,
+                reqId: actionObj.message.reqId,
+                sdp: actionObj.message.sdp,
+                rspInfo: getInfoMsg
 
-            grpDialingApi.peerInfoMessage.action = actionObj.action
-            grpDialingApi.peerInfoMessage.rspInfo = getInfoMsg;
+            }
+            session.setLocalContent(local)
+            session.setRemoteContent(remote)
 
             if (getInfoMsg && getInfoMsg.rspCode === 200) {
                 console.log("current get codeType is " + getInfoMsg.rspCode);
-                grpDialingApi.currentShareContent.isEstablishSuccessPc = true
-                grpDialingApi.sendMessage2Popup({ cmd: 'isSharingTurnedOn', shareState: 'open', content: grpDialingApi.currentShareContent, changeIconState: 'start'})
+                session.isEstablishSuccessPc = true
+                let currentLine = this.findLineStateAndMark({ lineId: request.content.local_line})
+                this.sendMessage2Popup({
+                    cmd: 'isSharingTurnedOn',
+                    shareState: 'open',
+                    content: session,
+                    action: 'start',
+                    state: currentLine.state,
+                    mark: currentLine.mark
+                })
             } else {
                 console.log( "current get codeType is " + getInfoMsg.rspCode, "cause: " + getInfoMsg.rspMsg   );
             }
-            grpDialingApi.sendMessage2ShareScreen({ cmd: request.cmd, data: grpDialingApi.peerInfoMessage })
-            grpDialingApi.clearPeerInfoMessage();
+            this.sendMessage2ShareScreen({
+                cmd: 'remoteAnswerSdp',
+                data: session,
+                lineData: this.lineData,
+                localAccountLists: this.loginData.accountLists
+            })
+
+            /**针对主动开启共享端：若对端接受后，共享页面展现在屏幕最前面***/
+            this.openPopup('../shareScreen/shareScreen.html', 'shareScreen')
+
+        }
+    },
+
+    /**
+     * 获取线路中conf是否为1，只有主动拉人入会，conf才会显示未1，被叫仍为0; 以此认为是host。
+     * 若为true，表示当前存在线路是主持会议； 否则并不代表当前不存在线路（可能是被叫端）
+     * @param data.lineId
+     **/
+    isExistHostConf: function (data={}){
+        if(!data.lineId){
+            console.log("isExistHostConf: invalid parameter ")
+            return
+        }
+        let isExistHost = this.lineData.some((item)=>Number(item.conf) === 1 && item.line === data.lineId)
+        return isExistHost
+    },
+
+    /**
+     * 获取线路中conf是否为1，只有主动拉人入会，conf才会显示未1，被叫仍为0; 以此认为是host。
+     * 若为true，表示当前存在线路是主持会议； 否则并不代表当前不存在线路（可能是被叫端）
+     * @param data.lineId
+     **/
+    isExistPc: function (data={}){
+        if(!data.lineId){
+            console.log("isExistHostConf: invalid parameter ")
+            return
+        }
+
+        let isExistPc = this.lineData.some((item)=>item.isEstablishSuccessPc && item.line === data.lineId)
+
+        return isExistPc
+    },
+
+    /**
+     * 处理会议室中关于共享相关内容
+     * @param data
+     * **/
+    handleConference: function(data){
+        let This = this
+
+        /**针对当前线路是否存在共享，若有则不处理，若没有则根据当前线路是否是会议室来处理共享逻辑。**/
+        let curLineConf = This.isExistHostConf({lineId: data.line})
+        let curLineSuccessPc = This.isExistPc({lineId: data.line})
+        if(!curLineSuccessPc){
+            if(curLineConf){
+                /** 1.准备针对当前线路 处理共享流程 **/
+                    /**（1）若当前会议中存在共享，则直接对其他线路开启共享**/
+                    /**（2）若当前会议中没有共享，则不处理**/
+                    /**（3）此处不需要打开共享页面，在原有的共享页面处理。**/
+
+                let session = This.getSession({key: 'lineId', value: data.line})
+                if(!session){
+                    let config = {
+                        lineId: data.line,
+                        shareType: 'shareScreen',
+                        localShare: true,
+                        currentLineInfo: data
+                    }
+                    session = This.getShareSessionInstance(config)
+
+
+                    let message = {
+                        cmd: 'localScreenShare',
+                        data: session,
+                        localAccountLists: This.loginData.accountLists,
+                    }
+                    This.sendMessage2ShareScreen(message)
+                }
+            }
+        }
+
+        if(This.lineData){
+            This.sendMessage2ShareScreen({
+                type: 'setLineStatus',
+                lines: This.lineData,
+                maxLinesNum: This.maxLinesNum
+            })
         }
     },
 
@@ -2381,31 +2709,33 @@ let grpDialingApi = {
      */
     setLineStatus: function (request){
         grpDialingApi.lineData = request.lines
+        this.updateShareSessionsState(grpDialingApi.lineData)
+
+        let This = this
         for (let i = 0; i < request.lines.length; i++) {
             let line = request.lines[i]
-            // 处理桌面共享
-            if (grpDialingApi.currentShareContent.isEstablishSuccessPc && grpDialingApi.saveShareLineContent.length) {
-                console.log("share exist")
-                for(let i in grpDialingApi.saveShareLineContent){
-                    let currentShare = grpDialingApi.saveShareLineContent[i]
+
+            // 针对点对点情况下，线路状态对其 桌面共享 的处理
+            if (This.shareSessions.length) {
+                for(let i in This.shareSessions){
+                    let currentShare = This.shareSessions[i]
                     switch(line.state){
                         case 'idle':
                             if(currentShare.lineId === line.line){
-                                console.log("current lineId hangup, need stop shareScreen and close peerConnection"+ line.line)
-                                grpDialingApi.sendMessage2ShareScreen({ type: 'closeWindow', data: { localLineId: line.line } })
-                                grpDialingApi.clearShareContent({lineId: line.line})
+                                console.log("current lineId hangup, need stop shareScreen and close peerConnection, lineId is "+ line.line)
+                                This.sendMessage2ShareScreen({ type: 'closeWindow', data: { lineId: line.line } })
                             }
                             break
                         case 'onhold':
                             if(currentShare.lineId === line.line){
                                 console.log("Currently in the hold state" )
-                                grpDialingApi.sendMessage2ShareScreen({type: 'holdLine', data: {lineId: line.line}})
+                                This.sendMessage2ShareScreen({type: 'holdLine', data: {lineId: line.line}})
                             }
                             break
                         case 'connected':
                             if(currentShare.lineId === line.line){
-                                console.log("Currently in the unhold state" )
-                                grpDialingApi.sendMessage2ShareScreen({type: 'unHoldLine', data: {lineId: line.line}})
+                                console.log("Currently in the unHold state" )
+                                This.sendMessage2ShareScreen({type: 'unHoldLine', data: {lineId: line.line}})
                             }
                             break
                         default:
@@ -2417,27 +2747,125 @@ let grpDialingApi = {
     },
 
     /**
+     * 更新共享线路的状态
+     * */
+    updateShareSessionsState: function(lines){
+        for(let data of lines){
+            for(let session of this.shareSessions){
+                if(session.lineId ===  data.line){
+                    session.currentLineInfo = data
+                }
+            }
+        }
+
+    },
+
+    /**
+     * 判断两个数组对象是否有所改变
+     * @param arr1
+     * @param arr2
+     * **/
+    areArraysChanged(arr1, arr2) {
+        // 存在有个参数不存在的情况
+        if(!arr1 || !arr2){
+            return true
+        }
+        let isObjectEqual = function(obj1, obj2) {
+            const keys1 = Object.keys(obj1);
+            const keys2 = Object.keys(obj2);
+
+            // 判断属性个数是否相等
+            if (keys1.length !== keys2.length) {
+                return false;
+            }
+
+            // 判断属性值是否相等
+            for (let i = 0; i < keys1.length; i++) {
+                const key = keys1[i];
+                if (obj1[key] !== obj2[key]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // 判断长度是否相等
+        if (arr1.length !== arr2.length) {
+            return true;
+        }
+
+        // 判断每个对象的属性值是否相等
+        for (let i = 0; i < arr1.length; i++) {
+            if (!isObjectEqual(arr1[i], arr2[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    /**
      * 判断对端的webSocket是否建立成功
+     * 主要针对当前线路是connected状态 发送数据
      * **/
     isSuccessforRemoteWs(data){
-        // 情况一： 当前未开始进行共享，获取对端是否连接webSocket
-        // 情况二： 当前已经在共享，线路状态发生改变
         let This = this
+        let isChangeForLineData = This.areArraysChanged(grpDialingApi.preLineData, data.lines)
+        if(!isChangeForLineData){
+            console.log("handleShareIconForHold： current lineData no change")
+            return
+        }
+        This.preLineData = data.lines
+
+        /** 针对线路处于connected 状态 发送探测请求 ***/
+            // 情况一： 当前未开始进行共享，获取对端是否连接webSocket
+            // 情况二： 当前已经在共享，线路状态发生改变
         for (let line of data.lines) {
-            if(line.state === 'connected' && grpDialingApi.socket && grpDialingApi.socket.wsIsConnected()){
+            let isMarkDetect
+            if(This.markLineDetect.length){
+                isMarkDetect = This.markLineDetect.find((item)=> item.lineId === line.line)
+            }
+            if((line.state === 'connected' || line.state === 'onhold') && !isMarkDetect && This.socket && This.socket.wsIsConnected()){
                 let getReqId = This.getRandomReqId({action: 'detectMediaSession'})
-                console.log("get reqId:", getReqId)
                 let data = {
                     detectMediaSession:{
                         action:"detect_remote_connection_state",
                         line: line.line,
                         reqId: getReqId,
+                        state: line.state
                     },
                     local_line: line.line,
                 }
-                grpDialingApi.socket.sendMessage(data)
+                This.socket.sendMessage(data)
             }
         }
+
+        /** 针对已经标记的探测线路 状态发生改变取消 **/
+        This.deleteMarkLine()
+    },
+
+    /**
+     * 查找当前线路的状态以及是否标记探测
+     *@param data.lineId
+     * **/
+    findLineStateAndMark: function(data){
+        if(!data || !data.lineId){
+            console.log("findLineStateAndMark: invalid parameter ")
+            return
+        }
+
+        let This = this
+        let isExist = false
+        let lineState = false
+        if(This.markLineDetect.length){
+            isExist = This.markLineDetect.some((item)=> item.lineId === data.lineId )
+        }
+
+        let currentLine = This.lineData.find((item)=> item.line === data.lineId)
+        lineState = currentLine.state
+
+        return {state: lineState, mark: isExist}
     },
 
     /**
@@ -2454,13 +2882,17 @@ let grpDialingApi = {
 
         This.randomReqIdArray.push({
             action: data.action,
-            reqId: reqId
+            reqId: reqId,
         })
 
         return reqId
     },
 
     deleteRandomReqId: function(data){
+        if(!data || !data.reqId){
+            console.log("deleteRandomReqId: invalid parameter")
+            return
+        }
         let This = this
         for(let index in This.randomReqIdArray){
             let content = This.randomReqIdArray[index]
@@ -2472,86 +2904,100 @@ let grpDialingApi = {
         }
     },
 
-    /** 清除保存内容
-     * */
-    clearPeerInfoMessage: function (isClearCurrentShareContent = false) {
-        console.log("isClearCurrentShareContent is : " + isClearCurrentShareContent)
-        if(isClearCurrentShareContent){
-            grpDialingApi.currentShareContent = {
-                lineId: '',
-                remoteLineId:'',
-                shareType: '',
-                remoteCallInfo:'',
-                isEstablishSuccessPc: false
+    /**
+     * 判断当前挂断线路中是否存在标记探测线路，若存在，就删除。
+     * **/
+    deleteMarkLine: function(){
+        let This = this
+        if(This.lineData.length){
+            for(let item of This.lineData){
+                for(let index in This.markLineDetect){
+                    let content = This.markLineDetect[index]
+                    if( item.line === content.lineId ){
+                        if((content.state === 'connected' || content.state === 'onhold') && item.state === 'idle'){
+                            console.log("delete detectLine is " + content.lineId )
+                            This.markLineDetect.splice(index,1)
+                        }
+                    }
+                }
             }
-        }
-
-        grpDialingApi.peerInfoMessage = {
-            action: '',
-            reqId: '',
-            localLineId: '',
-            sdp: '',
-            remoteLineId: '',
-            updateMessage: '',
-            infoMsg: '',
-            rspInfo: ''
         }
     },
 
     /**
-     * 清除共享内容的相关内容
-     * @param data
+     * 清除共享内容线路的相关内容
+     * @param data.lineId      共享线路
+     * @param data.isCloseStream 是否停止流
      */
     clearShareContent: function(data){
-        console.log("clear current share content, lineId: " + data.lineId)
-        grpDialingApi.closeShareScreenTab()
-        grpDialingApi.deleteScreenLine(data.lineId)
-        grpDialingApi.clearPeerInfoMessage(true)
-        grpDialingApi.localShare = false
+        if(!data ||!data.lineId){
+            console.log("clearShareContent: invalid parameter")
+            return
+        }
+
+        /** (1) 若当前不是会议， 则直接清除当前线路并且关闭窗口**/
+        /** (2) 若当前是会议， 则直接清除当前线路，但不能关闭窗口**/
+        let This = this
+        let session = This.getSession({key: 'lineId', value: data.lineId})
+        if(!session){
+            console.log("clearShareContent: no session")
+            return
+        }
+
+        let closeOtherLine = function(){
+            let sessions = This.shareSessions.filter((item)=> item.lineId !== data.lineId)
+            if(sessions.length){
+                for(let session of sessions){
+                    console.log("current close share lineId is ", session.lineId)
+                    This.closePc({lineId: session.lineId})
+                }
+            }
+        }
+
+        if(Number(session.currentLineInfo.conf) === 1){
+            console.log("current is conference content, clear lineId is: " + data.lineId)
+
+            /** 作为主持人，清除当前共享线路时，需要告知其他线路也要关闭共享和共享窗口。 先后顺序： 场景一 、场景二 、场景三 、场景四 **/
+                /** 场景一：(1)判断当前线路是否停止共享，若不是，则判断当前共享线路是否挂断；若是，则需要告知其他共享线路关闭共享窗口*/
+                /** 场景二：(2)判断当前共享线路通话是否挂断。若不是，则判断当前是否是收到销毁共享线路；若是，则需要告知其他线路关闭共享窗口；**/
+                /** 场景三：(3)判断当前是否是收到销毁共享线路。若不是，则判断当前所有共享线路主持人和共享者是否是同一端；若是，则不需要告知其他线路关闭共享窗口；**/
+                /** 场景四：(4)判断当前所有共享线路主持人和共享者是否是同一端。若不是，则需要告知；若是，则不需要告知其他线路关闭共享窗口；**/
+
+            let currentLineContent = This.lineData.filter((item)=> item.line === session.lineId)
+            console.log("current line state is ", currentLineContent.state)
+
+            if(data.isCloseStream || currentLineContent.state === 'idle'){
+                console.log("close other shareLines")
+                closeOtherLine()
+            }else if(currentLineContent.state !== 'idle'){
+
+                if(This.shareSessions.length){
+                    let theSameHostAndSharing = This.shareSessions.every((item)=>  item.localShare && !item.remoteShare )
+                    if(!theSameHostAndSharing){
+                        closeOtherLine()
+                    }
+                }
+            }
+        }
+
+        This.deleteScreenLine(data.lineId)
     },
 
-    /**
-     * 关闭pc
-     * @param data
-     * @param isLocal
-     */
-    closePrePeerConnection: function(data, isLocal = false){
-        let deleteLine = function(lineId,i){
-            console.log("destroy lineId:" + lineId)
-            grpDialingApi.saveShareLineContent.splice(i, 1);
-            if(grpDialingApi.currentShareContent.isEstablishSuccessPc){
-                grpDialingApi.closePc({lineId: lineId})
-            }else{
-                grpDialingApi.closeShareScreenTab(false)
-            }
-        }
-        for (let index = 0; index < grpDialingApi.saveShareLineContent.length; index++) {
-            let currentShareContent = grpDialingApi.saveShareLineContent[index]
-            if(!isLocal){
-                if (currentShareContent.lineId !== data.lineId) {
-                    deleteLine(currentShareContent.lineId, index)
-                }
-            }else{
-                if (currentShareContent.lineId === data.lineId) {
-                    deleteLine(data.lineId,index)
-                }
-            }
-        }
-    },
     /**
      * 发送 关闭pc 消息
      * @param data
      */
     closePc: function(data){
+        let This = this
+        let getReqId = This.getRandomReqId({action: 'destroyMediaSession'})
         let param = {
             destroyMediaSession: {
-                reqId: parseInt(Math.round(Math.random() * 100)),
+                reqId: getReqId,
                 actionType: 'handleLocalHangup'
             },
             local_line: data.lineId
         }
-        grpDialingApi.localShare = false
-        grpDialingApi.socket.sendMessage(param)
+        This.socket.sendMessage(param)
     },
 
     /**
@@ -2561,18 +3007,28 @@ let grpDialingApi = {
         if (!lineId) {
             return
         }
-        for (let index = 0; index < grpDialingApi.saveShareLineContent.length; index++) {
-            let currentShareContent = grpDialingApi.saveShareLineContent[index]
-            if (currentShareContent.lineId === lineId) {
+
+        for (let index = 0; index < this.shareSessions.length; index++) {
+            let session = this.shareSessions[index]
+            if (session.local.lineId === lineId) {
                 console.log("current line hangup:" + lineId)
-                currentShareContent.value = 'false'
-                grpDialingApi.sendMessage2Popup({ cmd: 'isSharingTurnedOn', shareState: 'close', content: currentShareContent, changeIconState: 'end'})
-                currentShareContent.lineId = null
-                currentShareContent.shareType = null
-                delete currentShareContent.value
-                grpDialingApi.saveShareLineContent.splice(index, 1);
+                let currentLine = this.findLineStateAndMark({lineId:lineId})
+                this.sendMessage2Popup({
+                    cmd: 'isSharingTurnedOn',
+                    shareState: 'close',
+                    content: session,
+                    action: 'end',
+                    state: currentLine.state,
+                    mark: currentLine.mark
+                })
+
+                this.shareSessions.splice(index, 1);
                 break
             }
+        }
+
+        if(this.shareSessions.length === 0){
+            this.closeShareScreenTab()
         }
     },
 
@@ -2580,13 +3036,14 @@ let grpDialingApi = {
      * 关闭共享窗口
      **/
     closeShareScreenTab: function (isClearPopupContent = true) {
+        let This = this
         if(isClearPopupContent){
-            grpDialingApi.sendMessage2Popup({cmd: 'clearShareContentForPop'})
+            This.sendMessage2Popup({cmd: 'clearShareContentForPop'})
         }
-        let tabId = grpDialingApi.shareScreenPopupPort ? grpDialingApi.shareScreenPopupPort.sender.tab.id : null
+        let tabId = This.shareScreenPopupPort ? This.shareScreenPopupPort.sender.tab.id : null
         console.log('close tab id: ', tabId)
         if (tabId) {
-            let tabs = grpDialingApi.extensionNamespace.tabs
+            let tabs = This.extensionNamespace.tabs
             if (tabs && tabs.remove) {
                 tabs.remove(tabId, function () {
                     console.log('close shareScreen success ')
@@ -2680,52 +3137,102 @@ let grpDialingApi = {
             data = JSON.parse(data)
         }
         console.info('handle detect mediaSession: ', data)
-        let content = grpDialingApi.socket.parseMessageBody(data.content)
+
+        let This = this
+        let content = This.socket.parseMessageBody(data.content)
+        let isExist
+        let getLineContent
+
         switch (content.type) {
             case 'detectMediaSession':
-                 if(content?.message) {                    // background 回复，表示websocket 建立成功 并处理request ---> response
-                     //告知popup页面shareScreen按钮取消置灰
-                     let param = {
-                         detectMediaSessionRet: {
-                             action: "detect_remote_connection_state",
-                             line: content.message?.line,
-                             reqId: content.message?.reqId,
-                             rspInfo: {
-                                 rspCode: 200,
-                                 rspMsg: 'action success'
-                             }
-                         },
-                         local_line: content.message?.line,
+                if(content?.message) {                    // background 回复，表示websocket 建立成功 并处理request ---> response
+                    //告知popup页面shareScreen按钮取消置灰
+                    let param = {
+                        detectMediaSessionRet: {
+                            action: "detect_remote_connection_state",
+                            line: content.message?.line,
+                            reqId: content.message?.reqId,
+                            state: content.message?.state,
+                            rspInfo: {
+                                rspCode: 200,
+                                rspMsg: 'action success'
+                            }
+                        },
+                        local_line: data.content.local_line,
+                    }
+                    This.socket.sendMessage(param)
 
-                     }
-                     grpDialingApi.socket.sendMessage(param)
-                     grpDialingApi.sendMessage2Popup({
-                         cmd: 'changeShareScreenIcon',
-                         data: {state: 'recovery', lineId: Number(data?.content?.local_line)}
-                     })
-                 }
+                    /** 接收到远端的探测消息，说明对端的websocket是成功建立的 **/
+                        /** 查看标记探测中是否标记，若没有，则告知popup页面将共享桌面、共享文件、联系人 都恢复可点击样式**/
+                    let currentLine = This.findLineStateAndMark({ lineId: content.message?.line})
+                    if(!currentLine.mark){
+                        This.sendMessage2Popup({
+                            cmd: 'changeShareScreenIcon',
+                            data:{
+                                action: 'recovery',
+                                lineId: content.message?.line,
+                                state: currentLine.state,
+                                mark: true
+                            }})
+                    }
+
+                    isExist = This.markLineDetect.find((item)=> item.lineId === content.message?.line)
+                    if(!isExist){
+                        getLineContent = This.lineData.find((item)=>item.line === content.message?.line)
+                        This.markLineDetect.push({lineId: getLineContent.line, state: 'connected'})
+                    }
+
+                }
                 break;
             case 'detectMediaSessionRet':
+                let getLineId = Number(data?.content?.local_line)
                 if(content?.message){
                     console.log("current get detect remote webSocket code:", content.message?.rspInfo?.rspCode)
                     if(content.message?.rspInfo?.rspCode === 200){     // 表示成功
+                        // 标记当前对端线路建立websocket
+                        isExist = This.markLineDetect.find((item)=> item.lineId === getLineId)
+                        if(!isExist){
+                            This.markLineDetect.push({lineId: getLineId, state: content.message?.state})
+                        }
+
                         //告知popup页面shareScreen按钮取消置灰
-                        grpDialingApi.sendMessage2Popup({cmd: 'changeShareScreenIcon', data:{state: 'recovery', lineId: Number(data?.content?.local_line)}})
-                    }else{                                    // 表示失败
-                        //告知popup页面shareScreen按钮要置灰
-                        grpDialingApi.sendMessage2Popup({cmd: 'changeShareScreenIcon', data:{state: 'interrupt', lineId: Number(data?.content?.local_line)}})
+                        let currentLine = This.findLineStateAndMark({ lineId: content.message?.line})
+                        This.sendMessage2Popup({
+                            cmd: 'changeShareScreenIcon',
+                            data: {
+                                action: 'recovery',
+                                lineId: getLineId,
+                                state: currentLine.state,
+                                mark: true
+                            }})
                     }
-                    grpDialingApi.deleteRandomReqId({reqId: content.message?.reqId})
-                }else{
-                    console.log("Waiting for detectMediaSessionRet reply...")
+                    This.deleteRandomReqId({reqId: content.message?.reqId})
+
+                    This.startOtherLineShare() // 针对会议室情况下，判断当前线路是否共享。
                 }
 
                 break;
             default:
-                console.log("handleDetectMediaSession: get type is:",request.cmd)
+                console.log("handleDetectMediaSession: get type is:",content.type)
                 break;
         }
 
+    },
+
+    /**
+     * 针对会议室情况下，判断当前线路是否共享。
+     * **/
+    startOtherLineShare: function(){
+        let This = this
+        if(This.shareSessions.length && This.shareScreenPopupPort){
+            for(let line of This.lineData){
+                for(let item of This.markLineDetect){
+                    if(item.lineId === line.line){
+                        This.handleConference(line)
+                    }
+                }
+            }
+        }
     },
 
     /*******************************************************桌面通知*****************************************************/
@@ -2987,28 +3494,22 @@ let grpDialingApi = {
         }
 
 
-        let customWidth = 440
+        let customWidth = 456
         let customHeight = 540
+        if(grpDialingApi.getBrowserDetail().browser === 'firefox'){
+            /**
+             * 从 Firefox 7 开始，不能改变浏览器窗口的大小了，要依据下面的规则：
+             * 不能设置那些不是通过 window.open 创建的窗口或 Tab 的大小。
+             *  当一个窗口里面含有一个以上的 Tab 时，无法设置窗口的大小。
+             * @type {number}
+             */
+            customHeight = customHeight + 150
+        }
         let iTop = 200
         let iLeft = 600
-        let screenWidth
-        let screenHeight
-        let screenTop
-        let screenLeft
-        if (This.extensionNamespace.runtime.getManifest().manifest_version === 2) {
-            iTop = (window.screen.height - 30 - customHeight) / 2; //获得窗口的垂直位置;
-            iLeft = (window.screen.width - 10 - customWidth) / 2; //获得窗口的水平位置;
-            screenWidth = parseInt(Number(window.screen.width) * 0.8)
-            screenHeight = parseInt(Number(window.screen.height) * 0.8)
-            screenTop = parseInt((window.screen.height - 50 - screenHeight) / 2);
-            screenLeft = parseInt((window.screen.width - screenWidth) / 2);
-        } else if (grpDialingApi.screen.width && grpDialingApi.screen.height) {
+        if (grpDialingApi.screen.width && grpDialingApi.screen.height) {
             iTop = (grpDialingApi.screen.height - 30 - customHeight) / 2;
             iLeft = (grpDialingApi.screen.width - 10 - customWidth) / 2;
-            screenWidth = parseInt(Number(grpDialingApi.screen.width) * 0.8)
-            screenHeight = parseInt(Number(grpDialingApi.screen.height)  * 0.8)
-            screenTop = parseInt((grpDialingApi.screen.height - 50 - screenHeight) / 2);
-            screenLeft = parseInt((grpDialingApi.screen.width - screenWidth) / 2);
         } else {
             // use default position
         }
@@ -3053,17 +3554,13 @@ let grpDialingApi = {
                         console.log('update window')
                         This.extensionNamespace.windows.update(win.id, {
                             focused: true,
-                            left: screenLeft || 0,
-                            top: screenTop || 0
+                            state: 'maximized'
                         },createShareWindowCallBack)
                     } else {
                         This.extensionNamespace.windows.create({
                             url: url,
                             type: "popup",
-                            height: screenHeight || customHeight,
-                            width: screenWidth || customWidth,
-                            left: screenLeft || 0,
-                            top: screenTop || 0
+                            state: 'maximized'
                         },createShareWindowCallBack);
                     }
                 })
@@ -3072,10 +3569,7 @@ let grpDialingApi = {
                 This.extensionNamespace.windows.create({
                     url: url,
                     type: "popup",
-                    height: screenHeight || customHeight,
-                    width: screenWidth || customWidth,
-                    left: screenLeft || 0,
-                    top: screenTop || 0
+                    state: 'maximized'
                 },createShareWindowCallBack);
             }
         }

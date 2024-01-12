@@ -13,8 +13,16 @@ let WebRTCSession = function (lineId) {
     this.isRecvRequest = false             // 是否接受对端请求
     this.localShare = false                // 表示本端是否开启共享
     this.remoteShare = false               // 表示对端是否开启演示
+    this.conf  = 0                         // 表示当前线路是否是会议室模式、点对点模式 1（会议室） 0（点对点）
     this.isInitiativeStopScreen = false    // 表示是否主动关闭演示
-    this.isHandleDestroy = false           // 表示当前是否进行destroy流程
+    this.account ={                        // 表示本端的 id 和 name
+        id: '',
+        name: ''
+    }
+    this.remoteAccount ={                  // 表示远端的 id 和 name
+        id: '',
+        name: ''
+    }
 
     this.isMute = false                     // 表示流处于的状态
     this.isLocalHold = false                // 表示本端是否hold
@@ -76,20 +84,29 @@ let WebRTCSession = function (lineId) {
     this.fileSize = 0                                               // 文件大小
     this.fileName = null                                            // 文件名字
     this.fileReader = null
+    this.sendTimeoutFileList = []                                   // 文件发送超时列表
+    this.receiveTimeoutFileList = []                                // 文件接收超时列表
 }
 
 /**
  * 通过添加流或者addTransceiver创建媒体行
  * @param shareType 当前呼叫类型
  * @param isOffer: true 为 offer， false 为 answer
+ * @param stream  只有会议室的场景下才会由此参数
  * @returns {Promise<void>}
  */
-WebRTCSession.prototype.createMediaLine = async function (shareType, isOffer){
+WebRTCSession.prototype.createMediaLine = async function (shareType, isOffer, stream){
     log.info('createMediaLine type is ' + shareType +  ' and offer is : '+ isOffer )
     let This = this
 
     try {
-        let presentStream = This.getStream('slides', true)
+        let presentStream
+        if(This.conf === 1){
+            presentStream = stream
+        }else{
+            presentStream = This.getStream('slides', true)
+        }
+
         // 先创建Transceiver
         switch (shareType){
             case 'audio':
@@ -179,12 +196,14 @@ WebRTCSession.prototype.subscribeStreamEvents = function (pc) {
 
 /**
  * create webRTC multiStream Peer connection
+ * @param type  如 'audio', 'main', 'slides'
+ * @param stream  当前线路是会议室的场景下才会由此参数
  * @param conf.iceServers
  * @param conf.RTCpeerConnectionOptional
  * @param conf.iceTransportPolicy
  * @param conf.peerAccount
  */
-WebRTCSession.prototype.createRTCSession = async function (type = null, conf = {}) {
+WebRTCSession.prototype.createRTCSession = async function (type = null, stream, conf = {}) {
     log.info('create webRTC multiStream Peer connection')
     let This = this
     if(!This.isSuccessUseWebsocket){
@@ -194,10 +213,10 @@ WebRTCSession.prototype.createRTCSession = async function (type = null, conf = {
 
     try {
         if(!This.isSuccessUseWebsocket){
-            await This.createMediaLine(This.shareType, true)
+            await This.createMediaLine(This.shareType, true, stream)
         }else{
-            let mainStream = This.getStream(type, true)
-            await This.processAddStream(mainStream, This.pc, type)
+            let slidesStream = This.getStream(type, true)
+            await This.processAddStream(slidesStream, This.pc, type)
         }
         await This.doOffer()
     } catch (error) {
@@ -456,12 +475,5 @@ WebRTCSession.prototype.JSEPStatusRollback = function(){
         .catch(function(error){
             log.warn("JSEP: Rollback status failed: " + error)
         })
-    let type = 'slides'
-    let stream = This.getStream(type,true)
-    if (stream) {
-        log.warn('clear slides stream.')
-        This.closeStream(stream)
-        This.setStream(null, type, true)
-    }
     This.localShare = false
 }

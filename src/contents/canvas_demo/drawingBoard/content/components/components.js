@@ -1,83 +1,112 @@
 function GRPButtonUpdateClass (elem, type){
     let This = elem
-    let disabled = This.getAttribute("disabled")                // 是否禁用 true禁用 false不禁用
-    This.getElementsByClassName('setBtnContainer')[0].className = `setBtnContainer ${disabled === 'true' ? 'setBtnContainerProhibit' : 'setBtnContainerInit'}`
-    let icon = This.getElementsByClassName('btn')[0]  // 按钮图标
-    let text = This.querySelector('span')           // 按钮文案
+    let forbidden = This.getAttribute("disabled")                // 是否禁用 true禁用 false不禁用
+    let show = This.getAttribute("show")                       // 显示或隐藏
+    This.getElementsByClassName('setBtnContainer')[0].className = `setBtnContainer ${forbidden === 'true' ? 'setBtnContainerProhibit' : 'setBtnContainerInit'}`
+    let icon = This.getElementsByClassName('shareBtn')[0]  // 按钮图标
     switch (type) {
+        case "display":
+            icon.className = `shareBtn icon ${show === 'true' ? 'GRP-icon-drag' : 'GRP-icon-drag'}`
+            break
         case "invite":
-            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-contacts-ash' : 'GRP-icon-contacts-black'}`
+            icon.className = `shareBtn icon ${forbidden === 'true' ? 'GRP-icon-share-contacts-ash' : 'GRP-icon-share-contacts-black'}`
             break
         case "member":
-            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-member-ash' : 'GRP-icon-member-black'}`
+            icon.className = `shareBtn icon ${forbidden === 'true' ? 'GRP-icon-member-ash' : 'GRP-icon-member-black'}`
             break
         case 'shareFile':
-            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-file-ash' : 'GRP-icon-file-black'}`
+            icon.className = `shareBtn icon ${forbidden === 'true' ? 'GRP-icon-share-file-ash' : 'GRP-icon-share-file-black'}`
             break
         case "shareScreen":
         case "switchShareScreen":
-            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-newShare-ash' : 'GRP-icon-newSharing-black'}`
-            text.textContent = type === 'shareScreen' ? currentLocale['L92'] : currentLocale['L92_1']
+            let name
+            if(forbidden === 'true'){
+                name = type === 'shareScreen' ? 'GRP-icon-newShare-ash' : 'GRP-icon-newSharing-ash'
+            }else{
+                name = type === 'shareScreen' ? 'GRP-icon-newShare-white' : 'GRP-icon-newSharing-white'
+            }
+            icon.className = `shareBtn icon ${name}`
+            This.setAttribute('title',type === 'shareScreen' ? currentLocale['L92'] : currentLocale['L92_1'])
             break
         case "pauseShareScreen":
         case "resumeShareScreen":
-            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-pauseSharing-ash' : 'GRP-icon-pauseSharing-black'}`
-            text.textContent = type === 'pauseShareScreen' ? currentLocale['L93'] : currentLocale['L104']
+            icon.className = `shareBtn icon ${forbidden === 'true' ? 'GRP-icon-pauseSharing-ash' : 'GRP-icon-pauseSharing-black'}`
             break
         case "stopShareScreen":
-            icon.className = `btn icon ${disabled === 'true' ? 'GRP-icon-quitSharing-ash' : 'GRP-icon-quitSharing-black'}`
+            icon.className = `shareBtn icon ${forbidden === 'true' ? 'GRP-icon-quitSharing-ash' : 'GRP-icon-quitSharing-black'}`
             break
+        case "hold":
+        case 'unHold':
+            icon.className = `shareBtn icon ${forbidden === 'true' ? 'GRP-icon-share-hold-ash' : 'GRP-icon-share-hold-white'}`
+            This.setAttribute('title',type === 'hold' ? currentLocale['L158'] :currentLocale['L159'])
+            break
+        default:
+            break;
     }
 }
 
 // 共享页侧边栏按钮
 class GRPButton extends HTMLElement {
     static get observedAttributes() {
-        return ['type', 'disabled'];
+        return ['type', 'disabled', 'show'];
     }
     constructor() {
         super();
         this.type = this.getAttribute("type")
-        this.disabled = this.getAttribute("disabled")
+        this.forbidden = this.getAttribute("disabled")
+        this.show = this.getAttribute("show")
         this.icon = null
         this.text = null
+
         switch (this.type) {
+            case "display":
+                this.icon = 'GRP-icon-drag'
+                break
             case "invite":
-                this.icon = !this.disabled ? 'GRP-icon-contacts-black' : 'GRP-icon-contacts-ash'
-                this.text = currentLocale['L90']
+                this.icon = !this.forbidden ? 'GRP-icon-share-contacts-black' : 'GRP-icon-share-contacts-ash';
+                this.setAttribute('title', currentLocale['L90'])
                 this.onclick = e => {
-                    if(this.disabled === 'true'){
+                    if(this.forbidden === 'true'){
                         return
                     }
                     inviteClick()
                 }
                 break
             case "member":
-                this.icon = !this.disabled ? 'GRP-icon-member-black' : 'GRP-icon-member-ash'
-                this.text = currentLocale['L91']
+                this.icon = !this.forbidden ? 'GRP-icon-member-black' : 'GRP-icon-member-ash';
+                this.setAttribute('title', currentLocale['L91'])
                 this.onclick = e => {
-                    if(this.disabled === 'true'){
+                    if(this.forbidden === 'true'){
                         return
                     }
                     memberClick()
                 }
                 break
             case 'shareFile':
-                this.icon = !this.disabled ? 'GRP-icon-file-black' : 'GRP-icon-file-ash'
-                this.text = currentLocale['L117']
+                this.icon = !this.forbidden ? 'GRP-icon-share-file-black' : 'GRP-icon-share-file-ash'
+                this.setAttribute('title', currentLocale['L117'])
                 this.onclick = e => {
-                    if(this.disabled === 'true'){
+                    if(this.forbidden === 'true'){
                         return
                     }
-                    fileUploadOnClick()
+                    // 获取会话列表里是否含有 文件列表
+                    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: currentLocalLine})
+                    if(session && session.receiveTimeoutFileList.length > 0){
+                        lossFileList.innerHTML = ''
+                        lossTitle.classList.remove('loss-title-none')
+                        addFileList(session.receiveTimeoutFileList)
+                    }else{
+                        lossTitle.classList.add('loss-title-none')
+                        fileUploadOnClick(e)
+                    }
                 }
                 break
             case "shareScreen":
             case "switchShareScreen":
-                this.icon = !this.disabled ? 'GRP-icon-newSharing-black' : 'GRP-icon-newShare-ash'
-                this.text = this.type === 'shareScreen' ? currentLocale['L92'] : currentLocale['L92_1']
+                this.icon = this.type === 'shareScreen' ?  'GRP-icon-newShare-ash': 'GRP-icon-newSharing-ash' ;
+                this.setAttribute('title', this.type === 'shareScreen' ? currentLocale['L92'] : currentLocale['L92_1'])
                 this.onclick = e => {
-                    if(this.disabled === 'true'){
+                    if(this.forbidden === 'true'){
                         return
                     }
                     if(this.type === 'shareScreen'){
@@ -85,45 +114,89 @@ class GRPButton extends HTMLElement {
                     }else{
                         switchScreenScreen()
                     }
+                    this.setAttribute('title', this.type === 'shareScreen' ? currentLocale['L92'] : currentLocale['L92_1'])
                 }
                 break
             case "pauseShareScreen":
             case "resumeShareScreen":
-                this.icon = !this.disabled ? 'GRP-icon-pauseSharing-black' : 'GRP-icon-pauseSharing-ash'
-                this.text = this.type === 'pauseShareScreen' ? currentLocale['L93'] :currentLocale['L104']
+                this.icon = !this.forbidden ? 'GRP-icon-pauseSharing-black' : 'GRP-icon-pauseSharing-ash'
+                this.setAttribute('title', this.type === 'pauseShareScreen' ? currentLocale['L93'] :currentLocale['L104'])
                 this.onclick = e => {
-                    if(this.disabled === 'true'){
+                    if(this.forbidden === 'true'){
                         return
                     }
                     pauseShareScreen(this.type)
+                    this.setAttribute('title', this.type === 'pauseShareScreen' ? currentLocale['L93'] :currentLocale['L104'])
                 }
                 break
             case "stopShareScreen":
-                this.icon = !this.disabled ? 'GRP-icon-quitSharing-black' : 'GRP-icon-quitSharing-ash'
-                this.text = currentLocale['L94']
+                this.icon = !this.forbidden ? 'GRP-icon-quitSharing-black' : 'GRP-icon-quitSharing-ash'
+                this.setAttribute('title', currentLocale['L94'])
                 this.onclick = e => {
-                    if(this.disabled === 'true'){
+                    if(this.forbidden === 'true'){
                         return
                     }
                     stopShareScreen()
                 }
                 break
+            case "hold":
+            case "unHold":
+                this.icon = !this.forbidden ? 'GRP-icon-share-hold-black' : 'GRP-icon-share-hold-ash'
+                this.setAttribute('title',this.type === 'hold' ? currentLocale['L158'] :currentLocale['L159'])
+                this.onclick = e => {
+                    if(this.forbidden === 'true'){
+                        return
+                    }
+                    /**1.改变icon背景色  2.针对当前状态处理hold/unHold  3.针对当前状态标记状态 4.修改title***/
+                    let iconElement =  this.getElementsByClassName('shareBtn')[0]
+                    iconElement.className = `shareBtn icon ${this.type === 'hold' ? 'GRP-icon-share-hold-black': 'GRP-icon-share-hold-white'}`
+
+                    popupSendMessage2Background({
+                        cmd: this.type,
+                        lineId: currentLocalLine
+                    })
+
+                    if(this.type === 'hold'){
+                        this.type = 'unHold'
+                    }else if(this.type === 'unHold'){
+                        this.type = 'hold'
+                    }
+                    this.setAttribute('title',this.type === 'hold' ? currentLocale['L158'] :currentLocale['L159'])
+                }
+                break
+            case "bye":
+                this.icon = 'GRP-icon-end';
+                this.setAttribute('title', currentLocale['L65'])
+                this.onclick = e => {
+                    if(this.forbidden === 'true'){
+                        return
+                    }
+                    popupSendMessage2Background({
+                        cmd: 'popupHangupLine',
+                        lineId: currentLocalLine
+                    })
+                }
+                break
+            default:
+                console.log("GRPButton: current type is:",this.type)
+                break
         }
-        this.innerHTML = `<div class="setBtnContainer ${this.disabled === 'true' ? 'setBtnContainerProhibit' : 'setBtnContainerInit'}">
+        this.innerHTML = `<div class="setBtnContainer ${this.forbidden === 'true' ? 'setBtnContainerProhibit' : 'setBtnContainerInit'}">
                             <div class="btnSetting">
                                 <div class="imgContent">
-                                    <div class="btn icon ${this.icon}"></div>
+                                    <div class="shareBtn icon ${this.icon}"></div>
                                  </div>
                             </div>
-                            <span>${this.text}</span>
                         </div>`;
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if(name === 'disabled'){
-            this.disabled = newValue
+            this.forbidden = newValue
         }else if(name === 'type'){
             this.type = newValue
+        }else if(name === 'show'){
+            this.show = newValue
         }
         GRPButtonUpdateClass(this, this.getAttribute("type"))
     }
@@ -184,26 +257,28 @@ class GRPFunButton extends HTMLElement {
         super();
         this.isSharing = false
         this.line = Number(this.getAttribute("line"))
+        this.conf = Number(this.getAttribute("conf"))
         this.type = this.getAttribute("type")
-        this.disabled = typeof this.getAttribute("disabled") === 'string'
+        this.forbidden = typeof this.getAttribute("disabled") === 'string'
         this.icon = null
         this.shareType = null
+        this.setAttribute('title', currentLocale['L148'])
         switch (this.type) {
             case "share":       // 共享
-                this.icon = !this.disabled ? 'GRP-icon-share-black' : 'GRP-icon-share-ash'
+                this.icon = !this.forbidden ? 'GRP-icon-share-black' : 'GRP-icon-share-ash'
                 this.shareType = 'shareScreen'
                 break
             case "file":        // 文件
-                this.icon = !this.disabled ? 'GRP-icon-file-black' : 'GRP-icon-file-ash'
+                this.icon = !this.forbidden ? 'GRP-icon-file-black' : 'GRP-icon-file-ash'
                 this.shareType = 'shareFile'
                 break
             case "contacts":    // 联系人
-                this.icon = !this.disabled ? 'GRP-icon-contacts-black' : 'GRP-icon-contacts-ash'
+                this.icon = !this.forbidden ? 'GRP-icon-contacts-black' : 'GRP-icon-contacts-ash'
                 break
         }
-        this.innerHTML = `<div class="operation-button icon ${this.icon}" style="cursor: ${this.disabled ? 'not-allowed' : 'pointer'}"></div>`
+        this.innerHTML = `<div class="operation-button icon ${this.icon}" style="cursor: ${ this.forbidden ? 'not-allowed' : 'pointer'}"></div>`
         this.onclick = e => {
-            if(this.disabled === 'true'){   // 针对禁止点击不做任何处理
+            if(this.forbidden === 'true'){   // 针对禁止点击不做任何处理
                 return
             }
 
@@ -221,7 +296,7 @@ class GRPFunButton extends HTMLElement {
             }else{
                 if(this.type === 'share'){
                     // 共享桌面
-                    if(currentShareContent){
+                    if( (currentShareContent && currentShareContent.lineId !== this.line && this.conf === 0)){
                         // 弹框提示： 当前存在桌面共享，发起新共享后结束目前共享，确定发起?
                         console.log("Share exists. Upon accepting the new share, the original share will close automatically")
                         mb.classList.add('mb');
@@ -239,11 +314,11 @@ class GRPFunButton extends HTMLElement {
                         requestShareTipsWrapper.classList.toggle('requestShare-tips-wrapper-show', false)
                         sharePopup.classList.toggle('requestShareBox-show',true)
                     }else {
-                        popupSendMessage2Background({ cmd: 'localShareScreenRequest', data: { localLineId: this.line, localShare: true, shareType: this.shareType } })
+                        popupSendMessage2Background({ cmd: 'localShareScreenRequest', data: { localLineId: Number(this.line), localShare: true, shareType: this.shareType } })
                     }
                 }else if(this.type === 'file'){
                     // 共享文件
-                    if(isShareScreen){
+                    if(this.line === currentShareContent?.lineId){
                         // 如果存在桌面共享，就通知共享窗口发送文件
                         popupSendMessage2Background({ cmd: 'quicallSendFile' })
                     }else {
@@ -252,7 +327,16 @@ class GRPFunButton extends HTMLElement {
                             localShare: true,
                             shareType:  'shareFile'
                         }
-                        fileUploadOnClick(param)
+                        // 获取会话列表里是否含有 文件列表
+                        let session = WebRTCSession.prototype.getSession({key: 'lineId', value: this.line})
+                        if(session && session.receiveTimeoutFileList.length > 0){
+                            lossFileList.innerHTML = ''
+                            lossTitle.classList.remove('loss-title-none')
+                            addFileList(session.receiveTimeoutFileList)
+                        }else{
+                            lossTitle.classList.add('loss-title-none')
+                            fileUploadOnClick(param)
+                        }
                     }
                 }
             }
@@ -267,7 +351,7 @@ class GRPFunButton extends HTMLElement {
                 this.isSharing = false
             }
         }else if(name === 'disabled'){
-            this.disabled = newValue
+            this.forbidden = newValue
         }
     }
 }

@@ -45,6 +45,7 @@ class CanvasExample {
     rightTools = document.getElementsByClassName("rightTools")[0]
     scaleContent = document.getElementsByClassName("scaleContent")[0]
     toolsWrapper = document.getElementsByClassName("toolsWrapper")[0]
+    displayContent = document.getElementsByClassName("displayContent")[0]
 
     /**跟随鼠标显示用户名**/
     showPosition = document.getElementsByClassName("showPosition")[0]
@@ -60,6 +61,9 @@ class CanvasExample {
     /***关于用户和评论显示问题**/
     isShowAccount = true
     isShowComment = true
+
+    /**canvas 最外面元素 **/
+    videoDisplayArea = document.getElementsByClassName("videoDisplayArea")[0]
 
     /**canvas 和 video的父元素**/
     area = document.getElementsByClassName("areaContent")[0]
@@ -103,7 +107,7 @@ class CanvasExample {
 
     initConfig(config){
         this.canvas = config.canvas
-        this.ctx = config.canvas.getContext('2d')
+        this.ctx = config.canvas.getContext('2d',{ willReadFrequently: true})
         this.videoElement = config.videoElement
         this.videoContainer = config.toolParam?.targetEl
         this.videoWrapper = config.videoWrapper
@@ -113,19 +117,12 @@ class CanvasExample {
 
         this.width =  config.canvas.width = 1600
         this.height =  config.canvas.height = 1600
+        this.videoContainer.setAttribute('data-fullscreen', true)
     }
 
     initCanvas(){
         this.ctx.clearRect(0, 0, this.canvasStyle.width, this.canvasStyle.height)
-        this.resetDraw()
-    }
-
-    /** 重置画布 **/
-    resetDraw = () => {
-        this.currentCanvasValue = 0;
-        this.canvasHistory = this.canvasHistory.slice(0, 1);
-        let canvasData = this.canvasHistory[0];
-        this.setCanvas(canvasData);
+        this.resetDraw({canvas: this.canvas, isLocal: true})
     }
 
     /**监听video宽高的变化**/
@@ -166,7 +163,7 @@ class CanvasExample {
 
         if(content && content.videoWidth && content.videoHeight){
             videoRatio = content.videoWidth / content.videoHeight
-        }else{
+        } else{
             videoRatio = this.videoElement.videoWidth / this.videoElement.videoHeight;
         }
 
@@ -212,7 +209,12 @@ class CanvasExample {
 
         /**告知对端: 本端canvas大小**/
         let canvasPos = this.canvas.getBoundingClientRect()
-        sendCurrentMousePosition({type: 'remotePosition',lineContent: this.getCurrentLine(), width:canvasPos.width, height:canvasPos.height})
+        let param = {
+            type: 'remotePosition',
+            width:canvasPos.width,
+            height:canvasPos.height
+        }
+        handleContentForRemote(param)
 
         /**保存全屏后canvas的大小**/
         this.canvasStyle.width = canvasPos.width
@@ -241,7 +243,7 @@ class CanvasExample {
     setCanvasScale(canvas){
         if(!canvas) return
 
-        let ctx = canvas.getContext('2d')
+        let ctx = canvas.getContext('2d',{ willReadFrequently: true})
         let {width, height} = canvas.getBoundingClientRect()
 
         // 计算画布的缩放比例
@@ -265,11 +267,15 @@ class CanvasExample {
         canvas.width = 1600
         canvas.height = 1600
         canvas.points = []
+        canvas.canvasHistory = []
+        canvas.currentCanvasValue = 0
         canvas.setAttribute('name',config.account?.name)
         canvas.setAttribute('nameId',config.account?.id)
         canvas.name = config.account?.name
         canvas.nameId = config.account?.id
         canvas.brushColor = config.brushColor
+        canvas.brushSize = config.brushSize
+        canvas.brushStyle = config.brushStyle
         canvas.style.width = this.area.clientWidth + 'px'
         canvas.style.height = this.area.clientHeight + 'px'
         canvas.classList.add('otherCanvas')
@@ -318,8 +324,45 @@ class CanvasExample {
         color.appendChild(name)
 
         fragment.appendChild(li)
-        this.toolsWrapper.appendChild(fragment)
+        this.displayContent.appendChild(fragment)
     }
+
+    /**
+     *更新右侧工具内容
+     *@param type add(添加)、del(删除)
+     *@param data.account
+     *@param data.account.id
+     *@param data.account.name
+     *@param
+     * **/
+    updateAttendeesLists(type, data){
+        if(!type || !data || !data.account || !data.account.id){
+            console.log("updateAttendeesLists: invalid parameter")
+            return
+        }
+        let This = this
+
+        switch(type){
+            case 'add':
+                This.createTools(data)
+                break
+            case 'change':
+                This.changeToolColor(data)
+                break
+            case 'del':
+                let rightToolArray = Array.from(document.getElementsByClassName("rightToolContent"))
+                for(let item of rightToolArray){
+                    if(Number(item.getAttribute("nameId")) === Number(data.account.id)){
+                        this.displayContent.removeChild(item)
+                    }
+                }
+                break
+            default:
+                console.log("updateAttendeesLists: current type is ",type)
+                break
+        }
+    }
+
     /**
      * 按字节截取字符串
      * @param inputString
@@ -449,6 +492,19 @@ class CanvasExample {
                 for(let note of child){
                     if(note.classList.contains('user-backgroundColor')){
                         note.style.backgroundColor = data.brushColor
+
+                        /** 针对当前颜色为黑色 设置当前文字显示为白色   当前颜色为白色，设置当前文字为为黑色  其他默认白色***/
+                        let noteChild = note.children
+                        let userName = Array.from(noteChild).filter((item)=> item.classList.contains('user-name'))
+                        if(data.brushColor === '#FFFFFF'){
+                            for(let item of userName){
+                                 item.style.color = '#0c090c'
+                            }
+                        }else{
+                            for(let item of userName){
+                                item.style.color = '#FFFFFF'
+                            }
+                        }
                     }
                     note.setAttribute('color', data.brushColor)
                 }
@@ -496,10 +552,13 @@ class CanvasExample {
     changeCanvasZindex(data){
         let zIndex = window.getComputedStyle(data.canvas).zIndex
         if(data.isLocal){
+            /** 针对本地隐藏，需要对全局鼠标样式禁止；否则解除**/
             if (zIndex === '999') {
                 data.canvas.style.zIndex = 'auto'
+                this.videoDisplayArea.style.cursor = 'not-allowed'
             } else {
                 data.canvas.style.zIndex = '999'
+                this.videoDisplayArea.style.cursor = 'default'
             }
         }else{
             if (zIndex === '998') {
@@ -587,10 +646,12 @@ class CanvasExample {
     /**当前是否可以显示用户名**/
     setShowAccount = function(state){
         this.isShowAccount = state
+        this.canvasToolsBar.changeToolBarStyle({ flag:'brushFlag', type: 'brush',  from: 'settings'})
     }
 
     setShowComment = function(state){
         this.isShowComment = state
+        this.canvasToolsBar.changeToolBarStyle({ flag:'brushFlag', type: 'brush',  from: 'settings'})
     }
 
     setTextAreaHandler = (event)=>{
@@ -611,13 +672,15 @@ class CanvasExample {
 
     // 鼠标按下事件
     mousedownHandler = (event)=>{
-        if(this.canvasToolsBar.areaDeleteFlag || this.pausePainting) return
-        this.updateCanvas()
+        if( this.canvasToolsBar.pointerFlag || this.canvasToolsBar.areaDeleteFlag || event.button === 2 || this.pausePainting )  return
 
         setDefaultToolBarChild()
         let {left, top} = this.canvas.getBoundingClientRect()
         let startX = event.clientX - left
         let startY = event.clientY - top
+        if(!this.canvasToolsBar.noteFlag && !this.canvasToolsBar.textFlag){
+            this.updateCanvas({canvas: this.canvas, isLocal: true})
+        }
 
         let getRatio = this.getPostionRatio(true)
         startX = startX / getRatio.xRatio
@@ -632,31 +695,18 @@ class CanvasExample {
         /**发送当前内容给远端**/
         let param = {
             type: 'mouseDown',
-            lineContent: this.getCurrentLine(),
-            account: localAccount,
-            brushColor: this.canvasToolsBar.getBrushColor(),
-            brushStrokeSize: this.canvasToolsBar.getBrushStrokeSize(),
+            action: this.canvasToolsBar.getCurrentSelectedTool(),
+            currentStyle: this.canvasToolsBar.getCurrentStyle(),
             x: startX.toString(),
             y: startY.toString(),
             rect: this.canvas.getBoundingClientRect(),
-            action: this.canvasToolsBar.getCurrentSelectedTool(),
-            lineStyle: this.canvasToolsBar.getLineStyle()
         }
-
-        if(this.canvasToolsBar.eraserFlag){
-            param.eraserSize = this.canvasToolsBar.getEraserSize()
-        }
-
-        if(this.canvasToolsBar.pointerFlag){
-            param.pointerColor = this.canvasToolsBar.getPointerColor()
-        }
-
-        sendCurrentMousePosition(param)
+        handleContentForRemote(param)
     }
 
     // 鼠标移动事件
     mousemoveHandler = (event)=>{
-        if(this.pausePainting) return
+        if( event.button === 2 || this.pausePainting) return
         let {left, top} = this.canvas.getBoundingClientRect()
         let currentX = event.clientX - left
         let currentY = event.clientY - top
@@ -664,59 +714,59 @@ class CanvasExample {
         /**鼠标样式**/
         changeMouseStyle(currentX, currentY)
 
-        if(this.isMouseDown){
+        /**解决在远处多次点击绘制问题**/
+        if(this.isMouseDown && (this.startX !== currentX || this.startY !== currentY)){
+            this.isMouseMove = true
             let getRatio = this.getPostionRatio(true)
             currentX = currentX / getRatio.xRatio
             currentY = currentY / getRatio.yRatio
             let lineStyle = this.canvasToolsBar.getLineStyle()
             this.canvasMove({currentX,currentY,event,lineStyle})
+        }
 
-            let param = {
-                type: 'mouseMove',
-                lineContent: this.getCurrentLine(),
-                account: localAccount,
-                brushColor: this.canvasToolsBar.getBrushColor(),
-                brushStrokeSize: this.canvasToolsBar.getBrushStrokeSize(),
-                x: currentX.toString(),
-                y: currentY.toString(),
-                rect: this.canvas.getBoundingClientRect(),
-                action: this.canvasToolsBar.getCurrentSelectedTool(),
-                lineStyle: lineStyle,
-                shiftKey: event?.shiftKey
-            }
+        let param = {
+            type: 'mouseMove',
+            action: this.canvasToolsBar.getCurrentSelectedTool(),
+            currentStyle: this.canvasToolsBar.getCurrentStyle(),
+            rect: this.canvas.getBoundingClientRect(),
+            preX: this.startX,
+            preY: this.startY,
+            x: currentX.toString(),
+            y: currentY.toString(),
+            shiftKey: event?.shiftKey
+        }
 
-            if(this.canvasToolsBar.eraserFlag){
-                param.eraserSize = this.canvasToolsBar.getEraserSize()
-            }
-            if(this.canvasToolsBar.pointerFlag){
-                param.pointerColor = this.canvasToolsBar.getPointerColor()
-            }
-
-            if( param.message !== 'shapeFlag' || ( param.message === 'shapeFlag' &&
-                (param.lineStyle !== 'pencilFlag' || param.lineStyle !== 'penFlag' ))
-            ){
-                sendCurrentMousePosition(param)
-            }
+        if(this.isMouseDown && param.action !== 'shapeFlag'){
+            handleContentForRemote(param)
+        }else if(param.action === 'pointerFlag'){
+            handleContentForRemote(param)
         }
     }
 
     // 鼠标松开事件
     mouseupHandler = (event)=>{
-        this.ctx.closePath()
-        this.updateCanvas()
+       if( event.button === 2 || this.pausePainting) return
+       if(this.isMouseDown){
+           this.isMouseDown = false
+           this.ctx.closePath()
+           this.updateCanvas ({canvas: this.canvas, isLocal: true })
 
-        if(this.pausePainting) return
+           let {left, top} = this.canvas.getBoundingClientRect()
+           let endX = event.clientX - left
+           let endY = event.clientY - top
 
-        let {left, top} = this.canvas.getBoundingClientRect()
-        let endX = event.clientX - left
-        let endY = event.clientY - top
+           let getRatio = this.getPostionRatio(true)
+           endX = endX / getRatio.xRatio
+           endY = endY / getRatio.yRatio
 
-        let getRatio = this.getPostionRatio(true)
-        endX = endX / getRatio.xRatio
-        endY = endY / getRatio.yRatio
+           this.canvasUp({x: endX, y:endY, event: event})
 
-        this.canvasUp({x: endX, y:endY, event: event})
-        window.removeEventListener("mouseup", this.mouseupHandler)
+           if(this.isMouseMove){
+               this.isMouseMove = false
+           }
+
+           window.removeEventListener("mouseup", this.mouseupHandler)
+       }
     }
 
     //鼠标划过、离开事件
@@ -724,47 +774,156 @@ class CanvasExample {
         if(this.pausePainting) return
         this.showPosition.style.display = "none";
         mouseStyle.style.display = "none"
-        sendCurrentMousePosition({type: 'mouseLeave', lineContent: this.getCurrentLine() })
+        handleContentForRemote({type: 'mouseLeave'})
     }
+
+    /**
+     * 针对本端处理撤销方法
+     */
+    handleRevokeDraw(data){
+        this.revokeDraw({canvas: this.canvas, isLocal: true, step: 2})
+        handleContentForRemote({
+            type: 'revoke',
+            canvas: this.canvas
+        })
+    }
+
+    /**
+     * 针对本端处理恢复方法
+     */
+    handleRestoreDraw(data){
+        this.restoreDraw({canvas: this.canvas, isLocal: true, step: 2})
+        handleContentForRemote({ type: 'restore',canvas: this.canvas})
+    }
+
+    /**
+     * 重置画布
+     **/
+    resetDraw = (data) => {
+        if(!data ||!data.canvas){
+            console.log("resetDraw: invalid parameter")
+            return
+        }
+
+        if(data.isLocal){
+            this.currentCanvasValue = 0;
+            this.canvasHistory = this.canvasHistory.slice(0, 1);
+            if(this.canvasHistory.length){
+                data.msg = this.canvasHistory[0];
+                this.setCanvas(data);
+            }
+        }else{
+            let canvas = data.canvas
+            canvas.currentCanvasValue = 0;
+            canvas.canvasHistory = this.canvasHistory.slice(0, 1);
+            if(canvas.canvasHistory.length){
+                data.msg = canvas.canvasHistory[0];
+                this.setCanvas(data);
+            }
+        }
+    }
+
 
     /**
      * 更新画布状态
      **/
-    updateCanvas(){
-        let canvasData = this.ctx.getImageData(0,0, this.canvas.width, this.canvas.height)
-        if (this.currentCanvasValue < this.canvasHistory.length - 1) {
-            this.canvasHistory = this.canvasHistory.slice(0, this.currentCanvasValue + 1);
+    updateCanvas(data){
+        if(!data || !data.canvas) {
+            console.log("updateCanvas: invalid parameter ")
+            return
         }
-        this.canvasHistory.push(canvasData);
-        this.currentCanvasValue += 1;
+        let canvas = data.canvas
+        let ctx = canvas.getContext("2d",{ willReadFrequently: true})
+        let canvasData = ctx.getImageData(0,0, canvas.width, canvas.height)
+        if(data.isLocal){
+            if (this.currentCanvasValue < this.canvasHistory.length - 1) {
+                this.canvasHistory = this.canvasHistory.slice(0, this.currentCanvasValue + 1);
+            }
+            this.canvasHistory.push(canvasData);
+            this.currentCanvasValue += 1;
+        }else{
+            if (canvas.currentCanvasValue < canvas.canvasHistory.length - 1) {
+                canvas.canvasHistory = canvas.canvasHistory.slice(0, canvas.currentCanvasValue + 1);
+            }
+            canvas.canvasHistory.push(canvasData);
+            canvas.currentCanvasValue += 1;
+        }
     }
 
     /**
      * 存储画布状态
      * **/
-    setCanvas = (canvasData) => {
-        this.ctx.putImageData(canvasData, 0, 0);
+    setCanvas = (data) => {
+        if(!data || !data.canvas || !data.msg) {
+            console.log("setCanvas: invalid parameter ")
+            return
+        }
+        let canvas = data.canvas
+        let ctx = canvas.getContext('2d',{ willReadFrequently: true})
+        ctx.putImageData(data.msg, 0, 0);
     };
 
     /**
      * 撤销方法
+     * @param data.canvas
+     * @param data.isLocal
+     * @param data.step
      */
-    revokeDraw = () => {
-        if (this.currentCanvasValue > 0) {
-            this.currentCanvasValue--;
-            const canvasData = this.canvasHistory[this.currentCanvasValue];
-            this.setCanvas(canvasData);
+    revokeDraw = (data) => {
+        if(!data || !data.canvas) {
+            console.log("revokeDraw: invalid parameter ")
+            return
         }
-    };
+        let canvas = data.canvas
+        let step = !!data.step ?  data.step : 1
+
+        if(data.isLocal){
+            if (this.currentCanvasValue > 0) {
+                this.currentCanvasValue = this.currentCanvasValue - step
+                const canvasData = this.canvasHistory[this.currentCanvasValue];
+                this.setCanvas ({canvas: data.canvas, msg: canvasData});
+            }
+        }else{
+            if (canvas.currentCanvasValue > 0) {
+                canvas.currentCanvasValue = canvas.currentCanvasValue - step
+                const canvasData = canvas.canvasHistory[canvas.currentCanvasValue];
+                this.setCanvas ({canvas: data.canvas, msg: canvasData});
+            }
+        }
+    }
 
     /**
      * 恢复方法
+     * @param data.canvas
+     * @param data.isLocal
+     * @param data.step
      */
-    restoreDraw = () => {
-        if (this.currentCanvasValue < this.canvasHistory.length - 1) {
-            this.currentCanvasValue++;
-            const canvasData = this.canvasHistory[this.currentCanvasValue];
-            this.setCanvas(canvasData);
+    restoreDraw = (data) => {
+        if(!data || !data.canvas){
+            console.log("restoreDraw: invalid parameter ")
+            return
+        }
+
+        let canvas = data.canvas
+        let step = !!data.step ?  data.step : 1
+        if(data.isLocal){
+            if (this.currentCanvasValue < this.canvasHistory.length - 1) {
+                this.currentCanvasValue = this.currentCanvasValue + step
+                if(this.currentCanvasValue === this.canvasHistory.length){
+                    this.currentCanvasValue = this.canvasHistory.length - 1
+                }
+                const canvasData = this.canvasHistory[this.currentCanvasValue];
+                this.setCanvas ({canvas: data.canvas, msg: canvasData});
+            }
+        }else {
+            if (canvas.currentCanvasValue < canvas.canvasHistory.length - 1) {
+                canvas.currentCanvasValue = canvas.currentCanvasValue + step
+                if(canvas.currentCanvasValue === canvas.canvasHistory.length){
+                    canvas.currentCanvasValue = canvas.canvasHistory.length - 1
+                }
+                const canvasData = canvas.canvasHistory[canvas.currentCanvasValue];
+                this.setCanvas ({canvas: data.canvas, msg: canvasData});
+            }
         }
     };
 
@@ -778,7 +937,7 @@ class CanvasExample {
             width: 100,
             height: 100,
             text: '',
-            color: this.canvasToolsBar.getNoteColor(),
+            color: this.canvasToolsBar.getColor(),
             dragging: false,
             isDrawing: false,
             offsetX: 0,
@@ -819,6 +978,7 @@ class CanvasExample {
         this.startX = data.startX
         this.startY = data.startY
 
+       if(this.canvasToolsBar.textFlag || this.canvasToolsBar.noteFlag){
         if (this.canvasToolsBar.textFlag) {
             this.setTextBoxStyle({x: data.startX, y: data.startY})
 
@@ -826,7 +986,6 @@ class CanvasExample {
             if(this.showInputFlag){
                 this.handleDrawNote({text: this.textBox.value})
                 this.setTextBoxStyle({x: data.startX, y: data.startY})
-
             }else{
                 //判断当前位置是否已经存在note
                 let selectionNote
@@ -849,6 +1008,12 @@ class CanvasExample {
                     this.createNote({x: data.startX, y: data.startY})
                 }
             }
+           }
+
+           if(this.canvasToolsBar.textFlag || this.canvasToolsBar.noteFlag){
+               this.updateCanvas({canvas: this.canvas, isLocal: true })
+           }
+
         } else{
             if(this.canvasToolsBar.noteFlag || this.canvasToolsBar.textFlag) return
 
@@ -884,7 +1049,8 @@ class CanvasExample {
                     y2: position.currentY,
                     shiftKey:position.event.shiftKey,
                     target: position.target,
-                    lineStyle: This.canvasToolsBar.getLineStyle()
+                    action: This.canvasToolsBar.getCurrentSelectedTool(),
+                    currentStyle: This.canvasToolsBar.getCurrentStyle()
                 })
             }
         }
@@ -896,7 +1062,6 @@ class CanvasExample {
     /**canvas: mouseup  **/
     canvasUp(data) {
         this.lastImage = this.canvas.toDataURL('image/png');
-        this.isMouseDown = false
         this.points = []
 
         if(!this.canvasToolsBar.noteFlag){
@@ -907,20 +1072,16 @@ class CanvasExample {
 
         let param = {
             type: 'mouseUp',
-            lineContent: this.getCurrentLine(),
-            account: localAccount,
-            brushColor: this.canvasToolsBar.getBrushColor(),
-            brushStrokeSize: this.canvasToolsBar.getBrushStrokeSize(),
+            action: this.canvasToolsBar.getCurrentSelectedTool(),
+            currentStyle: this.canvasToolsBar.getCurrentStyle(),
             startX: this.startX,
             startY: this.startY,
             endX: data.x,
             endY: data.y,
-            action: this.canvasToolsBar.getCurrentSelectedTool(),
-            lineStyle: this.canvasToolsBar.getLineStyle(),
             shiftKey: data.event?.shiftKey
         }
 
-        sendCurrentMousePosition(param)
+        handleContentForRemote(param)
     }
 
     /**
@@ -933,15 +1094,25 @@ class CanvasExample {
      **/
     pen(data){
         let points = data?.canvas.points || data.points
-        let ctx = data?.canvas.getContext('2d')
+        let ctx = data?.canvas.getContext('2d',{ willReadFrequently: true})
 
         let getRandomInt = function(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
+
+        let param
+        if( Number(data.size) === 1 ){
+            param = getRandomInt(1, 3)
+        }else if(Number(data.size) === 4){
+            param = getRandomInt(3, 5)
+        }else if(Number(data.size) === 8){
+            param = getRandomInt(5, 7)
+        }
+
         points.push({
             x: data.x2,
             y: data.y2,
-            width: getRandomInt(3, 5)
+            width: param
         });
 
         ctx.strokeStyle = data.color
@@ -966,9 +1137,9 @@ class CanvasExample {
      slicingPen(data){
 
         let points = data?.canvas.points || data.points
-        let ctx = data?.canvas.getContext('2d')
+        let ctx = data?.canvas.getContext('2d',{ willReadFrequently: true})
 
-        ctx.lineWidth = 3;
+        ctx.lineWidth = data.color * this.canvasStyleRatio.x;
         ctx.strokeStyle = data.color
         ctx.lineJoin = ctx.lineCap = 'round';
         ctx.beginPath();
@@ -1004,7 +1175,7 @@ class CanvasExample {
         if(!data || !data.canvas || !data.eraserSize) return
         let canvas = data.canvas
         let size = data.eraserSize * 10 / 2 * this.canvasStyleRatio.x
-        let ctx = canvas.getContext('2d')
+        let ctx = canvas.getContext('2d',{ willReadFrequently: true})
 
         ctx.save()
         ctx.beginPath()
@@ -1028,7 +1199,6 @@ class CanvasExample {
             if(this.canvasToolsBar.textFlag){
                 this.textAreaRect = this.textBox.getBoundingClientRect()
                 this.handleTextAreaText(data)
-
             }
 
             /** 绘图后将文本框恢复到原点***/
@@ -1052,7 +1222,7 @@ class CanvasExample {
                 this.textBox.rows = 1;
                 this.textBox.style.height = '19px'
                 this.textBox.style.width = ''
-                this.textBox.style.color = this.canvasToolsBar.textColor
+                this.textBox.style.color = this.canvasToolsBar.getColor()
                 this.textBox.style.fontSize = this.canvasToolsBar.getTextFontSize() * this.canvasStyleRatio.x + 'px'
 
             }else if(this.canvasToolsBar.noteFlag) {
@@ -1074,18 +1244,16 @@ class CanvasExample {
      * **/
     handleTextAreaText(data){
         this.createText({x: parseFloat(this.textBox.style.left), y: parseFloat(this.textBox.style.top), text: this.textContent, event: data.event, target: data.target})
-        sendCurrentMousePosition({
+
+        handleContentForRemote({
             type: 'textFlag',
             action: this.canvasToolsBar.getCurrentSelectedTool(),
-            lineContent: this.getCurrentLine(),
+            currentStyle: this.canvasToolsBar.getCurrentStyle(),
             canvas: this.canvas,
             text: this.textContent,
-            textColor: this.canvasToolsBar.getTextColor(),
-            textFontSize: this.canvasToolsBar.getTextFontSize(),
             x: parseFloat(this.textBox.style.left),
             y: parseFloat(this.textBox.style.top)
         })
-
     }
 
     /**
@@ -1119,12 +1287,11 @@ class CanvasExample {
             this.ctx.restore();
             this.ctx.closePath();
 
-            sendCurrentMousePosition({
+            handleContentForRemote({
                 type: 'noteFlag',
                 action: this.canvasToolsBar.getCurrentSelectedTool(),
-                lineContent: this.getCurrentLine(),
+                currentStyle: this.canvasToolsBar.getCurrentStyle(),
                 canvas: this.canvas,
-                bgColor: this.canvasToolsBar.getNoteColor(),
                 text: note.text,
                 width: note.width,
                 height: note.height,
@@ -1143,7 +1310,7 @@ class CanvasExample {
             x: data.x,
             y: data.y,
             text: data.text,
-            textColor: this.canvasToolsBar.getTextColor(),
+            textColor: this.canvasToolsBar.getColor(),
             fontSize: this.canvasToolsBar.getTextFontSize(),
             dragging: false,
             isDrawing: false,
@@ -1152,7 +1319,14 @@ class CanvasExample {
         }
         this.texts.push(text)
 
-        this.drawing({x1: data.x, y1: data.y, shiftKey:data.event?.shiftKey, target: data.target});
+        this.drawing({
+            x1: data.x,
+            y1: data.y,
+            shiftKey:data.event?.shiftKey,
+            target: data.target,
+            action:this.canvasToolsBar.getCurrentSelectedTool(),
+            currentStyle: this.canvasToolsBar.getCurrentStyle()
+        });
     }
 
     /**绘制文字
@@ -1227,11 +1401,11 @@ class CanvasExample {
         let y1 = data.startY
         let x2 = data.endX
         let y2 = data.endY
-        let ctx = data.canvas?.getContext('2d')
+        let ctx = data.canvas?.getContext('2d',{ willReadFrequently: true})
 
-        if(data.action === 'rectFlag'){
+        if(data.action === 'rect'){
             action = 'fillRect'
-        }else if(data.action === 'strokeRectFlag'){
+        }else if(data.action === 'strokeRect'){
             action = 'strokeRect'
         }
 
@@ -1261,12 +1435,15 @@ class CanvasExample {
         let y1 = data.startY
         let x2 = data.endX
         let y2 = data.endY
-        let ctx = data.canvas?.getContext('2d')
+        let ctx = data.canvas?.getContext('2d',{ willReadFrequently: true})
 
         let k = ((x2 - x1) / 0.55);
         let w = (x2 - x1) / 2  ;
         let h = (y2 - y1) / 2 ;
 
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 4 * this.canvasStyleRatio.x             // 指定描边线的宽度
         ctx.beginPath()
         if (data.shiftKey === true) {     // circle
             let r = Math.sqrt(w * w + h * h);
@@ -1278,9 +1455,9 @@ class CanvasExample {
             ctx.bezierCurveTo(x1 + w * 11 / 5, y1 - h, x1, y1 - h, x1, y1 + h);
         }
 
-        if(data.action === 'circleFlag'){
+        if(data.action === 'circle'){
             ctx.fill();         // 实心
-        }else if(data.action === 'strokeCircleFlag'){
+        }else if(data.action === 'strokeCircle'){
             ctx.stroke();       // 空心
         }
         ctx.closePath()
@@ -1301,7 +1478,11 @@ class CanvasExample {
         let y1 = data.startY
         let x2 = data.endX
         let y2 = data.endY
-        let ctx = data.canvas?.getContext('2d')
+        let ctx = data.canvas?.getContext('2d',{ willReadFrequently: true})
+
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 4 * this.canvasStyleRatio.x             // 指定描边线的宽度
         ctx.beginPath()
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -1324,7 +1505,10 @@ class CanvasExample {
         let y1 = data.startY
         let x2 = data.endX
         let y2 = data.endY
-        let ctx = data.canvas?.getContext('2d')
+        let ctx = data.canvas?.getContext('2d',{ willReadFrequently: true})
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 4 * this.canvasStyleRatio.x             // 指定描边线的宽度
         ctx.beginPath()
 
         ctx.moveTo(x1, y1);
@@ -1343,32 +1527,11 @@ class CanvasExample {
         ctx.closePath()
     }
 
-    otherCanvasDown(data){
-        /**处理远端绘制内容**/
-        if(data.target){
-            data.target.points.push({ x: this.startX, y: this.startY })
-            this.drawing({x1: data.startX, y1: data.startY, shiftKey: data.shiftKey, target: data.target, action: data.action,lineStyle: data.lineStyle});
-        }
-    }
-
-    otherCanvasMove(data){
-        let This = this
-
-        /** 处理绘制内容 **/
-        if(This.isMouseDown || This.isShowComment){
-            This.drawing({x1: This.startX, y1: This.startY, x2: data.currentX, y2: data.currentY, shiftKey: data.shiftKey, target: data.target, action: data.action,lineStyle: data.lineStyle})
-        }
-    }
-
-    otherCanvasUp(content){
-        if(!content || !content.target){
-            console.log('target empty for other canvasUp')
+    hiddenContent(content){
+        if(!content || !content.account){
+            console.log('target empty for hiddenContent')
             return
         }
-
-        /**处理canvas位置***/
-        let canvas = content.target
-        canvas.points = []
 
         /***隐藏鼠标显示***/
         let otherShowPosition = document.getElementsByClassName('otherShowPosition')
@@ -1397,6 +1560,80 @@ class CanvasExample {
         }
     }
 
+    otherCanvasDown(data){
+        if(!data || !data.target){
+            console.log('target empty for other otherCanvasDown')
+            return
+        }
+
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+            if( data.action === 'eraserFlag' || data.action === 'textFlag' || data.action === 'noteFlag' ){
+                console.log("otherCanvasDown: no processing.")
+            }else{
+                /**处理远端绘制内容**/
+                canvas.points.push({ x: data.startX, y: data.startY })
+                if(data.action !== 'shapeFlag'){
+                    this.drawing({
+                        x1: data.startX,
+                        y1: data.startY,
+                        shiftKey: data.shiftKey,
+                        target: canvas,
+                        action: data.action,
+                        currentStyle: data.currentStyle
+                    });
+                }
+            }
+        }
+        this.updateCanvas({canvas: data.target, isLocal: false })
+    }
+
+    otherCanvasMove(data){
+        if(!data || !data.target || !data.currentStyle){
+            console.log('target empty for other otherCanvasMove')
+            return
+        }
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+
+            /** 处理绘制内容( 解决在原地多次点击导致的绘制问题) **/
+            if(this.isShowComment &&(canvas.startX !== data.currentX || canvas.startY !== data.currentY)){
+                this.drawing({
+                    x1: data.startX,
+                    y1: data.startY,
+                    x2: data.currentX,
+                    y2: data.currentY,
+                    shiftKey: data.shiftKey,
+                    target: data.target,
+                    action: data.action,
+                    currentStyle: data.currentStyle
+                })
+            }
+        }
+    }
+
+    otherCanvasUp(content){
+        if(!content || !content.target){
+            console.log('target empty for other canvasUp')
+            return
+        }
+
+        /**处理canvas位置***/
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === content.target.nameId)
+        canvas.points = []
+        if(content.action !== 'shapeFlag'){
+            this.updateCanvas({canvas: canvas, isLocal: false })
+        }
+
+        /**处理隐藏内容**/
+        this.hiddenContent(content)
+    }
+
+    otherCanvasLeave(content){
+        this.hiddenContent(content)
+    }
+
+
     otherCanvasDelete(data){
         if(!data || !data.target){
             console.log('target empty for other canvasDelete')
@@ -1405,14 +1642,18 @@ class CanvasExample {
 
         let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
         if(canvas){
-            let ctx = canvas.getContext('2d')
+            let ctx = canvas.getContext('2d',{ willReadFrequently: true})
 
             if(data.type === 'areaDelete'){
+                this.updateCanvas({canvas: canvas, isLocal: false })
                 ctx.clearRect(data.x, data.y, data.width, data.height)
+                this.updateCanvas({canvas: canvas, isLocal: false })
             }else if(data.type === 'allDelete'){
                 ctx.clearRect(0, 0, this.canvasStyle.width, this.canvasStyle.height)
+                this.resetDraw({canvas: canvas, isLocal: false })
             }
         }
+
     }
 
     /** 绘制远端text
@@ -1429,7 +1670,7 @@ class CanvasExample {
 
         let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
         if(canvas){
-            let ctx = canvas.getContext('2d')
+            let ctx = canvas.getContext('2d',{ willReadFrequently: true})
             let font = data.textFontSize * this.canvasStyleRatio.x
             let width = 261 * this.canvasStyleRatio.x
             let left = canvas.getBoundingClientRect().x + data.x
@@ -1472,7 +1713,7 @@ class CanvasExample {
 
         let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
         if(canvas){
-            let ctx = canvas.getContext('2d')
+            let ctx = canvas.getContext('2d',{ willReadFrequently: true})
 
             // 绘制便签方框
             ctx.beginPath();
@@ -1510,18 +1751,21 @@ class CanvasExample {
             y2: data.content.endY / getRatio.yRatio,
         }
         let param
+        let currentStyle = data.content.currentStyle
         let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
         if(canvas){
-            let ctx = canvas.getContext('2d')
-            ctx.strokeStyle = data.content.brushColor                                          // 画笔的颜色
-            ctx.lineWidth = data.content.brushStrokeSize * this.canvasStyleRatio.x             // 指定描边线的宽度
-            ctx.fillStyle = data.content.brushColor                                            // 填充颜色
+            let ctx = canvas.getContext('2d',{ willReadFrequently: true})
+            ctx.strokeStyle = currentStyle?.color                                               // 画笔的颜色
+            ctx.lineWidth = currentStyle?.brushStrokeSize * this.canvasStyleRatio.x             // 指定描边线的宽度
+            ctx.fillStyle = currentStyle?.color                                                 // 填充颜色
 
-            switch(data.content.lineStyle){
-                case 'rectFlag':
-                case 'strokeRectFlag':
+            ctx.save()
+
+            switch(currentStyle.lineStyle){
+                case 'rect':
+                case 'strokeRect':
                     param = {
-                        action: data.content.lineStyle,
+                        action: currentStyle?.lineStyle,
                         shiftkey: data.content?.shiftKey,
                         canvas: canvas,
                         startX: position.x1,
@@ -1531,10 +1775,10 @@ class CanvasExample {
                     }
                     this.drawRectangle(param)
                     break;
-                case 'circleFlag':
-                case 'strokeCircleFlag':
+                case 'circle':
+                case 'strokeCircle':
                     param = {
-                        action: data.content.lineStyle,
+                        action: currentStyle?.lineStyle,
                         shiftkey: data.content?.shiftKey,
                         canvas: canvas,
                         startX: position.x1,
@@ -1544,7 +1788,7 @@ class CanvasExample {
                     }
                     this.drawRound(param)
                     break;
-                case 'lineFlag':
+                case 'line':
                     param = {
                         canvas: canvas,
                         startX: position.x1,
@@ -1554,9 +1798,9 @@ class CanvasExample {
                     }
                     this.drawLine(param)
                     break;
-                case 'arrowFlag':
+                case 'arrow':
                     param = {
-                        action: data.content.lineStyle,
+                        action: currentStyle?.lineStyle,
                         shiftkey: data.content?.shiftKey,
                         canvas: canvas,
                         startX: position.x1,
@@ -1573,9 +1817,37 @@ class CanvasExample {
                     console.warn("current action is",data.content.lineStyle)
                     break
             }
+            ctx.restore();
+            ctx.closePath();
         }
+        this.updateCanvas({canvas: canvas, isLocal: false })
     }
 
+    /**
+     * 处理撤销恢复流程
+     * **/
+
+    otherCanvasUndoRecovery(data){
+        if(!data || !data.target){
+            console.log('target empty for other canvas UndoRecovery')
+            return
+        }
+
+        let canvas = can.canvasArray.find(item => item.getAttribute('nameId') === data.target.nameId)
+        if(canvas){
+            switch(data.type){
+                case 'revoke':
+                    this.revokeDraw({canvas: canvas, isLocal: false, step: 2})
+                    break;
+                case 'restore':
+                    this.restoreDraw({canvas: canvas, isLocal: false, step: 2})
+                    break;
+                default:
+                    console.warn("otherCanvasUndoRecovery: current type is ", data.type)
+                    break;
+            }
+        }
+    }
     loadImage(ctx){
         let self = this;
         let img = new Image();
@@ -1592,24 +1864,23 @@ class CanvasExample {
 
 
     drawing (data) {
+        if(!data || !data.action || !data.currentStyle){
+            console.log("drawing: invalid parameter" ,data)
+            return
+        }
         let points = !data.target ? this.points : data.target.points
         let getCanvas = !data.target ? this.canvas : data.target
-        let type
-        let brushColor
-        let brushStrokeSize
-        if(getCanvas === this.canvas){
-            type = this.canvasToolsBar.getCurrentSelectedTool()
-            brushColor = this.canvasToolsBar.getBrushColor()
-            brushStrokeSize = this.canvasToolsBar.getBrushStrokeSize()
-        }else {
-            type = data.action
-            brushColor = getCanvas.brushColor
-            brushStrokeSize = getCanvas.brushStrokeSize
-        }
+        let action = data.action
+        let currentStyle = data.currentStyle
+        let brushColor = currentStyle.color
+        let brushStrokeSize = currentStyle.brushStrokeSize
+        let brushStrokeStyle = currentStyle.brushStrokeStyle
 
         /**针对shapeFlag 修改type**/
-        if(type === 'shapeFlag'){
-            type = data.lineStyle
+        if(action === 'shapeFlag'){
+            action = currentStyle.lineStyle
+        }else if(action === 'brushFlag'){
+            action = currentStyle.brushStrokeStyle
         }
 
         let param ={
@@ -1617,12 +1888,13 @@ class CanvasExample {
             y1: data.y1,
             x2: data.x2,
             y2: data.y2,
+            style: brushStrokeStyle,
             color: brushColor,
             size: brushStrokeSize,
             canvas: getCanvas,
             points: points,
-            action: type,
-            lineStyle: data.lineStyle,
+            action: action,
+            lineStyle: currentStyle.lineStyle,
             shiftKey: data.shiftKey
         }
 
@@ -1632,93 +1904,99 @@ class CanvasExample {
 
     /***根据类别进行绘制***/
     startDraw( content){
+        if(!content || !content.action || !content.canvas){
+            console.log("startDraw: invalid parameter ",content)
+            return
+        }
         let x1 = content.x1
         let y1 = content.y1
         let x2 = content.x2
         let y2 = content.y2
 
         let self = this
-        let points = content?.canvas.points || content.points
-        let ctx = content?.canvas.getContext('2d')
+        let canvas = content.canvas
+        let points = canvas.points || content.points
+        let ctx = content?.canvas.getContext('2d',{ willReadFrequently: true})
         if(!ctx) return
 
         ctx.strokeStyle = content.color                                    // 画笔的颜色
         ctx.lineWidth = content.size * this.canvasStyleRatio.x             // 指定描边线的宽度
-        ctx.fillStyle = self.canvasToolsBar.getTextColor()                 // 填充颜色为红色
+        ctx.fillStyle = content.color                                      // 填充颜色为红色
 
         // Point-based with shadow
         // ctx.shadowBlur = 10;
         // ctx.shadowColor = content.color || 'rgb(0, 0, 0)'
 
         ctx.save()
+        ctx.beginPath()
 
         switch(content.action){
-            case 'rectFlag':
-                this.revokeDraw()
+            case 'rect':
+                this.revokeDraw({canvas: canvas, isLocal: true })
                 this.drawRectangle({
                     action: content.action,
                     shiftkey: content.shiftKey,
-                    canvas: content?.canvas,
+                    canvas: canvas,
                     startX: content.x1,
                     startY: content.y1,
                     endX: content.x2,
                     endY: content.y2
                 })
-                this.updateCanvas()
+                this.updateCanvas({canvas: canvas, isLocal: true })
                 break;
-            case 'strokeRectFlag':
-                this.revokeDraw()
+            case 'strokeRect':
+                this.revokeDraw({canvas: canvas, isLocal: true })
                 this.drawRectangle({
                     action: content.action,
                     shiftkey: content.shiftKey,
-                    canvas: content?.canvas,
+                    canvas: canvas,
                     startX: content.x1,
                     startY: content.y1,
                     endX: content.x2,
                     endY: content.y2
                 })
-                this.updateCanvas()
+                this.updateCanvas({canvas: canvas, isLocal: true })
                 break;
-            case 'circleFlag':
-            case 'strokeCircleFlag':
+            case 'circle':
+            case 'strokeCircle':
                 // 圆
-                this.revokeDraw()
+                this.revokeDraw({canvas: canvas, isLocal: true })
                 this.drawRound({
                     action: content.action,
                     shiftkey: content.shiftKey,
-                    canvas: content?.canvas,
+                    canvas: canvas,
                     startX: content.x1,
                     startY: content.y1,
                     endX: content.x2,
                     endY: content.y2
                 })
-                this.updateCanvas()
+                this.updateCanvas({canvas: canvas, isLocal: true })
                 break;
-            case 'lineFlag':
+            case 'line':
                 // 线条
-                this.revokeDraw()
+                this.revokeDraw({canvas: canvas, isLocal: true })
                 this.drawLine({
-                    canvas: content?.canvas,
+                    canvas: canvas,
                     startX: x1,
                     startY: y1,
                     endX: x2,
                     endY: y2
                 })
-                this.updateCanvas()
+                this.updateCanvas({canvas: canvas, isLocal: true })
                 break;
-            case  'arrowFlag':
+            case 'arrow':
                 // 箭头
                 ctx.fillStyle = content.color
-                this.revokeDraw()
+                this.revokeDraw({canvas: canvas, isLocal: true })
                 this.drawArrow({
                     action: content.action,
-                    canvas: content?.canvas,
+                    canvas: canvas,
                     startX: content.x1,
                     startY: content.y1,
                     endX: content.x2,
                     endY: content.y2
                 })
-                this.updateCanvas()
+                this.updateCanvas({canvas: canvas, isLocal: true })
                 break;
             case 'textFlag':
                 // 写字
@@ -1764,10 +2042,10 @@ class CanvasExample {
                 // 清除并隐藏输入框
                 self.setDefaultTextBox()
                 break;
-            case 'pencilFlag':
+            case 'wide':
                 this.slicingPen(content)
                 break
-            case 'penFlag':
+            case 'pen':
                 this.pen(content)
                 break
             default:
@@ -1979,6 +2257,7 @@ class CanvasExample {
      * **/
     clearSelectArea(){
         if(!this.ctx) return
+        this.updateCanvas({canvas: this.canvas, isLocal: true})
 
         let startX = Math.min(this.mouseX1, this.mouseX2)
         let startY = Math.min(this.mouseY1, this.mouseY2)
@@ -1991,18 +2270,19 @@ class CanvasExample {
 
         /*** 保存当前的画面 **/
         this.canvas.lastImage = this.canvas.toDataURL('image/png')
+        this.updateCanvas({canvas: this.canvas, isLocal: true})
 
         /**告知对端清除位置**/
         let param = {
             type: 'areaDelete',
-            lineContent: this.getCurrentLine(),
             x: startX.toString(),
             y: startY.toString(),
             width: width,
             height: height,
             canvas: this.canvas
         }
-        sendCurrentMousePosition(param)
+
+        handleContentForRemote(param)
     }
 
     /**
@@ -2018,42 +2298,35 @@ class CanvasExample {
             }
         }
     }
-
-    /**获取当前线路Id**/
-    getCurrentLine(){
-        if(!currentLocalLine || !currentRemoteLine ) return
-        let lineContent = {
-            local: null,
-            remote: null
-        }
-        if( currentLocalLine && currentRemoteLine){
-            lineContent.local = currentLocalLine
-            lineContent.remote = currentRemoteLine
-        }
-        return lineContent
-    }
-
 }
 
 
 /********************* 拖动模型*************************/
 class DragMoveModel {
-    startX = 0 // 按下的鼠标x值
-    startY = 0 // 按下的鼠标y值
-    moveInsX = 0 // 移动的x的值（从0开始累加）
-    moveInsY = 0 // 移动的y的值（从0开始累加）
-    isMousedown = false // 是否按下鼠标
+    startX = 0               // 按下的鼠标x值
+    startY = 0               // 按下的鼠标y值
+    moveInsX = 0             // 移动的x的值（从0开始累加）
+    moveInsY = 0             // 移动的y的值（从0开始累加）
+    isMousedown = false      // 是否按下鼠标
+    isMouseMove = false      // 是否移动位置
+    direction = null            //  显示方向
     clickEl = null
-    targetEl = null // 目标元素
-    targetElTx = 0 // 目标元素的translate的x的值
-    targetElTy = 0 // 目标元素的translate的y的值
-    initTargetElTop = 0 // 目标元素的初始top值
-    initTargetElLeft = 0 // 目标元素的初始left值
-    limitMoveBorder = false // 限制移动边界
-    moveMode = 'transform' // transform为transform-translate方式移动，position为top,left方式移动
-    callback = null // 回调函数，用于获取鼠标移动距离
-    h5 = false // 是否用于h5
-    rootDom = document // 根文档
+    targetEl = null              // 目标元素
+    targetElTx = 0            // 目标元素的translate的x的值
+    targetElTy = 0            // 目标元素的translate的y的值
+    initTargetElTop = 0       // 目标元素的初始top值
+    initTargetElLeft = 0      // 目标元素的初始left值
+    limitMoveBorder = false   // 限制移动边界
+    moveMode = 'transform'     // transform为transform-translate方式移动，position为top,left方式移动
+    callback = null              // 回调函数，用于获取鼠标移动距离
+    h5 = false                // 是否用于h5
+    rootDom = document      // 根文档
+
+    mainToolbar = null           // 主工具元素
+    subToolbar = null            // 子工具元素
+    deployToolbar = null         // 展开或者收起元素
+    isDeploy = true          // 默认是否展开
+    tool = null                 // 针对工具栏进行区分： canvasTool、functionBtn
 
     constructor(config = {}, callback = () => {}) {
         this._initConfig(config)
@@ -2069,16 +2342,22 @@ class DragMoveModel {
         this.limitMoveBorder = !!config.limitMoveBorder
         this.moveMode = config.moveMode || 'transform'
         this.h5 = !!config.h5
+
+        this.direction = config.direction
         this.rootDom = config.rootDom || this.rootDom
+        this.mainToolbar = config.mainToolbar
+        this.subToolbar = config.subToolbar
+        this.deployToolbar = config.deployToolbar
+        this.tool = config.tool
     }
 
     // 初始化目标元素相关信息
     _initTragetElInfo() {
-        if (this.clickEl) {
-            const { top, left } = this.clickEl.getBoundingClientRect()
+        if (this.targetEl) {
+            const { top, left } = this.targetEl.getBoundingClientRect()
             this.initTargetElTop = top
             this.initTargetElLeft = left
-            this.clickEl.style['will-change'] = this.moveMode === 'transform' ? 'transform' : 'left, top'
+            this.targetEl.style['will-change'] = this.moveMode === 'transform' ? 'transform' : 'left, top'
         }
     }
 
@@ -2189,9 +2468,12 @@ class DragMoveModel {
 
     // 鼠标移动事件
     _mousemoveHandler = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
         const pageX = this.h5 ? e.changedTouches[0].pageX : e.pageX
         const pageY = this.h5 ? e.changedTouches[0].pageY : e.pageY
         if (this.isMousedown) {
+            this.isMouseMove = true
             // 往左
             if (pageX < this.startX) {
                 this.moveInsX = pageX - this.startX
@@ -2222,7 +2504,8 @@ class DragMoveModel {
 
     // 鼠标按下事件
     _mousedownHandler = (e) => {
-        if(!(can.fullScreenModel && can.fullScreenModel.isCurrentFullScreen)) return
+        e.preventDefault()
+        e.stopPropagation()
         const pageX = this.h5 ? e.changedTouches[0].pageX : e.pageX
         const pageY = this.h5 ? e.changedTouches[0].pageY : e.pageY
         this.startX = pageX // 记录鼠标起始位置x
@@ -2241,9 +2524,83 @@ class DragMoveModel {
 
     // 鼠标松开事件
     _mouseupHandler = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
         this.isMousedown = false // 标记鼠标松开状态
         this.startX = 0 // 将x轴鼠标起始位置清零
-        this.startY = 0 // 将y轴鼠标起始位置清零
+        this.startY = 0 // 将y轴鼠标起始位置清
+        if(this.isMouseMove){
+            this.isMouseMove = false
+        }else{
+            this.handleDisplayForCanvasTool()
+        }
+
+        if(this.direction === 'upOrDown'){
+            let {top, height} = this.mainToolbar.getBoundingClientRect()
+            if(top < window.innerHeight - 2 * height){
+                if(!this.subToolbar.classList.contains('toolbarChild_top')){
+                    this.subToolbar.classList.add('toolbarChild_top')
+                }
+                this.subToolbar.style.removeProperty('bottom')
+            }else{
+                this.subToolbar.classList.remove('toolbarChild_top')
+                this.subToolbar.style.bottom = '55px'
+            }
+
+        }else if(this.direction === 'leftOrRight') {
+            let {left, width, right} = this.mainToolbar.getBoundingClientRect()
+            let {width: subWidth} = this.subToolbar.getBoundingClientRect()
+            if(left >  width + subWidth){
+                if(!this.subToolbar.classList.contains('colorSelectContainer_right')){
+                    this.subToolbar.classList.add('colorSelectContainer_right')
+                }
+                this.subToolbar.style.removeProperty('left')
+            }else{
+                this.subToolbar.classList.remove('colorSelectContainer_right')
+                this.subToolbar.style.left = '50px'
+            }
+        }
+
+    }
+
+    /**处理收起、展开内容**/
+    handleDisplayForCanvasTool = function(){
+        if(this.isDeploy){
+            this.isDeploy = false
+
+            if(this.tool === 'canvasTool'){
+                /**针对工具栏**/
+                this.deployToolbar.classList.remove('rightOfCanvasTool')
+                if(!this.deployToolbar.classList.contains('leftOfCanvasTool')){
+                    this.deployToolbar.classList.add('leftOfCanvasTool')
+                }
+                /**隐藏子组件**/
+                can.canvasToolsBar.setDefaultOfChild()
+            }else if(this.tool === 'functionBtn'){
+                /**针对功能按钮**/
+                this.deployToolbar.classList.remove('rightOfFunctionBtn')
+                if(!this.deployToolbar.classList.contains('leftOfFunctionBtn')){
+                    this.deployToolbar.classList.add('leftOfFunctionBtn')
+                }
+            }
+
+        }else{
+            this.isDeploy = true
+
+            if(this.tool === 'canvasTool'){
+                /**针对工具栏**/
+                this.deployToolbar.classList.remove('leftOfCanvasTool')
+                if(!this.deployToolbar.classList.contains('rightOfCanvasTool')){
+                    this.deployToolbar.classList.add('rightOfCanvasTool')
+                }
+            }else if(this.tool === 'functionBtn'){
+                /**针对功能按钮**/
+                this.deployToolbar.classList.remove('leftOfFunctionBtn')
+                if(!this.deployToolbar.classList.contains('rightOfFunctionBtn')){
+                    this.deployToolbar.classList.add('rightOfFunctionBtn')
+                }
+            }
+        }
     }
 
     // 初始化监听事件
@@ -2253,7 +2610,7 @@ class DragMoveModel {
         const upEvent = this.h5 ? 'touchend' : 'mouseup'
         this.rootDom.addEventListener(moveEvent, this._mousemoveHandler)
         this.clickEl && this.clickEl.addEventListener(downEvent, this._mousedownHandler)
-        this.rootDom.addEventListener(upEvent, this._mouseupHandler)
+        this.clickEl && this.clickEl.addEventListener(upEvent, this._mouseupHandler)
 
     }
 
@@ -2262,9 +2619,9 @@ class DragMoveModel {
         const moveEvent = this.h5 ? 'touchmove' : 'mousemove'
         const downEvent = this.h5 ?  'touchstart' : 'mousedown'
         const upEvent = this.h5 ? 'touchend' : 'mouseup'
-        this.clickEl && this.clickEl.removeEventListener(moveEvent, this._mousedownHandler)
         this.rootDom.removeEventListener(downEvent, this._mousemoveHandler)
-        this.rootDom.removeEventListener(upEvent, this._mouseupHandler)
+        this.clickEl && this.clickEl.removeEventListener(moveEvent, this._mousedownHandler)
+        this.clickEl && this.clickEl.addEventListener(upEvent, this._mouseupHandler)
     }
 }
 

@@ -21,6 +21,16 @@ WebRTCSession.prototype.subscribeChannelEvents = function (channel){
             This.sendMessageByDataChannel(fileInfo)
             This.readFileToSend({lineId: fileInfo.lineId, content: sendText})
         }
+
+        if(localAccountLists){
+            let param ={
+                type: 'remoteAccount',
+                lineContent: {local: This.lineId, remote: This.remoteLineId},
+                lineData: lineData,
+                accountLists: localAccountLists
+            }
+            This.sendMessageByDataChannel(param)
+        }
     }
 
     channel.onmessage = function (e){
@@ -52,109 +62,20 @@ WebRTCSession.prototype.handleChannelOnmessage = function (message){
         message = JSON.parse(message)
     }
 
-    let This = this
-    let lineId
     if(pageName === 'quicall'){
         remoteShareInfo.lineId = message.lineId
     }
 
-    if(message.type){
-      if(message.lineContent){
-          lineId = This.getMatchLocalLineId({lineId: message.lineId})  || message.lineContent.remote
-      }else{
-          lineId = message.lineId
-      }
-      let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: lineId })
-      if(!session){
-          log.info( message.type + ': no session is found')
-          return
-      }
-      let stream = This.getStream("slides", true)
-      switch(message.type){
-          case 'localHoldLine':
-              session.isRemoteHold = true
-              if(!session.isMute && !session.isLocalHold){
-                  session.streamMuteSwitch({type: 'slides', stream: stream, mute: true})
-                  gsRTC.trigger("holdStatus", {type: message.type , localHold: session.isLocalHold, remoteHold: session.isRemoteHold})
-              }
-              break
-          case 'localUnHoldLine':
-              session.isRemoteHold= false
-              if(session.isMute && !session.isLocalHold){
-                  session.streamMuteSwitch({type: 'slides', stream: stream, mute: false})
-              }
-              break
-          case 'remoteHoldLine':
-              session.isRemoteHold = true
-              gsRTC.trigger("holdStatus", {type: message.type})
-              break;
-          case 'remoteUnHoldLine':
-              session.isRemoteHold = false
-              break;
-          case 'fileInfo':
-              if(pageName === 'quicall'){
-                  remoteShareInfo.shareType = 'shareFile'
-              }
-              if(message.state === 'receive'){
-                 log.info('remote consent')
-                  session.readFileToSend({lineId: session.lineId, content: sendText})
-              }else if(message.state === 'reject') {
-                 log.info('remote reject')
-                  switchSendStatus('reject')
-              }else if(message.state === 'cancel'){
-                  if(pageName === 'shareScreen'){
-                      notice({ type: 'warn', value: currentLocale['L127']})
-                      fileCountDownTimer && countDownFile()
-                  }else if(pageName === 'quicall') {
-                      countDownTimer && countDown()
-                  }
-              }else if(message.state === 'timeout'){
-                  switchSendStatus('timeout')
-              }else{
-                  This.fileSize = message.size
-                  This.fileName = message.name
-                  This.receiveBuffer = []
-                  This.receivedSize = 0
-                  log.info("Receive the presentation, whether to accept the presentation")
-                  let data = {
-                      lineId: message.lineId,
-                      fileName: This.fileName,
-                      fileSize: This.fileSize
-                  }
-                  if(pageName === 'shareScreen'){
-                      gsRTC.trigger('shareScreenFileConfirmPopup', data)
-                  }else if(pageName === 'quicall' && message.popup){
-                      gsRTC.trigger('quicallFileConfirmPopup', data)
-                  }
-              }
-              break;
-          case 'mouseDown':
-          case 'mouseMove':
-          case 'mouseUp':
-          case 'mouseLeave':
-          case 'remotePosition':
-          case 'areaDelete':
-          case 'allDelete':
-          case 'pausePainting':
-          case 'textFlag':
-          case 'noteFlag':
-              gsRTC.trigger("onRemoteMousePosition", message)
-              break
-          case 'streamChange':
-              gsRTC.trigger("onRemoteStreamChange", message)
-              break;
-          case 'socketStatus':
-                if(message.state === 'close'){
-                    // 对端ws连接异常，关闭共享页面
-                    gsRTC.trigger('errorTip', gsRTC.CODE_TYPE.PEER_WEBSOCKET_CLOSED.codeType, message.lineId)
-                }
-              break
-          default:
-              log.info("get current type: " + message.type)
-              break;
-      }
-    }else {
-        This.handleShareRequestMessage(message)
+    if(!message.type){
+        this.handleShareRequestMessage(message)
+    }else{
+        let lineId
+        if(message.lineContent && message.lineContent.remote){
+            lineId =  message.lineContent.remote
+        }else{
+            lineId = message.lineId
+        }
+        gsRTC.handleEventContent({lineId: lineId, msg: message})
     }
 }
 
@@ -169,6 +90,18 @@ WebRTCSession.prototype.sendMessageByDataChannel = function (message, noStringif
     if(!This.pc || !This.pc.dataChannel){
        log.info('send message by data channel error')
         return
+    }
+    if(message.state === 'timeout'){
+        log.warn('receive timeout ' + This.fileName)
+        let file = This.receiveTimeoutFileList.find(item => {
+            return item.name === This.fileName
+        })
+        if(!file){
+            This.receiveTimeoutFileList.push({
+                name: This.fileName,
+                size: This.fileSize
+            })
+        }
     }
     let dataChannel = This.pc.dataChannel
     if(!noStringify){
@@ -195,6 +128,15 @@ WebRTCSession.prototype.sendMessageByDataChannel = function (message, noStringif
             break;
         case "closed":
             log.warn("Error! Attempt to send while connection closed.");
+
+            /** 针对 浏览器 websocket 断开， 自动检测到当前是连接状态为failed 且 dataChannel 状态为closed状态 **/
+            if(This.pc.connectionState === 'failed'){
+               log.warn("The current browser peerconnection detected connection status failed. ")
+               gsRTC.trigger("closeAllShareLine", {lineId: This.lineId})
+               for(let session of gsRTC.webrtcSessions){
+                   gsRTC.clearSession({lineId: session.lineId})
+               }
+            }
             break;
         default:
             break
@@ -232,6 +174,11 @@ WebRTCSession.prototype.readFileToSend = function (data){
             }else if(offset === file.size){
                log.info('send success')
                 switchSendStatus('success')
+                for(let i in This.sendTimeoutFileList){
+                    if(This.sendTimeoutFileList[i].name === file.name){
+                        This.sendTimeoutFileList.splice(i, 1)
+                    }
+                }
                 fileInfo = null
                 sendText = null
             }
@@ -272,35 +219,46 @@ WebRTCSession.prototype.fileDownload = function (event) {
         a.download = This.fileName
         a.textContent = This.fileName
         a.click()
-    }
-}
-
-/***
- * 解析消息体:Parse message body
- *@param message 消息体
- *@return
- */
-WebRTCSession.prototype.parseMessageBody = function(message){
-    log.info('WebRTCSession: parse message body')
-
-    if(typeof message === 'string'){
-        message = JSON.parse(message)
-    }
-
-    let action
-    let data
-    let getAttributeArray = Object.keys(message)   // ect: local_line、(createMediaSession、createMediaSessionRet)
-    if(message.hasOwnProperty('createMediaSession') || message.hasOwnProperty('createMediaSessionRet') ||
-        message.hasOwnProperty('updateMediaSession') ||  message.hasOwnProperty('updateMediaSessionRet') ||
-        message.hasOwnProperty('destroyMediaSession') ||  message.hasOwnProperty('destroyMediaSessionRet')){
-        for(let key in getAttributeArray){
-            action = getAttributeArray[key]
-            if(action.indexOf('MediaSession') > 0){
-                data = message[action]
-                break
-            }
+        if(SelectedList.length > 0 && isresendFile){
+            log.info('received completed, delete corresponding files: ' + This.fileName)
+            This.removeFileList(This.fileName)
         }
     }
-    return { type: action,  message: data }
 }
 
+WebRTCSession.prototype.removeFileList = function(name){
+    log.info('removeFileList: ' + name)
+    let This = this
+    // 移除接收完成的文件以及子节点
+    for(let i = 0; i < SelectedList.length; i++){
+        if(SelectedList[i].name === name){
+            remoteFileNode(SelectedList[i].name)
+            SelectedList.splice(i, 1)
+        }
+    }
+    // 移除接收列表里对应的文件
+    for(let n in This.receiveTimeoutFileList){
+        if(This.receiveTimeoutFileList[n].name === name){
+            This.receiveTimeoutFileList.splice(n, 1)
+        }
+    }
+    // 如果列表中还存在 那就代表用户选了多个，那就继续请求发送
+    if(SelectedList.length > 0){
+        This.fileName = SelectedList[0].name
+        This.fileSize = Number(SelectedList[0].size)
+        This.receiveBuffer = []
+        This.receivedSize = 0
+        This.sendMessageByDataChannel({
+            lineId: clickContent.localLineId,
+            type: 'fileInfo',
+            state: 'resend',
+            content: {
+                name: SelectedList[0].name,
+                size: SelectedList[0].size
+            }
+        })
+    }else {
+        // 如果选择的文件发送完了，就将是否重传文件的状态设置回去
+        isresendFile = false
+    }
+}

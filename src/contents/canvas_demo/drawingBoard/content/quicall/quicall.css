@@ -8,8 +8,8 @@ body {
     font-size: 12px;
     width: 100%;
     height: 100%;
-    min-height: 530px;
-    min-width: 440px;
+    /*min-height: 530px;*/
+    /*min-width: 440px;*/
     background: #FFFFFF;
     overflow: hidden;
     /*border: 1px solid rgba(8, 25, 62, 0.2);*/
@@ -17,12 +17,10 @@ body {
     position: absolute;
 }
 .center{
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    position: absolute;
+    width: 100%;
+    height: 100%;
+    min-width: 440px;
+    min-height: 698px;
 }
 
 /*去除input密码框默认小眼睛样式*/
@@ -148,7 +146,7 @@ input[type="password"]::-ms-reveal {
     color: #F8B222;
     background: #FEF0E4;
     float: left;
-     display: none;
+    display: none;
 }
 .login-verification-tip span:nth-child(1){
     width: 373px;
@@ -477,7 +475,7 @@ input:disabled{
     height: 24px;
     display: table;
     width: 100%;
-    padding: 0 24px 0 24px;
+    padding: 0 24px;
     box-sizing: border-box;
 }
 
@@ -505,10 +503,8 @@ input:disabled{
     justify-content: space-between;
     width: 100%;
     height: 40px;
-    padding: 0 40px 0 40px;
-    margin-top: 20px;
-    text-align: center;
-    box-sizing: border-box
+    margin-top: 24px;
+    margin-bottom: 6px;
 }
 
 .dial-select-left {
@@ -516,25 +512,25 @@ input:disabled{
     align-items:center;
     justify-content: space-between;
     width: 133px;
+    margin-left: 40px;
 }
 
-.dial-select-left h2 {
-    width: 57px;
-    height: 26px;
-    line-height: 26px;
-    background: #2F91FF;
-    border-radius: 13px;
-    font-family: SFUIDisplay-Regular;
+.dial-title, .contacts-title {
+    float: left;
     font-weight: 400;
-    font-size: 18px;
-    color: #FFFFFF;
-    letter-spacing: 0;
-}
-
-.dial-select-left h3 {
-    width: 63px;
     font-size: 16px;
     color: #999999;
+    letter-spacing: 0;
+    text-align: center;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.dial-title-show{
+    background: #2F91FF;
+    color: #FFFFFF;
+    border-radius: 13px;
+    font-size: 18px;
 }
 
 .dial-select select {
@@ -554,12 +550,50 @@ input:disabled{
     outline: none;
 }
 
+.contacts {
+    display: none;
+    height: 25px;
+    margin: 0 40px;
+    text-align: center;
+    line-height: 25px;
+    margin-bottom: 10px;
+}
+
+.contacts-show{
+    display: flex;
+    justify-content: center;
+}
+
+.contacts-localAddressBook, .contacts-ldap{
+    width: 33%;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+
+.contacts-phoneBookGroup {
+    width: 33%;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    cursor: not-allowed
+}
+
+.contacts-list-color{
+    border-color: #2F91FF;
+}
+
 .phoneNumber-input {
-    height: 48px;
+    height: 40px;
     width: 100%;
-    margin-top: 14px;
     position: relative;
 }
+
+.phoneNumber-input::after{
+    content:'';
+    clear:both;
+    display:block;
+}
+
 .number-from{
     text-align: center;
     font-size: 12px;
@@ -572,10 +606,6 @@ input:disabled{
     width: 100%;
     height: 100%;
     border: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
 }
 
 .number-input-shake{
@@ -591,9 +621,8 @@ input:disabled{
 }
 
 .phone-number {
-    min-width: 360px;
-    width: 100%;
-    height: 100%;
+    width: 360px;
+    height: 40px;
     margin: auto;
     position: absolute;
     outline: none;
@@ -647,26 +676,23 @@ input:disabled{
     border-radius: 2px;
     outline: none;
 }
-.setting-nav-list>ul:first-child{
-    padding: 4px 0 0 0;
-}
-.setting-nav-list>ul:last-child{
-    padding: 0 0 4px 0;
-}
 
 .setting-nav-list>ul>li{
-    padding: 6px 12px;
+    padding: 6px 12px 3px 12px;
+    height: 23px;
 }
 
 .setting-nav-list>ul>li>div{
     width: 20px;
-    height: 20px;
-    margin-right: 8px;
     float: left;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .setting-nav-list>ul>li>label{
-    height: 20px;
-    line-height: 20px;
+    height: 23px;
+    line-height: 23px;
     display: inline-block;
     font-size: 14px;
 }
@@ -675,8 +701,20 @@ input:disabled{
     background: #E9EAED;
 }
 
-#contact-source-list>li{
-    padding: 6px 12px 6px 34px
+#contact-source-list{
+    display: none;
+    margin-top: -8px;
+}
+#contact-source-list > li > div{
+    margin-left: 20px;
+}
+.contact-source-arrow_down{
+    position: absolute;
+}
+#contact-arrow-down{
+    width: 23px;
+    height: 23px;
+    position: absolute;
 }
 /**********************************设置***********************************/
 
@@ -775,10 +813,16 @@ input:disabled{
 }
 
 .account-list{
+    display: flex;
+    align-items: center;
+    height: 40px;
+    float: right;
     font-size: 14px;
     letter-spacing: 0;
     font-weight: 400;
+    line-height: 40px;
     font-family: HelveticaNeue, Helvetica, Arial, sans-serif;
+    margin: 8px 42px 8px 0;
     position: relative;
 }
 
@@ -891,7 +935,10 @@ input:disabled{
     z-index: 999;
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 320px;
+    max-height: 275px;
+    left: 50%;
+    transform: translate(-61%, 0%);
+    -webkit-transform: translate(-61%, 0%);
 }
 
 .search-result div:nth-child(1){
@@ -951,8 +998,7 @@ input:disabled{
 }
 
 .call-btn-area{
-    margin: 20px 40px 20px 40px;
-    height: 40px;
+    margin: 0 40px;
 }
 
 .call-button{
@@ -977,6 +1023,7 @@ input:disabled{
     height: 40px;
     background: #27CA15;
     line-height: 40px;
+    margin: 20px 0;
 }
 
 #videoCall{
@@ -995,13 +1042,25 @@ input:disabled{
 }
 
 .line-count{
-    /*width: 360px;*/
-    /*position: relative;*/
-    margin: 0 40px;
+    height: 1px;
+    background: #E9EAED;
+    position: relative;
+    margin: 85px 40px 10px 40px;
+}
+
+.line-count::before {
+    content: attr(dataBefore);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 0 10px;
     height: 16px;
-    text-align: center;
-    display: none;
-    align-items: center;
+    font-family: SFUIDisplay;
+    font-size: 14px;
+    color: #222222;
+    letter-spacing: 0;
 }
 
 .lines{
@@ -1020,24 +1079,33 @@ input:disabled{
     border-top: 2px solid #f3f3f3;
     flex-grow: 1;
 }
+
 .lines-display{
-    margin: 12px 31px 0 40px;
-    display: flex;
-    flex-wrap: wrap;
-    height: 172px;
-    overflow: hidden;
     transition: all .5s;
     text-align: center;
+    padding: 0 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
 }
+
+.lines-display ul:nth-child(3n+2){
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 .active-line{
+    float: left;
     position: relative;
-    width: 111px;
+    list-style-type: none;
+    width: calc(33.33% - 8px);
     height: 160px;
     border: 2px solid #E1E3E6;
     border-radius: 6px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    list-style: none
+    padding: 0;
+    cursor: pointer;
+    margin-bottom: 0px;
+    margin-top: 8px;
 }
 
 .active-line li:nth-child(1){
@@ -1050,7 +1118,7 @@ input:disabled{
     overflow: hidden; /*超出部分隐藏*/
 }
 
- /*呼叫的号码溢出文本框时，显示...，hover时显示tip提示 */
+/*呼叫的号码溢出文本框时，显示...，hover时显示tip提示 */
 /*.active-line li:nth-child(1):hover:after {*/
 /*    position:absolute;*/
 /*    top: -30px;*/
@@ -1141,7 +1209,7 @@ input:disabled{
 }
 .hold{
     background: #FFEECB;
-    }
+}
 .unhold{
     background: #F8B222;
 }
@@ -1154,7 +1222,7 @@ input:disabled{
 .line-expand{
     height: 24px;
     width: 24px;
-    margin: 0 auto;
+    margin: 10px auto;
     line-height: 24px;
 }
 
@@ -1186,7 +1254,7 @@ input:disabled{
 }
 
 .changeStyle{
-    cursor: not-allowed !important;
+    cursor: pointer !important;
 }
 
 /*************************** 弹框通知样式 ********************************/
@@ -1368,15 +1436,54 @@ input:disabled{
     width: 0;
     height: 0;
     position: absolute;
+    top: 0;
     z-index: 9;
     background-color: rgba(10, 11, 17, .3);
-    transition: all 0.5s ease-in-out;
     overflow: hidden;
 }
 
-.minimized {
+.file-popup-show{
     width: 100%;
     height: 100%;
+    animation: popupShow 0.5s;
+}
+
+.file-popup-none{
+    animation: popupNone 0.5s;
+}
+
+@keyframes popupShow {
+    0% {
+        width: 0;
+        height: 0;
+        top: 50%;
+        left: 50%;
+        opacity: 0;
+    }
+    100%{
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes popupNone {
+    0% {
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 1;
+    }
+    100%{
+        width: 0;
+        height: 0;
+        top: 50%;
+        left: 50%;
+        opacity: 0;
+    }
 }
 
 .file-popup-content{
@@ -1403,11 +1510,42 @@ input:disabled{
     letter-spacing: 0;
     text-align: center;
     line-height: 24px;
+    display: flex;
+    justify-content: flex-start;
+}
+.file-head > span{
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.file-head-span-color{
+    color: #CED0D1;
 }
 
 .file-body{
+    display: none;
     width: 58.3%;
     padding-top: 12px;
+}
+
+@keyframes BodyLeft {
+    0% {
+        transform: translate(-100px);
+        opacity: 0;
+    }
+    50% {
+        transform: translate();
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(0);
+        opacity: 1;
+    }
+}
+
+.file-body-show{
+    display: block;
+    animation: BodyLeft .5s ease-out;
 }
 
 .file-body-content{
@@ -1478,7 +1616,7 @@ input:disabled{
     text-align: center;
 }
 
-.file-tail-button{
+.file-tail-button, .loss-file-button, .cance-file-button{
     display: inline-block;
     background: #B5D7FF;
     font-family: OpenSans;
@@ -1491,12 +1629,12 @@ input:disabled{
     cursor: not-allowed;
 }
 
-.file-tail-button-show{
+.file-tail-button-show, .loss-file-button-show, .cance-file-button-show{
     background: #2F91FF;
     cursor: pointer;
 }
 
-.file-tail-button-none{
+.file-tail-button-none, .loss-file-button-none, .cance-file-button-none, .loss-title-none{
     display: none;
 }
 
@@ -1536,6 +1674,218 @@ progress::-webkit-progress-bar{
 progress::-webkit-progress-value{
     background: #288EF6;
     border-radius: 3px;
+}
+
+.loss-file-list{
+    display: none;
+    border-left:1px solid #000000;
+    border-top:1px solid #000000;
+    border-right:1px solid #000000;
+    text-align: center;
+}
+
+@keyframes listRight {
+    0% {
+        transform: translate(100px);
+        opacity: 0;
+    }
+    50% {
+        transform: translate();
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(0px);
+        opacity: 1;
+    }
+}
+
+.loss-file-list-show{
+    display: block;
+    animation: listRight .5s ease-out;
+}
+
+.file-list-li{
+    display: grid;
+    grid-template-columns: 50px 170px 50px;
+    grid-auto-rows: 30px;
+}
+
+.file-list-li-icon{
+    border-bottom:1px solid #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.magic-checkbox {
+    position: absolute;
+    display: none;
+}
+
+.magic-checkbox[disabled] {
+    cursor: not-allowed;
+}
+
+.magic-checkbox + label {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.magic-checkbox + label:hover:before {
+    animation-duration: 0.4s;
+    animation-fill-mode: both;
+    animation-name: hover-color;
+}
+
+.magic-checkbox + label:before {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    content: '';
+    border: 1px solid #c0c0c0;
+}
+
+.magic-checkbox + label:after {
+    position: absolute;
+    display: none;
+    content: ''; }
+
+.magic-checkbox[disabled] + label {
+    cursor: not-allowed;
+    color: #e4e4e4;
+}
+.magic-checkbox[disabled] + label:hover,
+.magic-checkbox[disabled] + label:before,
+.magic-checkbox[disabled] + label:after {
+    cursor: not-allowed;
+}
+
+.magic-checkbox[disabled] + label:hover:before {
+    border: 1px solid #e4e4e4;
+    animation-name: none;
+}
+
+.magic-checkbox[disabled] + label:before {
+    border-color: #e4e4e4;
+}
+
+.magic-checkbox:checked + label:before {
+    animation-name: none;
+}
+
+.magic-checkbox:checked + label:after {
+    display: block;
+}
+
+.magic-checkbox + label:before {
+    border-radius: 10px;
+}
+
+.magic-checkbox + label:after {
+    top: 2px;
+    left: 7px;
+    box-sizing: border-box;
+    width: 6px;
+    height: 12px;
+    transform: rotate(45deg);
+    border-width: 2px;
+    border-style: solid;
+    border-color: #fff;
+    border-top: 0;
+    border-left: 0;
+}
+
+.magic-checkbox:checked + label:before {
+    border: #3e97eb;
+    background: #3e97eb;
+}
+
+.file-list-li-name{
+    border-left:1px solid #000000;
+    border-right:1px solid #000000;
+    border-bottom:1px solid #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.group{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 9;
+    background-color: rgba(10, 11, 17, .3);
+    overflow: hidden;
+}
+
+.group-popup-content{
+    width: 37.5%;
+    min-width: 320px;
+    min-height: 225px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 32px 0 #00000014;
+    border-radius: 4px;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    position: relative;
+}
+
+.group-tail{
+    width: 100%;
+    padding: 6px 0;
+    justify-content: center;
+    text-align: center;
+}
+
+.group-tail-button{
+    display: inline-block;
+    background: #B5D7FF;
+    font-family: OpenSans;
+    font-size: 14px;
+    color: #FFFFFF;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 20px;
+    padding: 6px 24px;
+    cursor: not-allowed;
+}
+
+.group-list{
+    width: 100%;
+    height: 150px;
+    overflow-y: scroll;
+    text-align: center;
+}
+
+/* 修改垂直滚动条 */
+::-webkit-scrollbar {
+    width: 5px; /* 修改宽度 */
+}
+
+/* 修改滚动条轨道背景色 */
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
+
+/* 修改滚动条滑块颜色 */
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+}
+
+/* 修改滚动条滑块悬停时的颜色 */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+/* 修改滚动条滑块的圆角 */
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
 }
 
 @font-face {

@@ -49,9 +49,6 @@ WebRTCSession.prototype.setStream = function (stream, type, isLocal, msid) {
         This.localStreams[type] = stream
     }else {
         if(type === 'audio' || type === 'main' || type === 'slides'){
-            // if(This.remoteStreams[type]){
-            //     This.closeStream(This.remoteStreams[type])  // clear before first
-            // }
             This.remoteStreams[type] = stream
         } else {
             if(!stream){
@@ -62,13 +59,8 @@ WebRTCSession.prototype.setStream = function (stream, type, isLocal, msid) {
         }
     }
 
-    let changeStream = stream
-    // if(isLocal && type === 'main' && stream && gsRTC.backgroundEnabled()){
-    //     changeStream = This.localStreams.effectStream
-    // }
-
     gsRTC.trigger('streamChange',  {
-        stream: changeStream,
+        stream: stream,
         type: type,
         isLocal: isLocal,
         msid: msid,

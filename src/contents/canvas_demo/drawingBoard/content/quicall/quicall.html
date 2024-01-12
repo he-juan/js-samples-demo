@@ -69,25 +69,26 @@
                     <ul>
                         <li>
                             <div><input type="checkbox" class="icon GRP-icon-security-ash" id="privacy-settings"></div>
-                            <label class="privacy-settings-tip" for="privacy-settings">登出清除个人数据</label>
+                            <label class="privacy-settings-tip" for="privacy-settings"></label>
                         </li>
                         <li>
                             <div><input type="checkbox" id="word-dialing"></div>
-                            <label class="word-dialing-tip" for="word-dialing">划词拨号</label>
+                            <label class="word-dialing-tip" for="word-dialing"></label>
                         </li>
                         <li>
                             <div><input type="checkbox" id="contact-source"></div>
-                            <label class="contact-source-tip" for="contact-source">通讯录来源</label>
+                            <label class="contact-source-tip" for="contact-source"></label>
+                            <span id="contact-arrow-down" class="icon GRP-icon-arrow_down"></span>
                         </li>
                     </ul>
                     <ul id="contact-source-list">
                         <li>
                             <div><input type="checkbox" id="contact-source-ldap"></div>
-                            <label class="contact-source-ldap-tip" for="contact-source-ldap">LDAP</label>
+                            <label class="contact-source-ldap-tip" for="contact-source-ldap"></label>
                         </li>
                         <li>
                             <div><input type="checkbox" id="contact-source-local"></div>
-                            <label class="contact-source-local-tip" for="contact-source-local">本地联系人</label>
+                            <label class="contact-source-local-tip" for="contact-source-local"></label>
                         </li>
                     </ul>
                 </div>
@@ -105,8 +106,8 @@
 
         <div class="dial-select">
             <div class="dial-select-left">
-                <h2 class="dial-title">Dial</h2>
-                <h3 style="display: none">Contacts</h3>
+                <div class="dial-title dial-title-show"></div>
+                <div class="contacts-title"></div>
             </div>
             <div class="account-list">
                 <div class="change-select-account">
@@ -121,6 +122,11 @@
                 <!--  账号列表区域  -->
                 <ul class="device-account-list"></ul>
             </div>
+        </div>
+        <div class="contacts">
+            <div class="contacts-localAddressBook contacts-list-color"></div>
+            <div class="contacts-phoneBookGroup"></div>
+            <div class="contacts-ldap"></div>
         </div>
 
             <!-- 号码输入区   -->
@@ -137,11 +143,7 @@
                 <input type="button" class="call-button" id="normalCall" value="Call">
             </div>
             <!--   线路数显示  -->
-            <div class="line-count">
-                <span class="line-segment"></span>
-                <span class="lines">Line 0/0</span>
-                <span class="line-segment"></span>
-            </div>
+            <div class="line-count"></div>
             <!--  线路状态  -->
             <div class="lines-display">
             </div>
@@ -190,8 +192,13 @@
 <div class="file-popup">
     <div class="file-popup-content">
         <span class="icon GRP-icon-add_s file-close"></span>
-        <div class="file-head">File Share</div>
-        <div class="file-body">
+        <div class="file-head">
+            <span class="file-share-title"></span>
+            <span class="loss-title file-head-span-color"></span>
+        </div>
+        <div class="loss-file-list">
+        </div>
+        <div class="file-body file-body-show">
             <div class="file-body-content">
                 <span class="file-upload icon GRP-icon-upload"></span>
                 <div class="file-body-content-text">
@@ -202,10 +209,80 @@
             <div class="file-body-tips"></div>
         </div>
         <div class="file-tail">
-            <div class="file-tail-button"></div>
+            <div class="file-tail-button file-tail-button-none"></div>
+            <div class="loss-file-button loss-file-button-none"></div>
+            <div class="cance-file-button cance-file-button-none"></div>
         </div>
     </div>
 </div>
+
+<!-- <div class="group">
+    <div class="group-popup-content">
+        <p>选择</p>
+        <p>当前型号话机仅支持X路通话和Y方会议</p>
+        <div class="group-list">
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">1</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">2</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">3</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">4</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">5</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">6</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+            <div class="file-list-li">
+                <div class="file-list-li-icon">
+                    <input class="magic-checkbox" type="checkbox" id="yyc1">
+                    <label for="yyc1"></label>
+                </div>
+                <div class="file-list-li-name">7</div>
+                <div class="file-list-li-icon">0%</div>
+            </div>
+        </div>
+        <div class="group-tail">
+            <div class="group-tail-button">呼叫</div>
+        </div>
+    </div>
+</div> -->
 
 <!--webRTC 相关文件引用-->
 <script type="text/javascript" src="../webRTC/lib/sdp_tools.js"></script>

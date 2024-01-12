@@ -2,7 +2,8 @@
  * 打开文件弹窗
  */
 function openFilePopup (){
-    filePopup.classList.toggle('minimized', true)
+    filePopup.classList.toggle('file-popup-show', true)
+    filePopup.classList.toggle('file-popup-none', false)
     filePopupState = true
 }
 
@@ -10,7 +11,8 @@ function openFilePopup (){
  *  关闭文件弹窗
  */
 function closeFilePopup (){
-    filePopup.classList.toggle('minimized', false)
+    filePopup.classList.toggle('file-popup-show', false)
+    filePopup.classList.toggle('file-popup-none', true)
     if(sendStatus === 'end'){
         fileNameIcon.classList.toggle('file-name-icon_show', true)
         fileContent.classList.toggle('file-content_selected', false)
@@ -83,7 +85,6 @@ function fileUploadOnClick (param){
                 }
 
                 sendFile(param)
-
                 if(!filePopupState){
                     openFilePopup()
                 }
@@ -212,6 +213,7 @@ function switchSendStatus (e){
         case 'reject':
         case 'timeout':
         case 'success':
+        case 'offline':
         case 'fail':
             // 1、将上传图标和文件选择区域替换成可用状态
             fileBodyContent.classList.toggle('file-body-content_disable', false)            // 上传模块可用
@@ -237,6 +239,8 @@ function switchSendStatus (e){
                     fileBodyTips.textContent = currentLocale['L126']
                 }else if(e === 'timeout'){
                     fileBodyTips.textContent = currentLocale['L128']
+                }else if(e === 'offline'){
+                    fileBodyTips.textContent = currentLocale['L156']
                 }else {
                     fileBodyTips.textContent = currentLocale['L131']
                 }
@@ -244,5 +248,160 @@ function switchSendStatus (e){
             break
         default:
             break
+    }
+}
+
+/**
+ * 切换到文件接收列表状态
+ * @param e
+ */
+function lossTitleClick() {
+    lossTitle.classList.remove('file-head-span-color')
+    fileShareTitle.classList.add('file-head-span-color')
+    lossFileList.classList.add('loss-file-list-show')
+    fileBody.classList.remove('file-body-show')
+    lossFileButton.classList.remove('loss-file-button-none')
+    canceFileButton.classList.remove('cance-file-button-none')
+}
+
+/**
+ * 切换到共享文件状态
+ * @param e
+ */
+function fileShareTitleClick(){
+    fileShareTitle.classList.remove('file-head-span-color')
+    lossTitle.classList.add('file-head-span-color')
+    fileBody.classList.add('file-body-show')
+    lossFileList.classList.remove('loss-file-list-show')
+    lossFileButton.classList.add('loss-file-button-none')
+    canceFileButton.classList.add('cance-file-button-none')
+}
+
+/**
+ * 新增文件列表内容
+ * @param list 漏接文件列表
+ */
+function addFileList (list){
+    for(let i in list){
+        let div = document.createElement('div')
+        div.className = 'file-list-li'
+        div.innerHTML = `<div class="file-list-li-icon">
+                            <input class="magic-checkbox" type="checkbox" name="${list[i].name}" size="${list[i].size}" id="yyc${i}">
+                            <label for="yyc${i}"></label>
+                        </div>
+                        <div class="file-list-li-name">${list[i].name}</div>
+                        <div class="file-list-li-icon">0%</div>`
+        lossFileList.appendChild(div)
+    }
+    lossFileInput = document.getElementsByClassName('magic-checkbox')
+    for(let i = 0; i < lossFileInput.length; i++){
+        lossFileInput[i].onclick = lossFileInputClick
+    }
+    openFilePopup()
+}
+
+/**
+ * 文件漏接列表 接收按钮点击事件
+ */
+function lossFileButtonClick (){
+    if(SelectedList.length <= 0){
+        return
+    }
+    let line = pageName === 'quicall' ? clickContent?.localLineId : currentLocalLine
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: line})
+    if(!session){
+        log.warn("lossFileButtonClick: session is not found")
+        return
+    }
+    isresendFile = true
+    session.fileName = SelectedList[0].name
+    session.fileSize = Number(SelectedList[0].size)
+    session.receiveBuffer = []
+    session.receivedSize = 0
+    session.sendMessageByDataChannel({
+        lineId: line,
+        type: 'fileInfo',
+        state: 'resend',
+        content: {
+            name: SelectedList[0].name,
+            size: SelectedList[0].size
+        }
+    })
+}
+
+/**
+ * 文件漏接列表 取消按钮点击事件
+ */
+function canceFileButtonClick (){
+    if(SelectedList.length <= 0){
+        return
+    }
+    let line = pageName === 'quicall' ? clickContent?.localLineId : currentLocalLine
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: line})
+    if(!session){
+        log.warn("canceFileButtonClick: session is not found")
+        return
+    }
+    for(let i = 0; i < SelectedList.length; i++){
+        session.sendMessageByDataChannel({
+            lineId: line,
+            type: 'fileInfo',
+            state: 'removeFile',
+            content: {
+                name: SelectedList[i].name,
+                size: SelectedList[i].size
+            }
+        })
+        remoteFileNode(SelectedList[i].name)
+        for(let n in session.receiveTimeoutFileList){
+            if(session.receiveTimeoutFileList[n].name === SelectedList[i].name){
+                session.receiveTimeoutFileList.splice(n, 1)
+            }
+        }
+    }
+}
+
+/**
+ * 删除漏接列表对应的子节点
+ * name 节点对应的文件名
+ */
+function remoteFileNode (name){
+    if(!name){
+        return
+    }
+    let childNode = lossFileList.children
+    let remoteChildNode
+    for(let i = 0; i < childNode.length; i++){
+        if(childNode[i].outerText.indexOf(name) >= 0){
+            remoteChildNode = childNode[i]
+        }
+    }
+    remoteChildNode && lossFileList.removeChild(remoteChildNode)
+    if(childNode.length <= 0){
+        closeFilePopup()
+    }
+}
+
+/**
+ * 漏接列表选中按钮点击事件
+ */
+function lossFileInputClick(){
+    SelectedList = []
+    let num = 0
+    for(let i = 0; i < lossFileInput.length; i++){
+        if(lossFileInput[i].checked){
+            num++
+            SelectedList.push({
+                name: lossFileInput[i].name,
+                size: lossFileInput[i].size
+            })
+        }
+    }
+    if(num > 0){
+        lossFileButton.classList.add('loss-file-button-show')
+        canceFileButton.classList.add('cance-file-button-show')
+    }else{
+        lossFileButton.classList.remove('loss-file-button-show')
+        canceFileButton.classList.remove('cance-file-button-show')
     }
 }

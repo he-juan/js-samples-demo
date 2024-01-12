@@ -4,24 +4,23 @@ let can
 /**工具按钮**/
 let toolbar = document.getElementsByClassName("toolbar")[0]
 let dragBtn = document.getElementsByClassName("dragBtn")[0]
-let defaultMouseBtn = document.getElementsByClassName("mouseBtn")[0]
-let shapeBtn = document.getElementsByClassName("shapeBtn")[0]
 let pointerBtn = document.getElementsByClassName("pointerBtn")[0]
 let brushBtn = document.getElementsByClassName("brushBtn")[0]
 let textBtn = document.getElementsByClassName("textBtn")[0]
+let shapeBtn = document.getElementsByClassName("shapeBtn")[0]
 let noteBtn = document.getElementsByClassName("noteBtn")[0]
 let eraserBtn = document.getElementsByClassName("eraserBtn")[0]
 let areaDeleteBtn = document.getElementsByClassName("areaDeleteBtn")[0]
 let clearBtn = document.getElementsByClassName("clearBtn")[0]
+let revokeBtn = document.getElementsByClassName('revokeBtn')[0]
+let restoreBtn = document.getElementsByClassName('restoreBtn')[0]
 let settingsBtn = document.getElementsByClassName("settingsBtn")[0]
 
 /**工具按钮配套子组件***/
 let toolbarChild = document.getElementsByClassName("toolbarChild")[0]
-let shapeChild = document.getElementsByClassName("shapeChild")[0]
-let pointerChild = document.getElementsByClassName("pointerChild")[0]
 let brushChild = document.getElementsByClassName("brushChild")[0]
 let textChild = document.getElementsByClassName("textChild")[0]
-let noteChild = document.getElementsByClassName("noteChild")[0]
+let shapeChild = document.getElementsByClassName("shapeChild")[0]
 let eraserChild = document.getElementsByClassName("eraserChild")[0]
 let settingChild = document.getElementsByClassName("settingsChild")[0]
 
@@ -47,17 +46,6 @@ toolbarChild.onclick = function(){
 }
 
 /**子工具栏监听事件***/
-shapeChild.onclick = function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    can.canvasToolsBar.handleLineStyleOfShape(e)
-}
-
-pointerChild.onclick = function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    can.canvasToolsBar.handleChildClickOfPointer(e)
-}
 brushChild.onclick = function(e){
     e.preventDefault();
     e.stopPropagation();
@@ -68,10 +56,10 @@ textChild.onclick = function(e){
     e.stopPropagation();
     can.canvasToolsBar.handleChildClickOfText(e)
 }
-noteChild.onclick = function(e){
+shapeChild.onclick = function(e){
     e.preventDefault();
     e.stopPropagation();
-    can.canvasToolsBar.handleChildClickOfNote(e)
+    can.canvasToolsBar.handleLineStyleOfShape(e)
 }
 eraserChild.onclick = function(e){
     e.preventDefault();
@@ -114,41 +102,86 @@ let setDefaultToolBarChild = function(){
 }
 
 let CanvasToolsBar = function(){
+    this.toolbarChild = document.getElementsByClassName("toolbarChild")[0]
     this.canvas = document.getElementsByClassName("canvas")[0]
     this.inputEarser = document.getElementById("rangeEarser")
 
+    /*** 右侧色板 **/
+    this.colorSelect = document.getElementsByClassName("colorSelect")[0]
+    this.colorSelectContainer = document.getElementsByClassName('colorSelectContainer')[0]
+    this.markColorBlock = false                     // 标记档期显示颜色块的点击状态
+
+    /** canvas工具栏 **/
+    this.drawToolbar = document.getElementsByClassName("drawToolbar")[0]
+
     /**主工具栏默认状态**/
-    this.mouseFlag = true
     this.pointerFlag = false
-    this.brushFlag = false
+    this.brushFlag = true
     this.textFlag = false
     this.noteFlag = false
+    this.shapeFlag = false
     this.eraserFlag = false
     this.areaDeleteFlag = false
     this.clearFlag = false
     this.settingFlag = false
 
     /***子工具栏默认状态***/
-    this.lineStyle = 'arbitraryLine'  //线条样式如： line、 arrow、 arbitraryLine（默认样式）、pencilFlag、penFlag、 circleFlag、 rectFlag、 strokeRectFlag、 strokeCircleFlag
-    this.pointerColor = '#FE4737'
-    this.brushColor = getRandomColor()
+    this.lineStyle = 'line'  //线条样式如： line、 arrow、 circleFlag、 rectFlag、 strokeRectFlag、 strokeCircleFlag
+    this.color = getRandomColor()
+    this.colorSelect.style.backgroundColor = this.color
+    this.brushStrokeStyle = 'round'
     this.brushStrokeSize = '4'
-    this.textColor = "#FE4737"
     this.textFontSize = "16"
-    this.noteColor = "#F9EC96"
     this.eraserSize = "5"
 
     this.inputEarser.oninput = (e)=>{
         this.setEraserSize(e.target.value)
     }
 
-    this.setDefaultOfParent = function(flag){
-        /**父级工具栏**/
-        if(defaultMouseBtn.firstElementChild.classList.contains("GRP-icon-mouse-blue")){
-            defaultMouseBtn.firstElementChild.classList.remove("GRP-icon-mouse-blue")
-            defaultMouseBtn.firstElementChild.classList.add("GRP-icon-mouse-white")
+    this.colorSelect.onclick = (e)=>{
+        e.stopPropagation()
+        /** 处理多次点击显示或者隐藏色块版 **/
+        if(this.markColorBlock){
+            this.markColorBlock = false
+            this.colorSelectContainer.style.display = 'none'
+        }else{
+            this.colorSelectContainer.style.display = 'flex'
+            this.markColorBlock = true
         }
+    }
 
+    this.colorSelectContainer.onclick = (e)=>{
+
+        /**1.设置选中的颜色 2.点击后隐藏色块版 3.更改颜色色块为当前选中的颜色 4.改变当前针对canvas颜色色块的显示 ***/
+        let element = e.target
+        if(element.classList.contains('color-red')){
+             this.setColor('#FE4737')
+        }else if(element.classList.contains('color-yellow')){
+            this.setColor('#FFE500')
+        }else if(element.classList.contains('color-green')){
+            this.setColor('#21D175')
+        }else if(element.classList.contains('color-blue')){
+            this.setColor('#3890FF')
+        }else if(element.classList.contains('color-purple')){
+            this.setColor('#A066FF')
+        }else if(element.classList.contains('color-deepPurple')){
+            this.setColor('#E2D0FF')
+        }else if(element.classList.contains('color-cyan')){
+            this.setColor('#24E8FF')
+        }else if(element.classList.contains('color-orange')){
+            this.setColor('#15ab87')
+        }else if(element.classList.contains('color-white')){
+            this.setColor('#FFFFFF')
+        } else if(element.classList.contains('color-black')){
+            this.setColor('#0c090c')
+        }
+        this.colorSelectContainer.style.display = 'none'
+        this.colorSelect.style.backgroundColor = this.getColor()
+        can.changeToolColor({account: localAccount, brushColor: this.getColor()})
+    }
+
+    this.setDefaultOfParent = function(data){
+        /**父级工具栏**/
         if(pointerBtn){
             if(pointerBtn.firstElementChild.classList.contains("GRP-icon-laserPointer-blue")){
                 pointerBtn.firstElementChild.classList.remove("GRP-icon-laserPointer-blue")
@@ -170,6 +203,13 @@ let CanvasToolsBar = function(){
             }
         }
 
+        if(shapeBtn){
+            if(shapeBtn.firstElementChild.classList.contains("GRP-icon-shape-blue")){
+                shapeBtn.firstElementChild.classList.remove("GRP-icon-shape-blue")
+                shapeBtn.firstElementChild.classList.add("GRP-icon-shape-white")
+            }
+        }
+
         if(noteBtn){
             if(noteBtn.firstElementChild.classList.contains("GRP-icon-stickyNote-blue")){
                 noteBtn.firstElementChild.classList.remove("GRP-icon-stickyNote-blue")
@@ -181,6 +221,20 @@ let CanvasToolsBar = function(){
             if(eraserBtn.firstElementChild.classList.contains("GRP-icon-eraser-blue")){
                 eraserBtn.firstElementChild.classList.remove("GRP-icon-eraser-blue")
                 eraserBtn.firstElementChild.classList.add("GRP-icon-eraser-white")
+            }
+        }
+
+        if(revokeBtn){
+            if(revokeBtn.firstElementChild.classList.contains("GRP-icon-revoke-blue")){
+                revokeBtn.firstElementChild.classList.remove("GRP-icon-revoke-blue")
+                revokeBtn.firstElementChild.classList.add("GRP-icon-revoke-white")
+            }
+        }
+
+        if(restoreBtn){
+            if(restoreBtn.firstElementChild.classList.contains("GRP-icon-restore-blue")){
+                restoreBtn.firstElementChild.classList.remove("GRP-icon-restore-blue")
+                restoreBtn.firstElementChild.classList.add("GRP-icon-restore-white")
             }
         }
 
@@ -208,59 +262,52 @@ let CanvasToolsBar = function(){
         this.setDefaultOfChild()
 
         /***标记状态**/
-        this.mouseFlag = false
-        this.shapeFlag = false
         this.pointerFlag = false
         this.brushFlag = false
         this.textFlag = false
+        this.shapeFlag = false
         this.noteFlag = false
         this.eraserFlag = false
+        this.revokeFlag = false
+        this.restoreFlag = false
         this.areaDeleteFlag = false
         this.clearFlag = false
         this.settingFlag = false
 
-        this[flag] = true
+        this[data.flag] = true
 
-        if(this.mouseFlag){
-            this.canvas.style.cursor = 'default'
-        }else if(this.pointerFlag){
+        if(this.pointerFlag){
             this.canvas.style.cursor = 'none'
         }else if(this.brushFlag){
             this.canvas.style.cursor = 'url(./img/mouse_brush.png) 0 0, default'
         }else if(this.textFlag){
             this.canvas.style.cursor = 'url(./img/mouse_text.png) 0 0, default'
+        }else if(this.shapeFlag){
+            this.canvas.style.cursor = 'default'
         }else if(this.noteFlag){
             this.canvas.style.cursor = 'url(./img/mouse_note.png) 0 0, default'
         }else if(this.eraserFlag){
             this.canvas.style.cursor = 'none'
         }else if(this.areaDeleteFlag){
             this.canvas.style.cursor = 'url(./img/mouse_area.png) 0 0, default'
-        }else if(this.clearFlag || this.settingFlag){
+        }else if(this.clearFlag || this.settingFlag || this.revokeFlag || this.restoreFlag){
             this.canvas.style.cursor = 'default'
         }
     }
 
     this.getCurrentSelectedTool = function(){
         let toolArray = [
-            'mouseFlag', 'shapeFlag', 'pointerFlag', 'brushFlag', 'textFlag',
-            'noteFlag', 'eraserFlag', 'areaDeleteFlag', 'clearFlag'
+            'pointerFlag', 'brushFlag', 'textFlag', 'shapeFlag','noteFlag',
+            'eraserFlag', 'restoreFlag','clearFlag','areaDeleteFlag', 'revokeFlag',
         ]
-        let content = toolArray.find((item)=>{
+
+        return toolArray.find((item)=> {
             if(this[item]) return item
         })
-        return content
     }
 
     this.setDefaultOfChild = function(){
         /**子级工具栏***/
-        if(shapeChild && shapeChild.classList.contains('toolbarChild_child_show')){
-            shapeChild && shapeChild.classList.remove('toolbarChild_child_show')
-        }
-
-        if(pointerChild && pointerChild.classList.contains('toolbarChild_child_show')){
-            pointerChild && pointerChild.classList.remove('toolbarChild_child_show')
-        }
-
         if(brushChild && brushChild.classList.contains('toolbarChild_child_show')){
             brushChild && brushChild.classList.remove('toolbarChild_child_show')
         }
@@ -269,8 +316,8 @@ let CanvasToolsBar = function(){
             textChild && textChild.classList.remove('toolbarChild_child_show')
         }
 
-        if(noteChild && noteChild.classList.contains('toolbarChild_child_show')){
-            noteChild && noteChild.classList.remove('toolbarChild_child_show')
+        if(shapeChild && shapeChild.classList.contains('toolbarChild_child_show')){
+            shapeChild && shapeChild.classList.remove('toolbarChild_child_show')
         }
 
         if(eraserChild && eraserChild.classList.contains('toolbarChild_child_show')){
@@ -281,13 +328,14 @@ let CanvasToolsBar = function(){
             settingChild && settingChild.classList.remove('toolbarChild_child_show')
         }
     }
-    this.setBackgroundColor = function(element, children=[]){
+
+    this.checkedSetBackgroundColor = function(element, children=[]){
         /**设置当前元素选中状态***/
         if(!children.length){
             let parent = element.parentElement
-            parent.classList.add('childWrapper-bg')
+            parent.classList.add('btn-active')
         }else{
-            element.classList.add('childWrapper-bg')
+            element.classList.add('btn-active')
         }
     }
 
@@ -295,56 +343,43 @@ let CanvasToolsBar = function(){
         this.lineStyle = style
     }
 
-    this.setPointerColor = function(color){
-        this.pointerColor = color
+    this.setColor = function(color){
+        this.color = color
+        can.changeToolColor({account: localAccount, color: this.color})
     }
-    this.setBrushColor = function(color){
-        this.brushColor = color
-        can.changeToolColor({account: localAccount, brushColor: this.brushColor})
-    }
+
     this.setBrushStrokeSize = function(size){
         this.brushStrokeSize = size
 
     }
-    this.setTextColor = function(color){
-        this.textColor = color
+    this.setBrushStrokeStyle = function(style){
+        this.brushStrokeStyle = style
     }
     this.setTextFontSize = function(size){
         this.textFontSize = size
     }
-    this.setNoteColor = function(color){
-        this.noteColor = color
-    }
+
     this.setEraserSize = function(size){
         this.eraserSize = size
-    }
-
-    this.getBrushColor = function(){
-        return this.brushColor
     }
 
     this.getTextFontSize = function(){
         return this.textFontSize
     }
 
+    this.getColor = function(){
+        return this.color
+    }
     this.getBrushStrokeSize = function(){
         return this.brushStrokeSize
     }
 
-    this.getNoteColor =function(){
-        return this.noteColor
+    this.getBrushStrokeStyle = function(){
+        return this.brushStrokeStyle
     }
 
     this.getEraserSize = function(){
         return this.eraserSize
-    }
-
-    this.getPointerColor = function(){
-        return this.pointerColor
-    }
-
-    this.getTextColor = function(){
-        return this.textColor
     }
 
     this.getTextFontSize = function(){
@@ -355,11 +390,21 @@ let CanvasToolsBar = function(){
         return this.lineStyle
     }
 
+    this.getCurrentStyle = function(){
+        return {
+            brushStrokeSize: this.getBrushStrokeSize(),
+            brushStrokeStyle: this.getBrushStrokeStyle(),
+            textFontSize: this.getTextFontSize(),
+            eraserSize: this.getEraserSize(),
+            lineStyle: this.getLineStyle(),
+            color: this.getColor(),
+        }
+    }
     this.changeToolBarStyle = function(data){
-        this.setDefaultOfParent(data && data.flag)
+        this.setDefaultOfParent({flag: data.flag})
 
         /** 针对存在子组件：添加子组件的类名zIndex**/
-        let settingsView = ['shape', 'pointer', 'brush', 'text', 'note', 'eraser', 'settings']
+        let settingsView = ['brush', 'text', 'shape',  'eraser', 'settings']
         settingsView.forEach(function(item){
             if(data.type === item){
                 if(!toolbarChild.classList.contains('toolbarChild-zIndex')){
@@ -370,7 +415,7 @@ let CanvasToolsBar = function(){
         })
 
         /** 针对不存在子组件：删除子组件的类名zIndex**/
-        let settingsName = ['defaultMouse', 'areaDelete', 'clear']
+        let settingsName = ['pointer', 'note','revoke', 'restore','areaDelete', 'clear']
         settingsName.forEach(function(item){
             if(data.type === item){
                 if(toolbarChild.classList.contains('toolbarChild-zIndex')){
@@ -383,28 +428,10 @@ let CanvasToolsBar = function(){
 
         /***更改子组件的样式***/
         switch(data.type){
-            case 'defaultMouse':
-                if(defaultMouseBtn.firstElementChild.classList.contains("GRP-icon-mouse-white")){
-                    defaultMouseBtn.firstElementChild.classList.remove("GRP-icon-mouse-white")
-                    defaultMouseBtn.firstElementChild.classList.add("GRP-icon-mouse-blue")
-                }
-                break
-            case 'shape':
-                if(shapeBtn.firstElementChild.classList.contains("GRP-icon-mouse-white")){
-                    shapeBtn.firstElementChild.classList.remove("GRP-icon-mouse-white")
-                    shapeBtn.firstElementChild.classList.add("GRP-icon-mouse-blue")
-                }
-                if(!(shapeChild && shapeChild.classList.contains('toolbarChild_child_show'))){
-                    shapeChild && shapeChild.classList.add('toolbarChild_child_show')
-                }
-                break
             case 'pointer':
                 if(pointerBtn.firstElementChild.classList.contains("GRP-icon-laserPointer-white")){
                     pointerBtn.firstElementChild.classList.remove("GRP-icon-laserPointer-white")
                     pointerBtn.firstElementChild.classList.add("GRP-icon-laserPointer-blue")
-                }
-                if(!(pointerChild && pointerChild.classList.contains('toolbarChild_child_show'))){
-                    pointerChild && pointerChild.classList.add('toolbarChild_child_show')
                 }
                 break
             case 'brush':
@@ -412,9 +439,12 @@ let CanvasToolsBar = function(){
                     brushBtn.firstElementChild.classList.remove("GRP-icon-brush-white")
                     brushBtn.firstElementChild.classList.add("GRP-icon-brush-blue")
                 }
-                if(!(brushChild && brushChild.classList.contains('toolbarChild_child_show'))){
-                    brushChild && brushChild.classList.add('toolbarChild_child_show')
+                if(!data.from){
+                    if(!(brushChild && brushChild.classList.contains('toolbarChild_child_show'))){
+                        brushChild && brushChild.classList.add('toolbarChild_child_show')
+                    }
                 }
+
                 break
             case 'text':
                 if(textBtn.firstElementChild.classList.contains("GRP-icon-text-white")){
@@ -425,13 +455,19 @@ let CanvasToolsBar = function(){
                     textChild.classList.add('toolbarChild_child_show')
                 }
                 break
+            case 'shape':
+                if(shapeBtn.firstElementChild.classList.contains("GRP-icon-shape-white")){
+                    shapeBtn.firstElementChild.classList.remove("GRP-icon-shape-white")
+                    shapeBtn.firstElementChild.classList.add("GRP-icon-shape-blue")
+                }
+                if(!(shapeChild && shapeChild.classList.contains('toolbarChild_child_show'))){
+                    shapeChild && shapeChild.classList.add('toolbarChild_child_show')
+                }
+                break
             case 'note':
                 if(noteBtn.firstElementChild.classList.contains("GRP-icon-stickyNote-white")){
                     noteBtn.firstElementChild.classList.remove("GRP-icon-stickyNote-white")
                     noteBtn.firstElementChild.classList.add("GRP-icon-stickyNote-blue")
-                }
-                if( !(noteChild && noteChild.classList.contains('toolbarChild_child_show')) ){
-                    noteChild.classList.add('toolbarChild_child_show')
                 }
                 break
             case 'eraser':
@@ -443,6 +479,22 @@ let CanvasToolsBar = function(){
                     eraserChild.classList.add('toolbarChild_child_show')
                 }
                 break
+            case 'revoke':
+                if(revokeBtn.firstElementChild.classList.contains("GRP-icon-revoke-white")){
+                    revokeBtn.firstElementChild.classList.remove("GRP-icon-revoke-white")
+                    revokeBtn.firstElementChild.classList.add("GRP-icon-revoke-blue")
+                }
+                can.handleRevokeDraw()
+
+                break
+            case 'restore':
+                if(restoreBtn.firstElementChild.classList.contains("GRP-icon-restore-white")){
+                    restoreBtn.firstElementChild.classList.remove("GRP-icon-restore-white")
+                    restoreBtn.firstElementChild.classList.add("GRP-icon-restore-blue")
+                }
+                can.handleRestoreDraw()
+
+                break
             case 'areaDelete':
                 if(areaDeleteBtn.firstElementChild.classList.contains("GRP-icon-areaDelete-white")){
                     areaDeleteBtn.firstElementChild.classList.remove("GRP-icon-areaDelete-white")
@@ -453,15 +505,11 @@ let CanvasToolsBar = function(){
                 can.clearCanvas()
                 can.notes = []
                 can.texts = []
-                can.canvasToolsBar.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
+                this.changeToolBarStyle({ flag:'brushFlag', type: 'brush',  from: 'clear'})
 
                 /**告知对端清除全部内容**/
-                let param = {
-                    type: 'allDelete',
-                    lineContent: can.getCurrentLine(),
-                    canvas: can.canvas
-                }
-                sendCurrentMousePosition(param)
+                handleContentForRemote({type: 'allDelete', canvas: can.canvas})
+
                 break
             case 'settings':
                 if(settingsBtn.firstElementChild.classList.contains("GRP-icon-settings-white")) {
@@ -476,19 +524,23 @@ let CanvasToolsBar = function(){
                 console.log("e:",data.type)
         }
     }
-    this.handleParentClick = function(e){
-       let element = e.target
+    this.handleParentClick = (e)=>{
+        let element = e.target
+        const {left, top} = this.drawToolbar.getBoundingClientRect()
+        let startX = e.clientX - left     // 记录鼠标起始位置x
+        let startY = e.clientY - top      // 记录鼠标起始位置y
+
         /**得到当前点击是哪个组件，并显示子组件**/
-        if(element.classList.value.indexOf("GRP-icon-mouse") !== -1){
-            this.changeToolBarStyle({ flag:'mouseFlag', type: 'defaultMouse' })
-        }else if(element.classList.value.indexOf("GRP-icon-shape") !== -1){
-            this.changeToolBarStyle({ flag:'shapeFlag', type: 'shape' })
+        if(element.classList.value.indexOf("GRP-icon-drag") !== -1){
+            this.setDefaultOfChild()
         }else if(element.classList.value.indexOf("GRP-icon-laserPointer") !== -1){
             this.changeToolBarStyle({ flag:'pointerFlag', type: 'pointer'})
         }else if(element.classList.value.indexOf("GRP-icon-brush") !== -1){
             this.changeToolBarStyle({ flag: 'brushFlag', type: 'brush' } )
         }else if(element.classList.value.indexOf("GRP-icon-text") !== -1){
             this.changeToolBarStyle({ flag: 'textFlag', type: 'text' })
+        }else if(element.classList.value.indexOf("GRP-icon-shape") !== -1){
+            this.changeToolBarStyle({ flag:'shapeFlag', type: 'shape' })
         }else if(element.classList.value.indexOf("GRP-icon-stickyNote") !== -1){
             this.changeToolBarStyle({ flag: 'noteFlag', type: 'note' })
         }else if(element.classList.value.indexOf("GRP-icon-eraser") !== -1){
@@ -498,263 +550,142 @@ let CanvasToolsBar = function(){
             can.handleSelectionArea()
         }else if(element.classList.value.indexOf("GRP-icon-clear") !== -1){
             this.changeToolBarStyle({type: 'clear'})
+        }else if(element.classList.value.indexOf("GRP-icon-revoke") !== -1){
+            this.changeToolBarStyle({flag: 'revokeFlag', type: 'revoke'})
+        }else if(element.classList.value.indexOf("GRP-icon-restore") !== -1){
+            this.changeToolBarStyle({flag: 'restoreFlag', type: 'restore'})
         }else if(element.classList.value.indexOf("GRP-icon-settings") !== -1){
             this.changeToolBarStyle({type: 'settings'})
+        }
+        this.updateChildToolsPosition(startX)
+    }
+
+
+    this.updateChildToolsPosition = function(data){
+        this.toolbarChild.style.left = data + 'px'
+    }
+
+    this.handleChildClickOfBrush = function(e){
+        let element = e.target
+        let children = element.children
+
+        if(element.classList.contains('brushStrokesStyle')) {
+            /** 1.清除之前画笔选中笔刷样式状态   2.为选中的笔刷样式添加背景样式***/
+            let brushStrokesStyle = document.getElementsByClassName ("brushStrokesStyle")
+            if (brushStrokesStyle.length) {
+                for (let i = 0; i < brushStrokesStyle.length; i ++) {
+                    let child = brushStrokesStyle[i]
+                    if (child.classList.contains ('btn-active')) {
+                        child.classList.remove ("btn-active")
+                    }
+                    if (i === brushStrokesStyle.length - 1) {
+                        /**设置当前选中的样式**/
+                        this.checkedSetBackgroundColor (element, children)
+                    }
+                }
+            }
+
+            /**针对画笔笔触设置**/
+            if(element.classList.contains("strokes-round")){
+                this.setBrushStrokeStyle('round')
+            }else if(element.classList.contains("strokes-wide")){
+                this.setBrushStrokeStyle('wide')
+            }else if(element.classList.contains("strokes-pen")){
+                this.setBrushStrokeStyle('pen')
+            }
+        }
+
+        if(element.classList.contains('brushFontStyle')){
+            let brushChildContent = document.getElementsByClassName("brushFontStyle")
+            /**1.清除之前画笔选中粗细样式状态  2.为选中的画笔粗细添加背景样式***/
+            if(brushChildContent.length){
+                for(let i =0; i < brushChildContent.length; i++){
+                    let child = brushChildContent[i]
+                        if(child.classList.contains('btn-active')){
+                            child.classList.remove("btn-active")
+                    }
+                    if(i === brushChildContent.length -1) {
+                        /**设置当前选中的样式**/
+                        this.checkedSetBackgroundColor (element, children)
+                    }
+                }
+            }
+            /**针对笔触大小设置**/
+            if(element.classList.contains("brush-font-thin")){
+                this.setBrushStrokeSize('1')
+            }else if(element.classList.contains("brush-font-middle")){
+                this.setBrushStrokeSize('4')
+            }else if(element.classList.contains("brush-font-crude")){
+                this.setBrushStrokeSize('8')
+            }
+        }
+    }
+
+    this.handleChildClickOfText = function(e){
+        let element = e.target
+        let children = element.children
+
+        if(element.classList.contains('textFontStyle')){
+            /**1.清除之前文本选中文字大小样式状态  2.为选中文字大小添加背景样式***/
+            let textFontStyle = document.getElementsByClassName("textFontStyle")
+            if(textFontStyle.length){
+                for(let i= 0; i < textFontStyle.length; i++){
+                    let child = textFontStyle[i]
+                    if(child.classList.contains('btn-active')){
+                        child.classList.remove("btn-active")
+                    }
+                    if(i === textFontStyle.length -1){
+                        /**设置当前选中文字大小样式**/
+                        this.checkedSetBackgroundColor(element, children)
+                    }
+                }
+            }
+
+            /**设置文字大小**/
+            if(element.classList.contains("text-font-small")){
+                this.setTextFontSize('12')
+            }else if(element.classList.contains("text-font-middle")){
+                this.setTextFontSize('16')
+            }else if(element.classList.contains("text-font-big")){
+                this.setTextFontSize('24')
+            }
         }
     }
 
     this.handleLineStyleOfShape = function(e){
         let element = e.target
-        if(element.classList.contains('shapeChild')){
-            return
-        }
-        let childNodes = element.childNodes
-
-        /**子组件的组件（多个）**/
-        let shapeChildWrapper = document.getElementsByClassName("shapeChildWrapper")
-        console.warn("shapeChildWrapper.length:",shapeChildWrapper.length)
-
-        /***1.清除之前选中的状态  2.设置选中的线条的样式**/
-        if(shapeChildWrapper.length) {
-            for (let i = 0; i < shapeChildWrapper.length; i ++) {
-                let elem = shapeChildWrapper[i]
-                if (elem.classList.contains('childWrapper-bg')) {
-                    elem.classList.remove("childWrapper-bg")
-                }
-            }
-        }
-
-        /** 2.设置选中的线条的样式 **/
-        if(element.classList.contains('shapeChildWrapper')){
-            element.classList.add('childWrapper-bg')
-        }else{
-            if(element.parentElement.classList.contains('shapeChildWrapper')){
-                element.parentElement.classList.add('childWrapper-bg')
-            }
-        }
-
-
-        /**获取线条样式**/
-        if(element.classList.value.indexOf('line') !== -1){
-            this.setLineStyle('lineFlag')
-        }else if(element.classList.value.indexOf('arrow') !== -1){
-            this.setLineStyle('arrowFlag')
-        }else if(element.classList.value.indexOf('arbitraryLine') !== -1){
-            this.setLineStyle('arbitraryLine')
-        }else if(element.classList.value.indexOf('circle') !== -1){
-            this.setLineStyle('strokeCircleFlag')
-        }else if(element.classList.value.indexOf('square') !== -1){
-            this.setLineStyle('strokeRectFlag')
-        }else if(element.classList.value.indexOf('pencil') !== -1){
-            this.setLineStyle('pencilFlag')
-        }else if(element.classList.value.indexOf('pen') !== -1){
-            this.setLineStyle('penFlag')
-        }
-    }
-
-    this.handleChildClickOfPointer = function(e){
-        let element = e.target
-        if(element.classList.contains('pointerChild')){
-            return
-        }
-        let childNodes = element.childNodes
-        /**子组件的组件（多个）**/
-        let pointerChildWrapper = document.getElementsByClassName("pointerChildWrapper")
-
-        /***清除之前选中的状态**/
-        if(pointerChildWrapper.length){
-            for(let i =0; i < pointerChildWrapper.length; i++){
-                let child = pointerChildWrapper[i]
-                if(child.classList.contains('childWrapper-bg')){
-                    child.classList.remove("childWrapper-bg")
-                }
-            }
-        }
-
-        /**设置选中元素的样式**/
-        this.setBackgroundColor(element,childNodes)
-
-        /**获取当前颜色**/
-        if(element.classList.value.indexOf("pointerBtn-red") !== -1){
-            this.setPointerColor('#FE4737')
-        }else if(element.classList.value.indexOf("pointerBtn-yellow") !== -1){
-            this.setPointerColor('#FFE500')
-        }else if(element.classList.value.indexOf("pointerBtn-green") !== -1){
-            this.setPointerColor('#21D175')
-        }else if(element.classList.value.indexOf("pointerBtn-blue") !== -1){
-            this.setPointerColor('#3890FF')
-        }else if(element.classList.value.indexOf("pointerBtn-purple") !== -1){
-            this.setPointerColor('#A066FF')
-        }
-    }
-    this.handleChildClickOfBrush = function(e){
-        let element = e.target
         let children = element.children
-        if(element.classList.contains("brushChildColor-Wrapper") || element.classList.contains("brushChildFontContent")){
-            return
-        }
-        /**清除之前选中的状态***/
-        let colorWrapper = document.getElementsByClassName("brushColorWrapper")
-        let brushChildContent = document.getElementsByClassName("brush-font")
-        if(colorWrapper.length && element.classList.value.indexOf('brushBtn') !== -1){
-            for(let i =0; i < colorWrapper.length; i++){
-                let child = colorWrapper[i]
-                if(child.classList.contains('childWrapper-bg')){
-                    child.classList.remove("childWrapper-bg")
-                }
-                if(i === colorWrapper.length -1){
-                    /**设置当前选中的样式**/
-                    this.setBackgroundColor(element, children)
-                }
-            }
-        }
-        if(brushChildContent.length && element.classList.value.indexOf('brush-font') !== -1){
-            for(let i =0; i < brushChildContent.length; i++){
-                let child = brushChildContent[i]
-                if(child.classList.contains('childWrapper-bg')){
-                    child.classList.remove("childWrapper-bg")
-                }
-                if(i === brushChildContent.length -1){
-                    /**设置当前选中的样式**/
-                    this.setBackgroundColor(element, children)
-                }
-            }
-        }
 
+        if(element.classList.contains('shapeStyle')){
+            /**子组件的组件（多个）**/
+            let shapeStyle = document.getElementsByClassName("shapeStyle")
 
-        /**针对颜色处理**/
-        if(element.classList.value.indexOf("brushBtn-black") !== -1){
-            this.setBrushColor('#000000')
-        }else if(element.classList.value.indexOf("brushBtn-white") !== -1){
-            this.setBrushColor('#FFFFFF')
-        }else if(element.classList.value.indexOf("brushBtn-gray") !== -1){
-            this.setBrushColor('#888888')
-        }else if(element.classList.value.indexOf("brushBtn-red") !== -1){
-            this.setBrushColor('#FE4737')
-        }else if(element.classList.value.indexOf("brushBtn-orange") !== -1){
-            this.setBrushColor('#FF9F00')
-        }
-        else if(element.classList.value.indexOf("brushBtn-yellow") !== -1){
-            this.setBrushColor('#FFE500')
-        }else if(element.classList.value.indexOf("brushBtn-green") !== -1){
-            this.setBrushColor('#21D175')
-        }else if(element.classList.value.indexOf("brushBtn-cyan") !== -1){
-            this.setBrushColor('#24E8FF')
-        }else if(element.classList.value.indexOf("brushBtn-blue") !== -1){
-            this.setBrushColor('#3890FF')
-        }else if(element.classList.value.indexOf("brushBtn-purple") !== -1){
-            this.setBrushColor('#A066FF')
-        }
-        /**针对大小处理**/
-        if(element.classList.value.indexOf("brush-font-small") !== -1){
-            this.setBrushStrokeSize('1')
-        }else if(element.classList.value.indexOf("brush-font-middle") !== -1){
-            this.setBrushStrokeSize('4')
-        }else if(element.classList.value.indexOf("brush-font-big") !== -1){
-            this.setBrushStrokeSize('8')
-        }
-    }
-    this.handleChildClickOfText = function(e){
-        let element = e.target
-        let children = element.children
-        if(element.classList.contains("textChildColor-Wrapper") || element.classList.contains("textChildFontContent")){
-            return
-        }
-        /**清除之前选中的状态***/
-        let colorWrapper = document.getElementsByClassName("textColorWrapper")
-        let brushChildContent = document.getElementsByClassName("text-font")
-        if(colorWrapper.length && element.classList.value.indexOf('textBtn') !== -1){
-            for(let i =0; i < colorWrapper.length; i++){
-                let child = colorWrapper[i]
-                if(child.classList.contains('childWrapper-bg')){
-                    child.classList.remove("childWrapper-bg")
-                }
-                if(i === colorWrapper.length -1){
-                    /**设置当前选中的样式**/
-                    this.setBackgroundColor(element, children)
+            /***1.清除之前选中的状态  2.设置选中的线条的样式**/
+            if(shapeStyle.length) {
+                for (let i = 0; i < shapeStyle.length; i ++) {
+                    let elem = shapeStyle[i]
+                    if (elem.classList.contains('btn-active')) {
+                        elem.classList.remove("btn-active")
+                    }
+                    if(i === shapeStyle.length -1){
+                        /**设置当前选中线条样式状态**/
+                        this.checkedSetBackgroundColor(element, children)
+                    }
                 }
             }
-        }
-        if(brushChildContent.length && element.classList.value.indexOf('text-font') !== -1){
-            for(let i =0; i < brushChildContent.length; i++){
-                let child = brushChildContent[i]
-                if(child.classList.contains('childWrapper-bg')){
-                    child.classList.remove("childWrapper-bg")
-                }
-                if(i === brushChildContent.length -1){
-                    /**设置当前选中的样式**/
-                    this.setBackgroundColor(element, children)
-                }
+
+            /**设置线条样式**/
+            if(element.classList.contains('shape-style-line')){
+                this.setLineStyle('line')
+            }else if(element.classList.contains('shape-style-arrow')){
+                this.setLineStyle('arrow')
+            }else if(element.classList.contains('shape-style-circle')){
+                this.setLineStyle('strokeCircle')
+            }else if(element.classList.contains('shape-style-squareShape')){
+                this.setLineStyle('strokeRect')
             }
         }
 
-
-        /**针对颜色处理**/
-        if(element.classList.value.indexOf("textBtn-black") !== -1){
-            this.setTextColor('#000000')
-        }else if(element.classList.value.indexOf("textBtn-white") !== -1){
-            this.setTextColor('#FFFFFF')
-        }else if(element.classList.value.indexOf("textBtn-gray") !== -1){
-            this.setTextColor('#888888')
-        }else if(element.classList.value.indexOf("textBtn-red") !== -1){
-            this.setTextColor('#FE4737')
-        }else if(element.classList.value.indexOf("textBtn-orange") !== -1){
-            this.setTextColor('#FF9F00')
-        }
-        else if(element.classList.value.indexOf("textBtn-yellow") !== -1){
-            this.setTextColor('#FFE500')
-        }else if(element.classList.value.indexOf("textBtn-green") !== -1){
-            this.setTextColor('#21D175')
-        }else if(element.classList.value.indexOf("textBtn-cyan") !== -1){
-            this.setTextColor('#24E8FF')
-        }else if(element.classList.value.indexOf("textBtn-blue") !== -1){
-            this.setTextColor('#3890FF')
-        }else if(element.classList.value.indexOf("textBtn-purple") !== -1){
-            this.setTextColor('#A066FF')
-        }
-        /**针对大小处理**/
-        if(element.classList.value.indexOf("text-font-small") !== -1){
-            this.setTextFontSize('12')
-        }else if(element.classList.value.indexOf("text-font-middle") !== -1){
-            this.setTextFontSize('16')
-        }else if(element.classList.value.indexOf("text-font-big") !== -1){
-            this.setTextFontSize('24')
-        }
-    }
-    this.handleChildClickOfNote = function(e){
-        let element = e.target
-        if(element.classList.contains('noteChild')){
-            return
-        }
-        let children = element.children
-        /**子组件的组件（多个）**/
-        let noteChildWrapper = document.getElementsByClassName("noteChildWrapper")
-
-        /***清除之前选中的状态**/
-        if(noteChildWrapper.length){
-            for(let i =0; i < noteChildWrapper.length; i++){
-                let child = noteChildWrapper[i]
-                if(child.classList.contains('childWrapper-bg')){
-                    child.classList.remove("childWrapper-bg")
-                }
-            }
-        }
-
-        /**设置选中元素的样式**/
-        this.setBackgroundColor(element,children)
-
-        /**获取当前颜色**/
-        if(element.classList.value.indexOf("noteBtn-orange") !== -1){
-            this.setNoteColor('#F9EC96')
-        }else if(element.classList.value.indexOf("noteBtn-yellow") !== -1){
-            this.setNoteColor('#FFCA96')
-        }else if(element.classList.value.indexOf("noteBtn-cyan") !== -1){
-            this.setNoteColor('#8DE7B8')
-        }else if(element.classList.value.indexOf("noteBtn-lightPurple") !== -1){
-            this.setNoteColor('#A7D0FF')
-        }else if(element.classList.value.indexOf("noteBtn-deepPurple") !== -1){
-            this.setNoteColor('#E2D0FF')
-        }
     }
     this.handleChildClickOfEraser = function(e){
         let This = this
@@ -762,46 +693,6 @@ let CanvasToolsBar = function(){
         /**选中橡皮擦大小**/
         element.oninput = function(){
             This.setEraserSize(element.value)
-        }
-    }
-    this.handleChildClickOfSetting = (e) =>{
-        let element = e.target
-        let text = document.getElementsByClassName("setting-status-text")[0]
-        let content = document.getElementsByClassName("setting-status-content")[0]
-        let other = document.getElementsByClassName("setting-display-other")[0]
-        let account = document.getElementsByClassName("setting-display-account")[0]
-        if(element === text ){
-            if(!this.isShowComment){
-                this.isShowComment = true
-                other.checked = true
-            }else{
-                this.isShowComment = false
-                other.checked = false
-            }
-
-        }else if(element === content){
-            if(!this.isShowAccount){
-                this.isShowAccount = true
-                account.checked = true
-            }else{
-                this.isShowAccount = false
-                account.checked = false
-            }
-
-        }else if(element === other){
-            if(!this.isShowComment){
-                this.isShowComment = true
-            }else{
-                this.isShowComment = false
-            }
-
-        }else if(element === account){
-            if(!this.isShowAccount){
-                this.isShowAccount = true
-            }else{
-                this.isShowAccount = false
-            }
-
         }
     }
 }
@@ -814,21 +705,38 @@ function getRandomColor () {
     let color = 'rgb('+ r +','+ g +','+ b +')';
     return color
 }
+/**
+ * 处理发送当前内容给远端
+ * @param param
+ * **/
+function handleContentForRemote(param){
+    let content = param
+    if(window.gsRTC && window.gsRTC.webrtcSessions  && window.gsRTC?.webrtcSessions.length){
+        for(let session of window.gsRTC.webrtcSessions){
+            if(session.isSuccessUseWebsocket){
+                content.lineContent = {local: session.lineId, remote: session.remoteLineId}
+                content.account = {id: session.account?.id, name: session.account?.name}
+                sendCurrentMousePosition(content)
+            }
+        }
+    }
+}
+
+
 
 /** 发送当前鼠标显示位置
  * */
 function sendCurrentMousePosition(data){
-    if(!data) {
+    if(!data || !data.lineContent || !data.lineContent.local || !data.account || !data.account.id) {
         console.log("setCurrentMousePosition  invalid")
         return
     }
-    let lineId = data.lineContent?.local
-    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: lineId})
+
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineContent.local})
     if(!session){
-        log.warn("setCurrentMousePosition: session is not found")
+        console.log("setCurrentMousePosition: session is not found")
         return
     }
-    data.lineId = lineId
     session.sendMessageByDataChannel(data)
 }
 
@@ -842,7 +750,7 @@ function changeMouseStyle(x, y){
         mouseStyle.style.height = 6 + 'px'
         mouseStyle.style.left = x + 'px'
         mouseStyle.style.top = y  + 'px'
-        mouseStyle.style.boxShadow = `0 0 6px 3px ${can.canvasToolsBar.pointerColor}`
+        mouseStyle.style.boxShadow = `0 0 6px 3px ${can.canvasToolsBar.getColor()}`
         mouseStyle.style.display = "block";
     }else if(can.canvasToolsBar.eraserFlag){
         let mouseRadius =  can.canvasToolsBar.eraserSize
@@ -872,10 +780,15 @@ let fullScreenParam ={
 
 let dragParam = {
     clickEl: dragBtn,
-    targetEl: document.getElementsByClassName("toolbarContent")[0],
-    limitMoveBorder: true
+    targetEl: document.getElementsByClassName("canvasToolBar")[0],
+    limitMoveBorder: true,
+    moveMode: 'position',
+    mainToolbar: document.getElementsByClassName("toolbar")[0],
+    subToolbar:  document.getElementsByClassName("toolbarChild")[0],
+    deployToolbar: document.getElementsByClassName("drawToolbar")[0],
+    direction: 'upOrDown',
+    tool: 'canvasTool'
 }
-
 
 /**当页面加载解析完成**/
 can = new CanvasExample({
@@ -886,8 +799,23 @@ can = new CanvasExample({
     dragParam: dragParam
 })
 
-/**开启共享**/
-let video = document.getElementsByClassName("presentVideo")[0]
-navigator.mediaDevices.getDisplayMedia({video:{width:1920, height: 1080}}).then(function(stream){
-    video.srcObject = stream
-})
+// let moveColor= new DragMoveModel({
+//     clickEl: document.getElementsByClassName("colorContent")[0],
+//     targetEl: document.getElementsByClassName("colorContent")[0],
+//     limitMoveBorder: true,
+//     moveMode: 'position',
+//     mainToolbar: document.getElementsByClassName("colorContent")[0],
+//     subToolbar:  document.getElementsByClassName("colorSelectContainer")[0],
+//     direction: 'leftOrRight'
+// })
+//
+//
+// let moveFunction= new DragMoveModel({
+//     clickEl: document.getElementsByClassName("displayBtn")[0],
+//     targetEl: document.getElementsByClassName("shareBtnContainer")[0],
+//     deployToolbar: document.getElementsByClassName("functionBtn")[0],
+//     limitMoveBorder: true,
+//     moveMode: 'position',
+//     tool: 'functionBtn'
+// })
+

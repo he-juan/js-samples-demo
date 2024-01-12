@@ -123,10 +123,13 @@ WebRTCSocketInstance.prototype.createWebSocket = function (url, protocols, callb
 
         if(grpDialingApi.isLogin){
             // 已登录，尝试重连
+            console.log('Already logged in, try to reconnect')
             This.wsReconnecting = true
             grpDialingApi.websocketStatus = 2
             grpDialingApi.socketOnClose({status: grpDialingApi.websocketStatus, code: event.code})
             This.wsReconnect(This.wsReconnectTime, callback)
+        }else {
+            console.log('Logged out and will not reconnect. . .')
         }
     }
 
@@ -137,9 +140,17 @@ WebRTCSocketInstance.prototype.wsReconnect = function (timer, callback){
     let This = this
     console.log('webSocket reConnect within time ' + timer)
     This.wsReconnectTimeoutEvent = setTimeout(function(){
-        console.log('reconnecting timer trigger...')
-            This.wsReconnectCount++
-            This.ws = This.createWebSocket(This.websocketUrl, This.websocketProtocol, callback)
+        if(grpDialingApi.isLogin){
+            if(!This.wsIsConnected()){
+                This.wsReconnectCount++
+                This.ws = This.createWebSocket(This.websocketUrl, This.websocketProtocol, callback)
+            }else {
+                // Todo: 第一次登录时ws未连接成功，触发重连，定时器触发前账号被抢占登出，重新登录后定时器触发，会覆盖新登录创建的ws，并导致后续的ws一直无法连接
+                console.log('ws connection already exists.')
+            }
+        }else {
+            console.log('Currently logged out, will not reconnect')
+        }
     }, timer)
 }
 
@@ -179,7 +190,7 @@ WebRTCSocketInstance.prototype.handleRecvMessage = function (message){
                 break
             case 'line_status':
                 if(message.data){
-                    grpDialingApi.sendMessage2Popup({cmd: 'setLineStatus', lines: message.data})
+                    grpDialingApi.handleLineContents({cmd: 'setLineStatus', lines: message.data})
                     grpDialingApi.handleShareScreenRequest({cmd: 'setLineStatus', lines: message.data})
                 }
                 break
@@ -327,7 +338,7 @@ WebRTCSocketInstance.prototype.wsCleanUp = function(){
     This.keepAliveWithoutResponse = 0
     This.wasWebsocketClosed = false
     This.isChannelOpen = true
-    grpDialingApi.socket = null
+    // grpDialingApi.socket = null
 }
 
 export { WebRTCSocketInstance }

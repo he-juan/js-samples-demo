@@ -5,8 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="41f92cdc-f81f-4778-9866-9782ff603a09" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/background.session.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/manifest/chrome.manifest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/manifest/edge.manifest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/manifest/firefox.manifest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/manifest/safari.manifest.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/shareProcess.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/background.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/background.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/gs.sdk.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/gs.sdk.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/gsRTC.socket.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/background/gsRTC.socket.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/components/components.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/components/components.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/contentScripts/contentScript.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/contentScripts/contentScript.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/contentScripts/contentScript.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/contentScripts/contentScript.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/iconfont/iconfont.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/iconfont/iconfont.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/locale/en/en-US.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/locale/en/en-US.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/locale/zh/zh-CN.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/locale/zh/zh-CN.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/quicall/quicall.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/quicall/quicall.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/quicall/quicall.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/quicall/quicall.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/quicall/quicall.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/quicall/quicall.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/draw.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/draw.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/initCanvas.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/initCanvas.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/shareScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/js/shareScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/shareScreen.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/shareScreen/shareScreen.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/lib/common.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/lib/common.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/gsrtc.api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/gsrtc.api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/gsrtc.common.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/gsrtc.common.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.dataChannel.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.dataChannel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.ice.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.ice.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.jsep.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.jsep.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.stream.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/contents/canvas_demo/drawingBoard/content/webRTC/src/webrtcSession.stream.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -223,19 +254,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "E:/private/js-samples-demo/src/contents/canvas_demo/drawingBoard/content",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/private/js-samples-demo/src/contents/canvas_demo/drawingBoard/content&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\private\js-samples-demo\src\contents\canvas_demo\drawingBoard\content" />

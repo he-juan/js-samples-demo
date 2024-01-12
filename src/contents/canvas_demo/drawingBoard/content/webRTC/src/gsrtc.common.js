@@ -587,18 +587,23 @@ GsRTC.prototype.clearSession = async function (data) {
     for (let i = 0; i < This.webrtcSessions.length; i++) {
         let session = This.webrtcSessions[i]
         if (lineId === session.lineId) {
-            Object.keys(session.localStreams).forEach(function (key) {
-                let stream = session.localStreams[key]
-                if (stream) {
-                    session.closeStream(stream)
+
+            // 针对当前线路对端是共享者，告知其他线路关闭共享和窗口
+            if(session.remoteShare){
+                let otherSessions = This.webrtcSessions.filter((item)=>item.lineId !== data.lineId)
+                if(otherSessions.length){
+                    for(let session of otherSessions){
+                       if(Number(session.conf) === 1){
+                           /** 通过 background 后台 处理关闭共享窗口 问题 **/
+                           gsRTC.trigger("closeAllShareLine", {lineId: session.lineId})
+                       }
+                    }
                 }
-            })
-            Object.keys(session.remoteStreams).forEach(function (key) {
-                let stream = session.remoteStreams[key]
-                if (stream) {
-                    session.closeStream(stream)
-                }
-            })
+            }
+
+            /**更新会议室成员列表内容 (1.更新本地自己的会议室成员列表内容  2. 告知其他线路更新对应的成员列表内容) **/
+            gsRTC.trigger("updateMemberList", {account: session.remoteAccount})
+            session.updateMemberList({account: session.remoteAccount})
 
 
             log.info('close pc of line (' + lineId + ')')
@@ -621,9 +626,328 @@ GsRTC.prototype.clearSession = async function (data) {
         }
     }
 
+    /** 在清除共享线路时，针对存在共享线路，需要针对 浏览器中存在的bar 设置对应的lineId；以防止之前的lineId已经清除；  **/
     if(This.webrtcSessions.length){
-        if(This.webrtcSessions.length === 1){
-            // This.setActiveLine(This.webrtcSessions[0].lineId)  激活另外一条线路
+        for(let session of This.webrtcSessions){
+            if(session){
+                This.setStreamInactiveEvent({lineId: session.lineId, stream: slideStream})
+                break
+            }
         }
     }
+
+    /** 针对不存在共享session 关闭视频流 **/
+    if(This.webrtcSessions.length === 0){
+        if(slideStream){
+            gsRTC.device.closeStream(slideStream)
+        }
+    }
+
 }
+
+
+
+/***
+ * 解析消息体:Parse message body
+ *@param message 消息体
+ *@return
+ */
+GsRTC.prototype.parseMessageBody = function(message){
+    log.info('GsRTC: parse message body')
+
+    if(typeof message === 'string'){
+        message = JSON.parse(message)
+    }
+
+    let action
+    let data
+    let getAttributeArray = Object.keys(message)   // ect: local_line、(createMediaSession、createMediaSessionRet)
+    if(message.hasOwnProperty('createMediaSession') || message.hasOwnProperty('createMediaSessionRet') ||
+        message.hasOwnProperty('updateMediaSession') ||  message.hasOwnProperty('updateMediaSessionRet') ||
+        message.hasOwnProperty('destroyMediaSession') ||  message.hasOwnProperty('destroyMediaSessionRet')){
+        for(let key in getAttributeArray){
+            action = getAttributeArray[key]
+            if(action.indexOf('MediaSession') > 0){
+                data = message[action]
+                break
+            }
+        }
+    }
+    return { type: action,  message: data }
+}
+
+
+/***********************************关于 dataChannel 接受的数据 进行处理**********************************************/
+
+/**
+ * 创建共享流程：主要是通过websocket 传递 createMediaSession 相关内容；
+ * 关闭共享窗口流程：主要是通过websocket 传递 destroyMediaSession 相关内容；
+ * @param data.lineId
+ * @param data.msg
+ * **/
+GsRTC.prototype.createShareContentMessage = function (data){
+    log.info('createShareContentMessage: ' + JSON.stringify(data, null, '    '))
+    if(!data || !data.lineId){
+        log.warn('createShareContentMessage: Invalid parameter ')
+        return
+    }
+
+    let This = this
+    let msg = This.parseMessageBody(data.msg)
+    let content = msg.message
+    let type = msg.type
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId })
+    if(!session){
+        log.warn("createShareContentMessage: no session")
+        return
+    }
+
+    let code = content.rspInfo && content.rspInfo.rspCode
+    let sdp = content.sdp?.data
+
+    switch(type) {
+        case gsRTC.SIGNAL_EVENT_TYPE.INVITE.name:
+            log.info("start handle createMediaSession content")
+            session.action = content.action
+            session.isRecvRequest = true
+            session.shareType = content.shareType
+            session.reqId = content.reqId
+            session.handleServerRequestSdp(sdp)
+            break;
+        case gsRTC.SIGNAL_EVENT_TYPE.INVITE_RET.name:
+            log.info("start handle createMediaSessionRet content")
+            if (gsRTC.isNxx(2, code)) {
+                log.info(session.action + ' success')
+                session.handleServerResponseSdp(sdp)
+            } else {
+                log.warn(" createMediaSessionRet error ")
+            }
+            break;
+        default:
+            log.warn("current exist problem: " + type)
+            break
+
+    }
+}
+
+
+
+/** 主要针对关闭共享、关闭共享窗口 进行处理
+ * 更新共享内容： (1)主要是通过 dataChannel 传递 updateMediaSession 相关内容；
+ * 更新共享内容： (2)主要是通过 dataChannel 传递destroyMediaSession 相关内容；
+ * @param data.lineId  线路id
+ * @param data.msg     携带相关内容
+ * **/
+
+GsRTC.prototype.updateShareContentMessage = function(data){
+    log.info('updateShareContentMessage: ' + JSON.stringify(data, null, '    '))
+    if(!data || !data.lineId){
+        log.warn('updateShareContentMessage: Invalid parameter ')
+        return
+    }
+
+
+    let This = this
+    let msg = This.parseMessageBody(data.msg)
+    let content = msg.message
+    let type = msg.type
+    let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId })
+    if(!session){
+        log.warn("updateShareContentMessage: no session")
+        return
+    }
+
+    /**当前pc建立成功的情况**/
+    /**（1） 关闭共享流程不需要通过background后台进行处理**/
+    /**（2） 开启共享流程需要通过background后台进行处理， 原因是：需要对端是否接受？**/
+    if(content.action === 'shareScreen' &&(type === 'updateMediaSession' || type === 'updateMediaSessionRet')){
+        if(!data.isFromBackground){
+            gsRTC.trigger("updateScreen", data.msg, session.localShare)
+            return
+        }
+    }
+
+    let code = content.rspInfo && content.rspInfo.rspCode
+    let sdp = content.sdp?.data
+
+    switch(type){
+        case This.SIGNAL_EVENT_TYPE.RE_INVITE.name:
+            log.info("start handle updateMediaSession content")
+            session.action = content.action
+            session.shareType = content.shareType
+            session.reqId = content.reqId
+
+            session.actionCallback = function (event) {
+                event.lineId = session.lineId
+                log.warn('accept ' + session.action + ' callback data: ' + JSON.stringify(event, null, '    '))
+                if (event.message.codeType === This.CODE_TYPE.ACTION_SUCCESS.codeType) {
+                    log.info(session.action + " success")
+                    This.trigger(session.action, true)
+                } else {
+                    log.info(session.action + " Failed")
+                    This.trigger(session.action, false)
+                }
+                session.actionCallback = null
+                session.action = null
+            }
+
+            if (!code) {
+                log.info("current handle reply ")
+                session.isRecvRequest = true
+                if (session.action === 'stopShareScreen') {
+                    session.remoteShare = false
+                } else if (session.action === 'shareScreen') {
+                    session.remoteShare = true
+                }
+                session.handleServerRequestSdp(sdp)
+            } else {
+                log.info("updateMediaSession: current get codeType : " + code + " cause: " + content.rspInfo.rspMsg)
+                session.handleSendMessage({
+                    type: This.SIGNAL_EVENT_TYPE.RE_INVITE_RET,
+                    mediaSession: content.sdp.data,
+                    action: content.action,
+                    shareType: content.shareType,
+                    line: content.line,
+                    reqId: content.reqId,
+                    rspInfo: {
+                        rspCode: code,
+                        rspMsg: content.rspInfo.rspMsg
+                    }
+                })
+                log.info("current codeType:" + code)
+            }
+            break
+        case This.SIGNAL_EVENT_TYPE.RE_INVITE_RET.name:
+            log.info("start handle updateMediaSessionRet content")
+            if (gsRTC.isNxx(2, code)) {
+                if (session.action === 'stopShareScreen') {
+                    session.localShare = false
+                } else if (session.action === 'shareScreen') {
+                    session.localShare = true
+                }
+                log.info(session.action + ' success')
+                session.handleServerResponseSdp(sdp)
+            } else {
+                log.warn("updateMediaSessionRet error ")
+            }
+            break
+        case This.SIGNAL_EVENT_TYPE.BYE.name:
+            log.info("start handle destroyMediaSession content, Share the line to end the call")
+            session.action = content.action
+            session.isRecvRequest = true
+            session.shareType = content.shareType
+            session.reqId = content.reqId
+            let param = {
+                type: This.SIGNAL_EVENT_TYPE.BYE_RET,
+                action: session.action,
+                line: session.lineId,
+                shareType: session.shareType,
+                reqId: session.reqId
+            }
+            session.handleSendMessage(param)
+            This.clearSession({lineId: session.lineId})
+            This.trigger('closeScreenTab', {lineId: session.lineId, isCloseStream: true})
+            break
+        case This.SIGNAL_EVENT_TYPE.BYE_RET.name:
+            if (This.isNxx(2, code)) {
+                log.info("start handle destroyMediaSessionRet content,Share the line to end the call")
+                session.action = content.action
+                session.shareType = content.shareType
+                session.reqId = content.reqId
+                This.clearSession({lineId: session.lineId})
+                This.trigger('closeScreenTab', {lineId: session.lineId, isCloseStream: true})
+            }
+            break
+        default:
+            log.warn("updateShareContentMessage: current exist problem: " + type)
+            break
+    }
+}
+
+
+/**
+ * 接收到对端事件处理请求，对此进行处理
+ * @param data.lineId
+ * @param data.msg
+ * **/
+GsRTC.prototype.handleEventContent = function(data){
+    log.info('handleEventContent: ' + JSON.stringify(data, null, '    '))
+    if(!data || !data.lineId){
+        log.warn('handleEventContent: Invalid parameter ')
+        return
+    }
+
+    let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: data.lineId })
+    if(!session){
+        log.info( data.lineId + ': no session is found')
+        return
+    }
+    let message = data.msg
+    let stream = session.getStream("slides", true)
+
+    switch(message.type){
+        case 'localHoldLine':
+            session.isRemoteHold = true
+            if(!session.isMute && !session.isLocalHold){
+                session.streamMuteSwitch({type: 'slides', stream: stream, mute: true})
+                gsRTC.trigger("holdStatus", {type: message.type , localHold: session.isLocalHold, remoteHold: session.isRemoteHold})
+                // 针对暂停画面 页面不能绘制做处理
+                gsRTC.isPausePainting({lineId: session.lineId})
+            }
+            break
+        case 'localUnHoldLine':
+            session.isRemoteHold= false
+            if(session.isMute && !session.isLocalHold){
+                session.streamMuteSwitch({type: 'slides', stream: stream, mute: false})
+                // 针对暂停画面 页面不能绘制做处理
+                gsRTC.isPausePainting({lineId: session.lineId})
+            }
+            break
+        case 'remoteHoldLine':
+            session.isRemoteHold = true
+            gsRTC.trigger("holdStatus", {type: message.type})
+            break;
+        case 'remoteUnHoldLine':
+            session.isRemoteHold = false
+            break;
+        case 'remoteAccount':
+            let remoteAccount = getAccountContent(message)
+            session.remoteAccount = remoteAccount
+            break
+        case 'confMember':
+            gsRTC.trigger("updateConfMember",message)
+            break
+        case 'fileInfo':
+            session.handleFileContent(message)
+            break
+        case 'mouseDown':
+        case 'mouseMove':
+        case 'mouseUp':
+        case 'mouseLeave':
+        case 'remotePosition':
+        case 'areaDelete':
+        case 'allDelete':
+        case 'pausePainting':
+        case 'textFlag':
+        case 'noteFlag':
+        case 'revoke':
+        case 'restore':
+            gsRTC.trigger("onRemoteMousePosition", message)
+            break
+        case 'streamChange':
+            gsRTC.trigger("onRemoteStreamChange", message)
+            break;
+        case 'socketStatus':
+            if(message.state === 'close'){
+                // 对端ws连接异常，关闭共享页面
+                gsRTC.trigger('errorTip', gsRTC.CODE_TYPE.PEER_WEBSOCKET_CLOSED.codeType, message.lineId)
+            }
+            break
+        case 'updateMemberList':
+            gsRTC.trigger('updateMemberList', message)
+        default:
+            log.info("get current type: " + message.type)
+            break;
+    }
+}
+

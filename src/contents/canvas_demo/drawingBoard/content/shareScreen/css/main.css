@@ -3,14 +3,50 @@ html, body {
     padding: 0;
     height: 100%;
     width: 100%;
+    overflow: hidden;
 }
-.videoDisplayArea{
-    width: 67%;
-    height: 89%;
+
+.container{
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+.moveTools{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+
+#tools-canvas{
     position: absolute;
-    top: 54px;
-    left: 0;
+    top: 10px;
+    left: 10px;
+}
+
+#tools-color{
+    position: absolute;
+    top: 50%;
     right: 0;
+    transform: translateY(-50%);
+}
+
+#tools-function{
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.videoDisplayArea{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
     margin: auto;
     min-width: 720px;
     min-height: 580px;
@@ -33,8 +69,7 @@ html, body {
 
 .videoWrapper{
     width: 100%;
-    height: 79%;
-    max-height: 675px;
+    height: 100%;
     display: flex;
     justify-content: center;
 }
@@ -87,7 +122,7 @@ html, body {
 }
 
 .videoContent{
-    width: 90%;
+    width: 100%;
     height: 100%;
     background-color: #F2F3F5;
 }
@@ -96,6 +131,7 @@ html, body {
     width: 100%;
     height: 100%;
     position: relative;
+    overflow: hidden;
 }
 
 .videoContainerCenter{
@@ -106,6 +142,7 @@ html, body {
     left: 50%;
     transform: translate(-50%,-50%);
     background-color: #f0f0f0;
+    overflow: hidden;
 }
 
 .showPosition{
@@ -129,41 +166,10 @@ html, body {
     padding: 0px 8px;
 }
 
-.btnContainer{
-    width: 10%;
-    height: 100%;
-}
-
-.btnContent{
-    width:100%;
-    height: 100%;
-    display:flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    padding: 45% 0;
-    box-sizing: border-box;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
-}
-
-.setBtnContainer{
-    width: 100%;
-    height: 66px;
-    display:flex;
-    flex-direction: column;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-
-}
 
 .btnSetting{
-    width: 48px;
-    height: 48px;
-    border: 1px solid #CCCCCC;
+    width: 60px;
+    height: 60px;
     border-radius: 28.5px;
     display:flex;
     flex-direction: column;
@@ -176,7 +182,6 @@ html, body {
     height:100%;
     margin: auto;
     position: relative;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -227,15 +232,20 @@ fullVideo::after, .presentVideoContainer::after, .presentVideo::after, .canvas::
 }
 
 .imgContent{
-    width: 48px;
-    height: 48px;
+    width: 100%;
+    height: 100%;
     display:flex;
     justify-content: center;
     align-items: center;
 }
-.btn{
-    width: 24px;
-    height: 24px;
+.shareBtn{
+    width: 48px;
+    height: 48px;
+    background-size: 35px !important;
+}
+
+.shareBtn:hover{
+    background-size: 50px !important;
 }
 
 .setBtnContainer span{
@@ -810,19 +820,54 @@ fullVideo::after, .presentVideoContainer::after, .presentVideo::after, .canvas::
     width: 0;
     height: 0;
     position: absolute;
-    top: 100px;
-    left: 25%;
+    top: 0;
     z-index: 9;
     background-color: rgba(10, 11, 17, .3);
-    transition: all 0.5s ease-in-out;
     overflow: hidden;
 }
 
-.minimized {
-    left: 0;
-    top: 0;
+.file-popup-show{
     width: 100%;
     height: 100%;
+    animation: popupShow 0.5s;
+}
+
+.file-popup-none{
+    animation: popupNone 0.5s;
+}
+
+@keyframes popupShow {
+    0% {
+        width: 0;
+        height: 0;
+        top: 50%;
+        left: 50%;
+        opacity: 0;
+    }
+    100%{
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes popupNone {
+    0% {
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 1;
+    }
+    100%{
+        width: 0;
+        height: 0;
+        top: 50%;
+        left: 50%;
+        opacity: 0;
+    }
 }
 
 .file-popup-content{
@@ -849,11 +894,42 @@ fullVideo::after, .presentVideoContainer::after, .presentVideo::after, .canvas::
     letter-spacing: 0;
     text-align: center;
     line-height: 24px;
+    display: flex;
+    justify-content: flex-start;
+}
+.file-head > span{
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.file-head-span-color{
+    color: #CED0D1;
 }
 
 .file-body{
+    display: none;
     width: 58.3%;
     padding-top: 24px;
+}
+
+@keyframes BodyLeft {
+    0% {
+        transform: translate(-100px);
+        opacity: 0;
+      }
+    50% {
+    transform: translate();
+    opacity: 0.5;
+    }
+    100% {
+    transform: translate(0);
+    opacity: 1;
+    }
+}
+
+.file-body-show{
+    display: block;
+    animation: BodyLeft .5s ease-out;
 }
 
 .file-body-content{
@@ -924,7 +1000,7 @@ fullVideo::after, .presentVideoContainer::after, .presentVideo::after, .canvas::
     text-align: center;
 }
 
-.file-tail-button{
+.file-tail-button, .loss-file-button, .cance-file-button{
     display: inline-block;
     background: #B5D7FF;
     font-family: OpenSans;
@@ -937,12 +1013,12 @@ fullVideo::after, .presentVideoContainer::after, .presentVideo::after, .canvas::
     cursor: not-allowed;
 }
 
-.file-tail-button-show{
+.file-tail-button-show, .loss-file-button-show, .cance-file-button-show{
     background: #2F91FF;
     cursor: pointer;
 }
 
-.file-tail-button-none{
+.file-tail-button-none, .loss-file-button-none, .cance-file-button-none, .loss-title-none{
     display: none;
 }
 
@@ -974,18 +1050,58 @@ progress::-webkit-progress-value{
     border-radius: 3px;
 }
 
+
+/****关于共享工具栏css *****/
+
+.shareBtnContainer{
+    height: 50px;
+    position: absolute;
+    z-index: 1000;
+    border-radius: 10px;
+
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btnContent{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-sizing: border-box;
+    background: #fcfdfe;
+    border-radius: 10px;
+    border: 1px solid #ffffff;
+    box-shadow: 0 0 6px rgba(180,160,120,.8);
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+
+.setBtnContainer{
+    width: 100%;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+
+    transform: translate3d(0, 0, 0);
+    transition: all .3s ease-in-out;
+}
+
+
 /*************************************** 工具栏css ************************************/
 .canvasToolBar{
-    width: 100%;
     height: 50px;
-    /*display: flex;*/
-    /*justify-content: center;*/
-    /*align-items: center;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     z-index:1000;
-    display: grid;
-    grid-template-columns: 10% 80% 10%;
-    grid-template-rows:auto;
+    border-radius: 10px;
 
 }
 .canvasToolBar_top_40{
@@ -999,13 +1115,10 @@ progress::-webkit-progress-value{
 
 .toolbarContent{
     position: relative;
-    width: 528px;
     height:50px;
-    margin: 0 auto;
-    border-radius: 5px;
     display:flex;
+    flex-direction: column;
     justify-content: center;
-    align-content: center;
     align-items: center;
     box-sizing: border-box;
 }
@@ -1015,17 +1128,73 @@ progress::-webkit-progress-value{
 }
 
 .toolbar{
-    position: absolute;
-    background-color: rgba(0,0,0,.9);
-    border-radius: 5px;
-    width: 100%;
-    height:100%;
     display:flex;
-    justify-content: space-around ;
-    align-content: center;
-    align-items: center;
-    /*padding: 6px 20px;*/
     box-sizing: border-box;
+    background-color: rgba(0,0,0,.9);
+    border-radius: 10px;
+    border: 1px solid #ffffff;
+    box-shadow: 0 0 6px rgba(180,160,120,.8);
+}
+
+.displayToolbar, .displayBtn{
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.displayBtn{
+    margin:0 8px;
+}
+
+.drawToolbar{
+    flex:1;
+    width: 450px;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.rightOfCanvasTool{
+    animation: directionRight .2s ease-in-out;
+    animation-fill-mode:forwards;
+}
+
+.leftOfCanvasTool{
+    animation: directionLeft .2s ease-in-out ;
+    animation-fill-mode:forwards;
+}
+
+@keyframes directionRight {
+    0% {
+        width: 0px;
+    }
+
+    50% {
+        width: 200px;
+    }
+
+    100% {
+        width: 450px;
+    }
+}
+
+@keyframes directionLeft {
+    0% {
+        width: 450px;
+    }
+
+    50% {
+        width: 200px;
+    }
+
+    100% {
+        width: 0px;
+    }
 }
 
 .toolbar_button{
@@ -1036,10 +1205,17 @@ progress::-webkit-progress-value{
     justify-content: center;
     align-content: center;
     align-items: center;
+    cursor: pointer;
 }
 .toolbar_icon{
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
+    display:flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    line-height: 24px;
+    text-align: center;
 }
 
 .toolbar_button_first{
@@ -1054,8 +1230,6 @@ progress::-webkit-progress-value{
 
 .toolbar_border_change{
     z-index:1000;
-    border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 0 2px 4px 0 #00000080;
 }
 
 .toolbar input{
@@ -1115,10 +1289,11 @@ textarea, .textBox {
 
 .toolbarChild{
     position: absolute;
-    top: 55px;
-    height: 100px;
     display: flex;
     justify-content: center;
+}
+.toolbarChild_top{
+    top: 55px;
 }
 
 .toolbarChild-zIndex{
@@ -1128,47 +1303,6 @@ textarea, .textBox {
     top: 60px;
 }
 
-/** 绘制线的样式 ***/
-.shapeChild{
-    width:160px;
-    height: 100px;
-    background-color: rgba(55,55,55,0.9);
-    border-radius:4px;
-    flex-direction: column;
-    display: none;
-    justify-content: space-around;
-    align-items: center;
-    font-size:small;
-    user-select: none;
-    color: white;
-    padding: 5px;
-}
-
-.shapeChild-type{
-    width:100%;
-    height:40px;
-    display: flex;
-    /*padding: 5px;*/
-    justify-content: space-evenly;
-    align-items: center;
-}
-.shapeChildWrapper{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.shapeChildWrapper:hover, .childWrapper-bg{
-    background-color: rgb(238, 238, 238, 0.8);
-    border-radius:2px;
-    color:black;
-}
-.shapeType{
-    width: 24px;
-    height: 24px;
-    padding: 2px;
-    /*background-repeat: no-repeat;*/
-    /*background-position: center;*/
-}
 
 /**笔触样式颜色***/
 .pointerChild, .noteChild{
@@ -1236,97 +1370,25 @@ textarea, .textBox {
 }
 
 /**画笔**/
-.brushChild, .textChild{
-    width: 160px;
-    height: 99px;
+.brushChild, .textChild, .shapeChild{
+    width: 180px;
     display: none;
     flex-direction: column;
-    justify-items: center;
-    align-items: center;
     background-color: rgb(55,55,55,0.9);
     border-radius: 4px;
+    padding: 2px;
 }
-.brushChildColorWrapper, .textChildColorWrapper{
-    width:100%;
-    height:66px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: center;
 
+.shapeChild{
+    width: 220px;
 }
-.brushChildColor-Wrapper, .textChildColor-Wrapper{
-    width: 90%;
-    height: 90%;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: 27px;
-    justify-items: center;
-    align-items: center;
-}
+
 .brushIsolationLine, .textIsolationLine{
     background-color : #5B5B5B;
-    width:100%;
+    width:70%;
     height:1px;
 }
 
-.brushChildFontWrapper, .textChildFontWrapper{
-    width:100%;
-    height:32px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-}
-
-.brushColorWrapper, .textColorWrapper{
-    width:18px;
-    height:18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2px;
-}
-.brushColorWrapper:hover, .textColorWrapper:hover .colorWrapper-bg{
-    background-color: rgba(238, 238, 238, 0.8);
-    border-radius: 2px;
-}
-.brushColorWrapper div, .textColorWrapper div{
-    width: 16px;
-    height:16px;
-    border-radius: 50%;
-}
-.brushBtn-black, .textBtn-black{
-    background-color:#000000;
-}
-.brushBtn-white, .textBtn-white{
-    background-color:#FFFFFF;
-}
-.brushBtn-gray, .textBtn-gray{
-    background-color:#888888;
-}
-.brushBtn-red, .textBtn-red{
-    background-color:#FE4737;
-}
-.brushBtn-orange, .textBtn-orange{
-    background-color:#FF9F00;
-}
-.brushBtn-yellow, .textBtn-yellow{
-    background-color:#FFE500;
-}
-.brushBtn-green, .textBtn-green{
-    background-color:#21D175;
-}
-.brushBtn-cyan, .textBtn-cyan{
-    background-color:#24E8FF;
-}
-.brushBtn-blue, .textBtn-blue{
-    background-color:#3890FF;
-}
-.brushBtn-purple, .textBtn-purple{
-    background-color:#A066FF;
-}
 /**字体设置**/
 .brushChildFontContent, .textChildFontContent{
     width: 100px;
@@ -1389,8 +1451,6 @@ textarea, .textBox {
 }
 
 .text-font-middle-txt{
-    /*width:100%;*/
-    /*height:100%;*/
     font-family: PingFangSC-Regular;
     font-weight: 400;
     font-size: 16px;
@@ -1398,8 +1458,6 @@ textarea, .textBox {
     letter-spacing: 0;
 }
 .text-font-big-txt{
-    /*width:100%;*/
-    /*height:100%;*/
     font-family: PingFangSC-Regular;
     font-weight: 400;
     font-size: 20px;
@@ -1751,6 +1809,7 @@ ul, li{
     -moz-user-select:none;
     -ms-user-select:none;
     user-select:none;
+    color: #FFFFFF;
 }
 
 .user-name:hover{
@@ -1769,4 +1828,450 @@ ul, li{
     background-size: 22px;
     position: absolute;
     z-index: 999;
+}
+
+/*关于子组件的样式处理*/
+.btn-group {
+    display: inline-flex
+}
+
+.flex {
+    display: flex
+}
+
+.btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    line-height: 1em;
+    min-height: 3rem;
+
+    color: white;
+    border-radius: 5px;
+}
+
+.btn-sm {
+    height: 2rem;
+    padding-left: .1rem;
+    padding-right: .1rem;
+    min-height: 2rem;
+    font-size: .875rem
+}
+
+.flex-grow {
+    flex-grow: 1
+}
+
+.mt-1 {
+    margin-top: .25rem
+}
+
+.btn:active:hover,.btn:active:focus {
+    animation: none;
+    transform: scale(var(--btn-focus-scale, .95))
+}
+
+.btn:hover,.btn-active {
+    --tw-border-opacity: 1;
+    border-width: thin;
+    border-color: hsl(var(--nf, var(--n)) / var(--tw-border-opacity));
+    --tw-bg-opacity: 1;
+    background-color: hsl(var(--nf, var(--n)) / var(--tw-bg-opacity));
+    background-color: gray;
+}
+
+.btn:not(:first-child), .btn:not(:last-child){
+    margin: 1px;
+}
+
+.btnContentWrapper{
+    height:100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    bottom: 0;
+}
+
+.direction-up {
+    animation: directionUp 0.5s ease;
+    animation-fill-mode:forwards;
+}
+
+.direction-down{
+    animation: directionDown 0.5s ease;
+    animation-fill-mode:forwards;
+}
+
+@keyframes directionUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes directionDown {
+    from {
+        transform: translateY(0%);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+.shareBtn_display-tips{
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(129, 123, 123, 0.1);
+    user-select: none;
+    background-color: rgb(4 82 158);
+    color: white;
+    font-size: x-small;
+}
+.btnContainer{
+    display:flex;
+    align-items: center;
+}
+
+.functionBtn{
+    flex: 1;
+    width: 600px;
+    height: 80px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    overflow: hidden;
+}
+
+.rightOfFunctionBtn{
+    animation: rightStyle .2s ease-in-out;
+    animation-fill-mode:forwards;
+}
+.leftOfFunctionBtn{
+    animation: leftStyle .2s ease-in-out;
+    animation-fill-mode:forwards;
+}
+
+@keyframes rightStyle {
+    0% {
+        width: 0px;
+    }
+
+    50% {
+        width: 100px;
+    }
+
+    100% {
+        width: 350px;
+    }
+}
+
+@keyframes leftStyle {
+    0% {
+        width: 350px;
+    }
+
+    50% {
+        width: 100px;
+    }
+
+    100% {
+        width: 0px;
+    }
+}
+
+/**shareBtn 向左向右显示隐藏**/
+.fade-content {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.fade-in {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.fade-out {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+
+/*关于颜色选择样式*/
+.colorContent{
+    position: absolute;
+    padding: 2px;
+    width: 40px;
+    z-index: 1000;
+    border-radius: 5px;
+}
+.colorContent_wrapper{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+
+    border: 2px solid transparent;
+    box-shadow: 0 0 6px rgba(180,160,120,.8);
+    border-radius: 5px;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.displayContentContainer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    top: 50%;
+}
+
+.displayContentContainer:not(:first-child), .displayContentContainer:not(:last-child){
+    margin: 1px;
+}
+.colorSelect{
+    width: 24px;
+    height: 24px;
+    background-color: red;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+/**颜色色块样式**/
+.colorSelectContainer{
+    position:absolute;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    top:5px;
+    background-color: #5f6b7c;
+    border-radius: 4px;
+}
+.colorSelectContainer_right{
+    right: 50px;
+}
+
+.colorSelectContainer-wrapper{
+    width: 150px;
+    padding: 5px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.colorStyle{
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.colorBlock{
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    /*background-color: palegoldenrod;*/
+}
+
+.color-red{
+    background-color: #FE4737;
+}
+
+.color-yellow{
+    background-color: #FFE500;
+}
+
+.color-green{
+    background-color: #21D175;
+}
+
+.color-blue{
+    background-color: #3890FF;
+}
+
+.color-purple{
+    background-color: #A066FF;
+}
+
+.color-deepPurple{
+    background-color: #E2D0FF;
+}
+
+.color-cyan{
+    background-color: #24E8FF;
+}
+
+.color-orange{
+    background-color: #15ab87;
+}
+
+.color-white{
+    background-color: #FFFFFF;
+}
+
+.color-black{
+    background-color: #0c090c;
+}
+
+.loss-file-list{
+    display: none;
+    border-left:1px solid #000000;
+    border-top:1px solid #000000;
+    border-right:1px solid #000000;
+    text-align: center;
+}
+
+@keyframes listRight {
+    0% {
+        transform: translate(100px);
+        opacity: 0;
+    }
+    50% {
+        transform: translate();
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(0px);
+        opacity: 1;
+    }
+}
+
+.loss-file-list-show{
+    display: block;
+    animation: listRight .5s ease-out;
+}
+
+.file-list-li{
+    display: grid;
+    grid-template-columns: 50px 170px 50px;
+    grid-auto-rows: 30px;
+}
+
+.file-list-li-icon{
+    border-bottom:1px solid #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.magic-checkbox {
+    position: absolute;
+    display: none;
+}
+
+.magic-checkbox[disabled] {
+    cursor: not-allowed;
+}
+
+.magic-checkbox + label {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.magic-checkbox + label:hover:before {
+    animation-duration: 0.4s;
+    animation-fill-mode: both;
+    animation-name: hover-color;
+}
+
+.magic-checkbox + label:before {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    content: '';
+    border: 1px solid #c0c0c0;
+}
+
+.magic-checkbox + label:after {
+    position: absolute;
+    display: none;
+    content: '';
+}
+
+.magic-checkbox[disabled] + label {
+    cursor: not-allowed;
+    color: #e4e4e4;
+}
+.magic-checkbox[disabled] + label:hover,
+.magic-checkbox[disabled] + label:before,
+.magic-checkbox[disabled] + label:after {
+    cursor: not-allowed;
+}
+
+.magic-checkbox[disabled] + label:hover:before {
+    border: 1px solid #e4e4e4;
+    animation-name: none;
+}
+
+.magic-checkbox[disabled] + label:before {
+    border-color: #e4e4e4;
+}
+
+.magic-checkbox:checked + label:before {
+    animation-name: none;
+}
+
+.magic-checkbox:checked + label:after {
+    display: block;
+}
+
+.magic-checkbox + label:before {
+    border-radius: 10px;
+}
+
+.magic-checkbox + label:after {
+    top: 2px;
+    left: 7px;
+    box-sizing: border-box;
+    width: 6px;
+    height: 12px;
+    transform: rotate(45deg);
+    border-width: 2px;
+    border-style: solid;
+    border-color: #fff;
+    border-top: 0;
+    border-left: 0;
+}
+
+.magic-checkbox:checked + label:before {
+    border: #3e97eb;
+    background: #3e97eb;
+}
+
+.file-list-li-name{
+    border-left:1px solid #000000;
+    border-right:1px solid #000000;
+    border-bottom:1px solid #000000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

@@ -174,18 +174,16 @@ let gsContentScript = {
         return false
     },
 
-    isChinese: function (data){
-        if(!data){
+    /**
+     * 使用正则表达式检查字符是否在中文的 Unicode 范围内
+     * @param char
+     * @returns {boolean}
+     */
+    isChinese: function (char){
+        if(!char){
             return  false
         }
-        var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
-        if (reg.test(data)) {
-            // 包括汉字
-            return true;
-        } else {
-            // 没有汉字
-            return false;
-        }
+        return /^[\u4E00-\u9FA5]+$/.test(char);
     },
 
     /** 简单消息通知
@@ -208,8 +206,55 @@ let gsContentScript = {
         }, 1000);
     },
 
-    /*** 通过模糊匹配获取内容
-     **/
+    /**
+     * 获取全名，规则如下：
+     * （1）对于ldap，获取的CallerIDName或calleridname就是全名，但是也存在姓名在后面的情况，如"某某 王"
+     * （2）对于本地通讯录：
+     *       FirstName + " " + LastName为全名，只存在一个时，则全名为FirstName或LastName，拼接时中间添加空格符。
+     *      如果FirstName以中文开头，则保存中文全名为 LastName + FirstName；
+     * @param item
+     * @returns {{fullName: string, chineseFullName: string}}
+     */
+    getFullName: function (item){
+        let fullName = '';
+        let chineseFullName = ''
+        if(item.CallerIDName || item.calleridname){ // 针对ldap
+            fullName = item.CallerIDName || item.calleridname
+
+            // CallerIDName存在 : "某某 王"的情况，不转换无法匹配
+            if (this.isChinese(fullName[0]) && fullName.indexOf(" ") > -1){
+                // "某某 王" 转换为 “王某某”
+                chineseFullName = fullName?.split(' ').reverse().join("").replace(/[ ]/g,"")
+            }
+        }else if(item.FirstName || item.LastName){  // 针对本地通讯录
+            if(item.FirstName && item.LastName){
+                fullName = item.FirstName + " " + item.LastName
+
+                let nameArr = item.FirstName.split('')
+                if(this.isChinese(nameArr[0])){
+                    chineseFullName = item.LastName + item.FirstName
+                }
+            }else {
+                fullName = item.FirstName || item.LastName
+            }
+        }
+
+        return {
+            fullName: fullName.toString().trim(),
+            chineseFullName: chineseFullName.toString().trim(),
+        }
+    },
+
+    /**
+     * 通过模糊匹配获取内容
+     * 1、鼠标选中某些字符，校验该选中字符是否包含以下任意一种情况的字符：
+     * （1）与联系人/LDAP中的email的用户个人设定的名称相同（模糊匹配）
+     * （2）与联系人/LDAP中的号码相同（模糊匹配）
+     * （3）与联系人/LDAP中的FirstName/LastName/FirstName+LastName相同（模糊匹配）
+     * 2、匹配顺序：先按照LDAP的P8029顺序挨个匹配，再按照本地联系人列表显示顺序及号码类型顺序挨个匹配
+     * @param searchContent
+     * @returns {string|*[]}
+     */
     getContentForFuzzyMatch: function(searchContent){
         if (!searchContent) {
             console.log('[EXT] searchContent parameter MUST offer!')
@@ -220,19 +265,38 @@ let gsContentScript = {
         let phoneIndex = 0
         let phoneBooks = this.phoneBooks
         if(phoneBooks){
+            let findPhoneNumber = function (target, searchContent){
+                let result
+                if (Object.prototype.toString.call(target['Phone']) === '[object Object]') {
+                    // Phone 只有一个号码时，数据为对象格式
+                    if(target['Phone'].phonenumber?.includes(searchContent)){
+                        result = target['Phone'].phonenumber
+                    }
+                } else if (Object.prototype.toString.call(target['Phone']) === '[object Array]') {
+                    // Phone 存在多个号码时，数据为数组格式。
+                    for (let j = 0; j < target['Phone'].length; j++) {
+                        if(target['Phone'][j].phonenumber?.includes(searchContent)){
+                            result = target['Phone'][j].phonenumber
+                            break
+                        }
+                    }
+                }
+                return result
+            }
+
+            searchContent = searchContent.toLowerCase()  // 搜索的文本转换为小写进行匹配
+            let reg1 = new RegExp("-","g"); // 加'g'，删除字符串里所有的"-"，匹配带"-"的号码：626-624-5033
+            searchContent = searchContent.replace(reg1,"");
             if(gsContentScript.contactSearchFrom.ldap && phoneBooks.ldap){
                 for (let i = 0; i < phoneBooks.ldap.length; i++) {
                     let user = phoneBooks.ldap[i]
-                    let callerIDName = user?.CallerIDName
-                    let isExistChinese = this.isChinese(callerIDName)
-                    if(isExistChinese){
-                        // TODO: CallerIDName 存在 “王无名” 和 “无名 王” 两种格式
-                        callerIDName = callerIDName?.split(' ').reverse().join("").replace(/[ ]/g,"")
-                    }
-                    let emailPrefix = user?.email?.split('@')[0]
-                    if (user?.AccountNumber?.includes(searchContent) || callerIDName?.includes(searchContent) ||
-                        emailPrefix === searchContent || user?.email === searchContent
-                    ){
+                    let {fullName, chineseFullName} = this.getFullName(user)
+                    let initFullName = fullName
+                    let callerIDName = fullName?.toLowerCase()
+                    chineseFullName = chineseFullName?.toLowerCase()
+
+                    if (user?.AccountNumber?.includes(searchContent) || callerIDName?.includes(searchContent)
+                        || chineseFullName?.includes(searchContent) || user?.email?.includes(searchContent)){
                         let phoneNumber = []
                         if(!phoneNumber[phoneIndex]){
                             phoneNumber[phoneIndex] = {}
@@ -252,7 +316,7 @@ let gsContentScript = {
                         getContentArray[index].phoneNumber = phoneNumber
 
                         if(user?.CallerIDName){
-                            getContentArray[index].name = user?.CallerIDName
+                            getContentArray[index].name = initFullName // 未转换大小写的初始值
                         }
 
                         if(user?.email){
@@ -269,19 +333,14 @@ let gsContentScript = {
                 for (let j = 0; j < localAddressBook.length; j++) {
                     let accountInfo = localAddressBook[j]
                     let phone = accountInfo?.Phone
-                    let emailPrefix = accountInfo?.email?.split('@')[0]
-                    let firstLastName, lastFirstName;
-                    if(accountInfo.FirstName && accountInfo.LastName){
-                        firstLastName = accountInfo.FirstName + accountInfo.LastName
-                        lastFirstName = accountInfo.LastName + accountInfo.FirstName
-                    }else if(accountInfo.FirstName){
-                        firstLastName = accountInfo.FirstName
-                    }else if(accountInfo.LastName){
-                        lastFirstName = accountInfo.LastName
-                    }
+                    let {fullName, chineseFullName} = this.getFullName(accountInfo)
+                    let initFullName = fullName
+                    let initChineseFullName = chineseFullName
+                    fullName = fullName?.toLowerCase()
+                    chineseFullName = chineseFullName?.toLowerCase()
 
-                    if (firstLastName?.includes(searchContent) || lastFirstName?.includes(searchContent) ||
-                        emailPrefix === searchContent || accountInfo?.email === searchContent) {
+                    if (fullName?.includes(searchContent) || chineseFullName?.includes(searchContent) ||
+                        accountInfo?.email?.includes(searchContent) || findPhoneNumber(accountInfo, searchContent)) {
                         let phoneNumber = []
                         getContentArray[index] = {}
                         if (phone) {
@@ -292,9 +351,10 @@ let gsContentScript = {
                             }
                         }
 
+                        let matchByName = fullName?.includes(searchContent) || chineseFullName?.includes(searchContent) // 是否通过名字匹配
                         getContentArray[index].from = 'localAddressBook'
                         getContentArray[index].phoneNumber = phoneNumber
-                        getContentArray[index].name = firstLastName || lastFirstName
+                        getContentArray[index].name = matchByName ? (fullName?.includes(searchContent) ? initFullName : initChineseFullName) : (fullName || initChineseFullName)
                         getContentArray[index].email = accountInfo?.email
                         getContentArray[index].jobTitle = accountInfo?.JobTitle
                         getContentArray[index].company = accountInfo?.Company
@@ -336,6 +396,7 @@ let gsContentScript = {
         this.panel.className = 'addGrpSpan addGrpSpan_hidden'
         this.panel.innerHTML = `
             <div class="addContentWrapper">
+                <div class="GRP-icon-close addGrpClose"></div>
                 <div class="addGrpTop">
                     <div class="addGrpLeft">
                         <span class="addGrpIcon GRP-icon-icon_left"></span>
@@ -433,6 +494,10 @@ let gsContentScript = {
                         phonenumber: callNumber
                     }
                 })
+
+                // 拨号后自动关闭hack页面
+                let addGrpSpan = document.getElementsByClassName("addGrpSpan")[0] || gsContentScript.target?.document.getElementsByClassName("addGrpSpan")[0]
+                addGrpSpan.style.display = "none"
             });
         }
 
@@ -503,6 +568,15 @@ let gsContentScript = {
                 addGrpGetContent.setAttribute('sipId', e.target.getAttribute('sipId'))
                 addGrp_showSelectOption.style.display = 'none'
             }
+        }
+
+        // 关闭hack页面
+        let addGrpCloseBtn = document.querySelector('.addGrpClose')
+        if(addGrpCloseBtn){
+            addGrpCloseBtn.addEventListener('click', function (e) {
+                let addGrpSpan = document.getElementsByClassName("addGrpSpan")[0] || gsContentScript.target?.document.getElementsByClassName("addGrpSpan")[0]
+                addGrpSpan.style.display = "none"
+            });
         }
     },
 
@@ -935,18 +1009,19 @@ let gsContentScript = {
 
         if(getPhoneContents.length && addGRPElement){
             /***** 针对整体内容显示位置 *****/
-            if (addGRPElement && e.currentTarget !== top){     // 当前元素在iframe中
-                addGRPElement.classList.add('addGrpSpan_center')
-                addGRPElement.style.top = '0'
-                addGRPElement.style.left = '0'
-                addGRPElement.style.right = '0'
-                addGRPElement.style.bottom = '0'
-            }else{
+            if(e.pageX && e.pageY){
                 addGRPElement.classList.remove('addGrpSpan_center')
                 addGRPElement.style.left = e.pageX - 20 + 'px'
                 addGRPElement.style.top = e.pageY + 20 + 'px'
                 addGRPElement.style.right = ''
                 addGRPElement.style.bottom = ''
+            }else {
+                // 针对网易邮箱等内嵌iframe元素的网页，点击时无法拿到位置，故居中显示
+                addGRPElement.classList.add('addGrpSpan_center')
+                addGRPElement.style.top = '0'
+                addGRPElement.style.left = '0'
+                addGRPElement.style.right = '0'
+                addGRPElement.style.bottom = '0'
             }
 
             if(addGRPElement && addGRPElement.classList.contains('addGrpSpan_hidden')){
@@ -968,7 +1043,8 @@ let gsContentScript = {
             let addGrpRight = document.querySelector(".addGrpRight") || gsContentScript.target?.document.querySelector(".addGrpRight");
             let addGrpTop = document.querySelector(".addGrpTop") || gsContentScript.target?.document.querySelector(".addGrpTop");
 
-            if (getPhoneContents.length === 1) {
+            // 只有一个联系人且只有一个号码时不显示左右切换按钮
+            if (getPhoneContents.length <= 1 && getPhoneContents[0].phoneNumber && getPhoneContents[0].phoneNumber.length <=1) {
                 setElementStyle(addGrpLeft, "none")
                 setElementStyle(addGrpRight, "none")
                 setElementStyle(addGrpTop, "", "30px")
@@ -1359,10 +1435,6 @@ let gsContentScript = {
 /*******************************************************************************************************************/
 if(gsContentScript.getBrowserDetail().browser === 'firefox'){
     gsContentScript.loadContentScript()
-
-    window.addEventListener("mouseup",   function (event){
-        gsContentScript.processSelectionTextContent(event)
-    })
 }else {
     /**
      * 内容注入
@@ -1373,11 +1445,14 @@ if(gsContentScript.getBrowserDetail().browser === 'firefox'){
         // 注入自定义JS
         gsContentScript.loadContentScript()
     })
-
-    /**
-     * 页面dom节点扫描获取选中文本内容
-     */
-    window.addEventListener("mouseup", function (event){
-        gsContentScript.processSelectionTextContent(event)
-    })
 }
+
+/**
+ * 页面dom节点扫描获取选中文本内容
+ */
+window.addEventListener("mouseup", function (event){
+    // 使用 setTimeout 延迟执行以确保在 mouseup 事件后获取文本选择，避免点击空白处时，window.getSelection还会拿到鼠标上次选中的文本
+    setTimeout(function() {
+        gsContentScript.processSelectionTextContent(event)
+    }, 0);
+})

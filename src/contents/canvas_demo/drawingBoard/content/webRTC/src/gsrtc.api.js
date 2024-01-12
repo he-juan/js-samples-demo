@@ -14,13 +14,13 @@ window.addEventListener('load', function () {
  * @param data.constraints 取流参数， 可选
  * @param data.lineId 线路line
  * @param data.localShare 当前是否开启演示 可选
+ * @param data.conf  当前线路是否是会议状态： 1（是） 0（否）
  * @param data.stream 演示流
  * @param data.shareType  共享类型（audio仅桌面音频、video仅桌面视频、audiovideo桌面音视频）
  * @param data.callback  回调
  */
 GsRTC.prototype.screenShare = function (data = {}){
     let This = this
-    This.action = 'shareScreen'
     log.info('share screen data: ' + JSON.stringify(data, null, '    '))
     if(!data || !data.lineId){
         log.info('invalid parameters!')
@@ -28,17 +28,13 @@ GsRTC.prototype.screenShare = function (data = {}){
         return
     }
 
-    let type = 'slides'
-    if(This.screenSharing){
-        notice({type: 'info',  value: currentLocale['L74']})
-        log.info("current open shareScreen")
-        return
-    }
     let session = WebRTCSession.prototype.getSession({key: 'lineId', value: data.lineId})
     if(!session){
         session = WebRTCSession.prototype.getSessionInstance(data.lineId)
     }
-    This.sharingPermission = 1
+
+    let type = 'slides'
+    let action = 'shareScreen'
 
     let shareScreenCallback = function (evt){
         log.warn('share screen callback data: ' + JSON.stringify(evt, null, '   '))
@@ -50,9 +46,9 @@ GsRTC.prototype.screenShare = function (data = {}){
             session.actionCallback = null
             session.isSuccessUseWebsocket = true
             This.screenSharing = true
+            session.setEncodingParameters(type)
         }
 
-        This.action = null
         if(data.callback ){
             data.callback(evt)
         }else {
@@ -73,10 +69,11 @@ GsRTC.prototype.screenShare = function (data = {}){
             gsRTC.setStreamInactiveEvent({ lineId: data.lineId, stream: stream})
 
             session.shareType = data.shareType || 'audio' // 默认仅共享音频
-            session.action = This.action
-            session.localShare = data.localShare === true ? data.localShare : true
+            session.action = action
+            session.localShare = data.localShare || true   // 默认是本地开启共享
+            session.conf = data.conf
             session.actionCallback = shareScreenCallback
-            session.createRTCSession(type)
+            session.createRTCSession(type,stream)
         }else {
             log.warn('Get present stream failed: ' + event.error)
             let codeType = WebRTCSession.prototype.getGumErrorCode('slides', event.error.name)
@@ -128,8 +125,8 @@ GsRTC.prototype.switchScreenSource = function (data) {
         log.info('switch screen data: ' + JSON.stringify(evt, null, '    '))
         if(evt.codeType === 200){
             log.info('present switch success')
-            session.setStream(stream, type, true)
-            // session.setEncodingParameters(type)
+            session.setStream(evt.stream, type, true)
+            session.setEncodingParameters(type)
         }else {
             log.warn('present switch failed')
         }
@@ -144,9 +141,10 @@ GsRTC.prototype.switchScreenSource = function (data) {
             if (preSlidesStream) {
                 log.info('clear pre slides stream')
                 session.processRemoveStream(preSlidesStream, pc, type)
+                session.closeStream(preSlidesStream)
             }
             session.processAddStream(stream, pc, type)
-            switchScreenSourceCallback(This.CODE_TYPE.ACTION_SUCCESS)
+            switchScreenSourceCallback({codeType:This.CODE_TYPE.ACTION_SUCCESS.codeType, stream: stream})
         } else {
             log.warn(event.error.toString())
             switchScreenSourceCallback({codeType: WebRTCSession.prototype.getGumErrorCode('slides', event.error.name)})
@@ -257,12 +255,13 @@ GsRTC.prototype.stopScreenShare = function (data = {}){
         gsRTC.trigger('closeScreenTab',{lineId: data.lineId})
         return
     }
-    This.action = 'stopShareScreen'
-    session.isInitiativeStopScreen = data.isInitiativeStopScreen
+
     let type = 'slides'
+    let action = 'stopShareScreen'
     let dataChannel = session.pc.dataChannel
     let stream = session.getStream(type, true)
 
+    session.isInitiativeStopScreen = data.isInitiativeStopScreen
     let stopShareScreenCallback = function (evt){
         log.warn('stop share Screen callback data: ' + JSON.stringify(evt, null, '   '))
         if(evt.message.codeType !== This.CODE_TYPE.ACTION_SUCCESS.codeType){
@@ -305,7 +304,7 @@ GsRTC.prototype.stopScreenShare = function (data = {}){
     }
     if (dataChannel){
         session.isInviteBeingProcessed = false
-        session.action = This.action
+        session.action = action
         session.actionCallback = stopShareScreenCallback
         session.processRemoveStream(stream, session.pc, type)
         session.doOffer()
@@ -319,14 +318,17 @@ GsRTC.prototype.stopScreenShare = function (data = {}){
  * @param data.lineId 线路line，即本终端线路对应的lineId
  * @param data.remoteLineId 当前终端线路匹配的对端线路Id
  * @param data.reqId  事务reqId   必选
+ * @param data.localShare  本地是否开共享  可选
+ * @param data.conf    当前线路状态是否是会议模式 1（是） 0（否）
  * @param data.isUpdate  true 表示当前使用updateMediasession, 否则表示当前使用的是createMediaSession
  * @param data.shareType  开启演示类型（audio,video,audioVideo）
+ * @param data.account   当前线路的id 和 name
  * @param data.callback  回调
  *
  */
 GsRTC.prototype.acceptScreenShare = function(data){
     log.info("handle accept data: " + JSON.stringify(data, null, '    '))
-    if(!data || !data.lineId){
+    if(!data || !data.lineId || !data.reqId){
         log.info('sipAccept: invalid parameters')
         data && data.callback && data.callback({message: "accept screenShare failed"})
         return
@@ -336,6 +338,7 @@ GsRTC.prototype.acceptScreenShare = function(data){
     if(!session){
         session = WebRTCSession.prototype.getSessionInstance(data.lineId)
     }
+    let action = 'sipAccept'
     async function sipAcceptCallBack(event){
         event.lineId = session.lineId
         log.info('call accept data ' + JSON.stringify(event, null, '    '))
@@ -350,13 +353,16 @@ GsRTC.prototype.acceptScreenShare = function(data){
         data.callback && data.callback(event)
     }
 
-    // session.isIncomingCall = true
     session.shareType = data.shareType
     session.isRecvRequest = true
-    session.localShare = data.localShare
+    session.localShare = data.localShare || false   // 默认是本地未开启共享
+    session.action = action
     session.remoteShare = true
     session.reqId = data.reqId
+    session.conf = data.conf
+    session.account = data.account
     session.actionCallback = sipAcceptCallBack
+
     if(!data.isUpdate){
         session.remoteLineId = data.remoteLineId
         session.action =  data.action || 'sipAccept'
@@ -402,6 +408,7 @@ GsRTC.prototype.lineHold = function(data){
                 if(!session.isMute && !session.isRemoteHold){
                     gsRTC.pauseScreenShare({isMute: true, lineId: data.lineId})
                     gsRTC.trigger("holdStatus", {type: 'localHold' , localHold: session.isLocalHold, remoteHold: session.isRemoteHold})
+                    gsRTC.isPausePainting({lineId: data.lineId})
                 }
             } else{
                 param.type = 'localHoldLine'
@@ -414,6 +421,7 @@ GsRTC.prototype.lineHold = function(data){
                 param.type = 'remoteUnHoldLine'
                 if(session.isMute && !session.isRemoteHold){
                     gsRTC.pauseScreenShare({isMute: false, lineId: data.lineId})
+                    gsRTC.isPausePainting({lineId: data.lineId})
                 }
             } else{
                 param.type = 'localUnHoldLine'
@@ -521,4 +529,36 @@ GsRTC.prototype.acceptShareFile = function(data){
     }else {
         log.warn('file accept: no sdp found')
     }
+}
+
+/**
+ * 针对当前是hold场景告知对端  canvas不能绘制
+ * **/
+GsRTC.prototype.isPausePainting = function (data) {
+    log.info("isPausePainting:", data?.lineId)
+    if(!data || !data.lineId){
+        log.info('isPausePainting: invalid parameters!')
+        return
+    }
+
+    let session = WebRTCSession.prototype.getSession({ key: 'lineId', value: data.lineId })
+    if(!session){
+        log.warn("current isPausePainting: no session")
+        return
+    }
+
+    can.pausePainting = session.isLocalHold || session.isRemoteHold  ? true: false
+
+    if(can.pausePainting){
+        document.body.style.cursor = 'not-allowed'
+    }else{
+        document.body.style.cursor = 'default'
+    }
+    session.sendMessageByDataChannel({
+        type: 'pausePainting',
+        lineId: session.remoteLineId,
+        pause: can.pausePainting,
+        account: session.account
+    })
+
 }
